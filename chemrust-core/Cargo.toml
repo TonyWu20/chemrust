@@ -1,0 +1,15 @@
+[package]
+name = "chemrust-core"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+nalgebra = {version="0.*", features=["debug", "compare", "rand","macros", "alloc", "arbitrary"]}
+castep-periodic-table = "0.1.*"
+nom = "7"
+# rayon = "1.*"
+# glob = "0"

@@ -1,0 +1,26 @@
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+members = [
+    "chemrust-core",
+    "chemrust-input-parser",
+    "chemrust-formats"
+]
+
+[workspace.package]
+name = "chemrust"
+description = "The core module defining the flow and structs of data in computational chemistry routines."
+authors = ["TonyWu20"]
+readme = "README.md"
+homepage = "https://github.com/TonyWu20/chemrust"
+repository = "https://github.com/TonyWu20/chemrust"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+keywords = [
+    "chemistry",
+    "computational_chemistry",
+    "linear_algebra",
+]
+
+

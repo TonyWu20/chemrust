@@ -6,54 +6,57 @@ use crate::system::data_view::{attributes::AttrBuild, AttrView};
 
 use super::format::DataFormat;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AtomIdMarker;
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ElementSymbolMarker;
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AtomicNumberMarker;
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CartesianCoordMarker;
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FractionalCoordMarker;
 
-pub struct AtomAttr<T, N>(T, usize, PhantomData<N>)
+#[derive(Debug, Clone)]
+pub struct AtomAttr<T, N, F>(T, usize, PhantomData<N>, PhantomData<F>)
 where
-    N: Debug;
+    N: Debug,
+    F: DataFormat;
 
-pub type AtomId = AtomAttr<u32, AtomIdMarker>;
-pub type ElementSymbol = AtomAttr<String, ElementSymbolMarker>;
-pub type AtomicNumber = AtomAttr<u8, AtomicNumberMarker>;
-pub type CartesianCoord = AtomAttr<Point3<f64>, CartesianCoordMarker>;
-pub type FractionalCoord = AtomAttr<Point3<f64>, FractionalCoordMarker>;
+pub type AtomId<T> = AtomAttr<u32, AtomIdMarker, T>;
+pub type ElementSymbol<T> = AtomAttr<String, ElementSymbolMarker, T>;
+pub type AtomicNumber<T> = AtomAttr<u8, AtomicNumberMarker, T>;
+pub type CartesianCoord<T> = AtomAttr<Point3<f64>, CartesianCoordMarker, T>;
+pub type FractionalCoord<T> = AtomAttr<Point3<f64>, FractionalCoordMarker, T>;
 
+#[derive(Debug, Clone)]
 pub struct AtomCollections<T: DataFormat> {
-    element_symbols: Vec<ElementSymbol>,
-    atomic_number: Vec<AtomicNumber>,
-    xyz: Vec<CartesianCoord>,
-    fractional_xyz: Option<Vec<FractionalCoord>>,
-    atom_ids: Vec<AtomId>,
+    element_symbols: Vec<ElementSymbol<T>>,
+    atomic_number: Vec<AtomicNumber<T>>,
+    xyz: Vec<CartesianCoord<T>>,
+    fractional_xyz: Option<Vec<FractionalCoord<T>>>,
+    atom_ids: Vec<AtomId<T>>,
     format_info: T,
 }
 
 impl<T: DataFormat> AtomCollections<T> {
-    pub fn element_symbols(&self) -> &[ElementSymbol] {
+    pub fn element_symbols(&self) -> &[ElementSymbol<T>] {
         self.element_symbols.as_ref()
     }
 
-    pub fn atomic_number(&self) -> &[AtomicNumber] {
+    pub fn atomic_number(&self) -> &[AtomicNumber<T>] {
         self.atomic_number.as_ref()
     }
 
-    pub fn xyz(&self) -> &[CartesianCoord] {
+    pub fn xyz(&self) -> &[CartesianCoord<T>] {
         self.xyz.as_ref()
     }
 
-    pub fn fractional_xyz(&self) -> Option<&Vec<FractionalCoord>> {
+    pub fn fractional_xyz(&self) -> Option<&Vec<FractionalCoord<T>>> {
         self.fractional_xyz.as_ref()
     }
 
-    pub fn atom_ids(&self) -> &[AtomId] {
+    pub fn atom_ids(&self) -> &[AtomId<T>] {
         self.atom_ids.as_ref()
     }
 
@@ -62,9 +65,10 @@ impl<T: DataFormat> AtomCollections<T> {
     }
 }
 
-impl<T, N> AttrView for AtomAttr<T, N>
+impl<T, N, F> AttrView for AtomAttr<T, N, F>
 where
     N: Debug,
+    F: DataFormat,
 {
     type Output = T;
 
@@ -85,16 +89,17 @@ where
     }
 }
 
-impl<T, N> AttrBuild for AtomAttr<T, N>
+impl<T, N, F> AttrBuild for AtomAttr<T, N, F>
 where
     N: Debug,
+    F: DataFormat,
 {
     type Input = T;
 
     type Output = Self;
 
     fn new(input: Self::Input, index: usize) -> Self::Output {
-        Self(input, index, PhantomData)
+        Self(input, index, PhantomData, PhantomData)
     }
 }
 
@@ -104,16 +109,20 @@ mod test {
 
     use nalgebra::Point3;
 
-    use crate::system::data_view::{attributes::AttrBuild, AttrView};
+    use crate::{
+        data::format::msi::Msi,
+        system::data_view::{attributes::AttrBuild, AttrView},
+    };
 
     use super::{AtomId, AtomicNumber, CartesianCoord, ElementSymbol};
 
     #[test]
     fn test_attributes() {
-        let atom_id = AtomId::new(1_u32, 0);
-        let element_symbol = ElementSymbol::new("H".into(), 0);
-        let atomic_number = AtomicNumber::new(0, 0);
-        let cart_coord = CartesianCoord::new(Point3::new(0_f64, 0_f64, 0_f64), 0);
+        let atom_id: AtomId<Msi> = AtomId::new(1_u32, 0);
+        let element_symbol: ElementSymbol<Msi> = ElementSymbol::new("H".into(), 0);
+        let atomic_number: AtomicNumber<Msi> = AtomicNumber::new(0, 0);
+        let cart_coord: CartesianCoord<Msi> =
+            CartesianCoord::new(Point3::new(0_f64, 0_f64, 0_f64), 0);
         assert_eq!(&1_u32, atom_id.content());
         assert_eq!("H", element_symbol.content());
         assert_eq!(&0_u8, atomic_number.content());

@@ -95,14 +95,14 @@ impl<T> CollectionViewer<T> for Vec<T> {
 #[cfg(test)]
 mod test {
     use crate::{
-        data::atom::AtomId,
+        data::{atom::AtomId, format::msi::Msi},
         system::data_view::{attributes::AttrBuild, collections::CollectionViewer},
     };
 
     #[test]
     fn test_gat() {
         let a: Vec<i32> = (0..12).into_iter().collect();
-        let atom_id = AtomId::new(1, 8);
+        let atom_id: AtomId<Msi> = AtomId::new(1, 8);
         assert_eq!(Some(&0), a.get_by_index(0));
         assert_eq!(Some(&8), a.get_by_item_index(&atom_id));
     }

@@ -3,7 +3,6 @@ use std::fmt::Display;
 use crate::{
     data::{AtomCollections, AtomId, AtomicNumber, CartesianCoord, ElementSymbol},
     impl_display,
-    system::data_view::AttrView,
 };
 
 use super::DataFormat;
@@ -48,10 +47,7 @@ impl Display for AtomCollections<Msi> {
 mod test {
     use nalgebra::Point3;
 
-    use crate::{
-        data::{AtomId, AtomicNumber, CartesianCoord, ElementSymbol},
-        system::data_view::attributes::AttrBuild,
-    };
+    use crate::data::{AtomId, AtomicNumber, CartesianCoord, ElementSymbol};
 
     use super::Msi;
 

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use nalgebra::Matrix3;
 
-use super::{format::DataFormat, parameters::ModelParameters, AtomCollections};
+use super::{format::DataFormat, param::ModelParameters, AtomCollections};
 
 #[derive(Debug, Clone)]
 pub struct LatticeVectors<T> {

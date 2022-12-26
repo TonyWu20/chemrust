@@ -3,7 +3,6 @@ use castep_periodic_table::element::LookupElement;
 use crate::cpt::data::ELEMENT_TABLE;
 
 use crate::data::AtomCollections;
-use crate::system::data_view::attributes::AttrView;
 use crate::{
     data::{ElementSymbol, FractionalCoord},
     impl_display,

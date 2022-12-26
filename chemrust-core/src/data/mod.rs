@@ -5,5 +5,5 @@ pub mod param;
 
 // Re-export
 pub use self::atom::{
-    AtomCollections, AtomId, AtomicNumber, CartesianCoord, ElementSymbol, FractionalCoord,
+    AtomCollection, AtomId, AtomicNumber, CartesianCoord, ElementSymbol, FractionalCoord,
 };

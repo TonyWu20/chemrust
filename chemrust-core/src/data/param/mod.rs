@@ -37,9 +37,13 @@ pub struct ModelParameters<T: DataFormat> {
 
 #[cfg(test)]
 mod test {
+    use crate::data::format::cell::Cell;
+
+    use super::attributes::KPoint;
 
     #[test]
     fn test_param_attr() {
-        todo!()
+        let kpt = KPoint::<Cell>::default();
+        assert_eq!(&[0.0, 0.0, 0.0, 1.0], kpt.content());
     }
 }

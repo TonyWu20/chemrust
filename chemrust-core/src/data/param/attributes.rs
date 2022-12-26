@@ -8,7 +8,6 @@ where
     M: ParamMarker,
     F: DataFormat;
 
-#[macro_export]
 macro_rules! def_param_type {
     ($(($type_name: ident,$type: ty,  $marker: ty)), *) => {
        $(pub type $type_name<T> = ParamAttr<$type, $marker,T>;)*
@@ -40,3 +39,29 @@ where
         Self(input, PhantomData, PhantomData)
     }
 }
+
+macro_rules! param_defaults {
+    ($(($x: ty, $l:expr)), *) => {
+        $(
+            impl<T:DataFormat> Default for $x {
+                fn default() -> Self {
+                    Self($l, PhantomData, PhantomData)
+                }
+            }
+
+            )*
+    };
+}
+
+param_defaults!(
+    (KPoint<T>, [0.0, 0.0, 0.0, 1.0]),
+    (KPointGrid<T>, [1,1,1]),
+    (KPointMPSpacing<T>, 0.07),
+    (KPointOffset<T>, [0.0,0.0,0.0]),
+    (EField<T>, [0.0,0.0,0.0]),
+    (EPressure<T>, [();6].map(|_| 0.0)),
+    (CryTolerance<T>, 0.05),
+    (SpaceGroup<T>, "P1 1".into()),
+    (PeriodicType<T>, 100),
+    (CryDisplay<T>, (192,256))
+);

@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
-use crate::system::data_view::AttrCollectionView;
+use crate::system::data_builder::Pending;
+use crate::system::{data_builder::AtomCollectionBuilder, data_view::AttrCollectionView};
 
 use crate::data::format::DataFormat;
 
@@ -8,16 +9,19 @@ use super::{
     AtomAttr, AtomAttrMarker, AtomId, AtomicNumber, CartesianCoord, ElementSymbol, FractionalCoord,
 };
 #[derive(Debug, Clone)]
-pub struct AtomCollections<T: DataFormat> {
-    element_symbols: Vec<ElementSymbol<T>>,
-    atomic_number: Vec<AtomicNumber<T>>,
-    xyz: Vec<CartesianCoord<T>>,
-    fractional_xyz: Option<Vec<FractionalCoord<T>>>,
-    atom_ids: Vec<AtomId<T>>,
-    format_info: T,
+pub struct AtomCollection<T: DataFormat> {
+    pub(crate) element_symbols: Vec<ElementSymbol<T>>,
+    pub(crate) atomic_number: Vec<AtomicNumber<T>>,
+    pub(crate) xyz: Vec<CartesianCoord<T>>,
+    pub(crate) fractional_xyz: Option<Vec<FractionalCoord<T>>>,
+    pub(crate) atom_ids: Vec<AtomId<T>>,
+    pub(crate) size: usize,
 }
 
-impl<T: DataFormat> AtomCollections<T> {
+impl<T: DataFormat> AtomCollection<T> {
+    pub fn builder(size: usize) -> AtomCollectionBuilder<T, Pending> {
+        AtomCollectionBuilder::<T, Pending>::new(size)
+    }
     pub fn element_symbols(&self) -> &[ElementSymbol<T>] {
         self.element_symbols.as_ref()
     }
@@ -38,8 +42,8 @@ impl<T: DataFormat> AtomCollections<T> {
         self.atom_ids.as_ref()
     }
 
-    pub fn format_info(&self) -> &T {
-        &self.format_info
+    pub fn size(&self) -> usize {
+        self.size
     }
 }
 

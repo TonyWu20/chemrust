@@ -2,7 +2,7 @@ use castep_periodic_table::element::LookupElement;
 
 use crate::cpt::data::ELEMENT_TABLE;
 
-use crate::data::AtomCollections;
+use crate::data::AtomCollection;
 use crate::{
     data::{ElementSymbol, FractionalCoord},
     impl_display,
@@ -28,7 +28,7 @@ impl BlockWriter for Cell {
 impl_display!(ElementSymbol<Cell>, "{:>3}");
 impl_display!(FractionalCoord<Cell>, "{:20.16}{:20.16}{:20.16}", x, y, z);
 
-impl Display for AtomCollections<Cell> {
+impl Display for AtomCollection<Cell> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let all_positions_str: Vec<String> = self
             .element_symbols()

@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use crate::{
-    data::{AtomCollections, AtomId, AtomicNumber, CartesianCoord, ElementSymbol},
+    data::{AtomCollection, AtomId, AtomicNumber, CartesianCoord, ElementSymbol},
     impl_display,
 };
 
@@ -17,7 +17,7 @@ impl_display!(ElementSymbol<Msi>, "{}");
 impl_display!(AtomicNumber<Msi>, "{}");
 impl_display!(CartesianCoord<Msi>, "({:.12} {:.12} {:.12})", x, y, z);
 
-impl Display for AtomCollections<Msi> {
+impl Display for AtomCollection<Msi> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let size = self.atom_ids().len();
         let display_string_collections: Vec<String> = (0..size)

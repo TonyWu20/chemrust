@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use nalgebra::Matrix3;
 
-use super::{format::DataFormat, param::ModelParameters, AtomCollections};
+use super::{format::DataFormat, param::ModelParameters, AtomCollection};
 
 #[derive(Debug, Clone)]
 pub struct LatticeVectors<T> {
@@ -26,7 +26,7 @@ impl<T> LatticeVectors<T> {
 #[derive(Debug, Clone)]
 pub struct LatticeModel<T: DataFormat> {
     lattice_vectors: Option<LatticeVectors<T>>,
-    atoms: AtomCollections<T>,
+    atoms: AtomCollection<T>,
     settings: ModelParameters<T>,
 }
 
@@ -35,7 +35,7 @@ impl<T: DataFormat> LatticeModel<T> {
         self.lattice_vectors.as_ref()
     }
 
-    pub fn atoms(&self) -> &AtomCollections<T> {
+    pub fn atoms(&self) -> &AtomCollection<T> {
         &self.atoms
     }
 
@@ -43,7 +43,7 @@ impl<T: DataFormat> LatticeModel<T> {
         &self.settings
     }
 
-    pub fn atoms_mut(&mut self) -> &mut AtomCollections<T> {
+    pub fn atoms_mut(&mut self) -> &mut AtomCollection<T> {
         &mut self.atoms
     }
 

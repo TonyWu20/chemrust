@@ -5,3 +5,4 @@ mod params_builder;
 
 pub use atoms_builder::AtomCollectionBuilder;
 pub use builder_state::*;
+pub use lattice_builder::LatticeModelBuilder;

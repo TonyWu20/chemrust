@@ -2,15 +2,20 @@ use std::marker::PhantomData;
 
 use nalgebra::Matrix3;
 
+use crate::system::data_builder::{LatticeModelBuilder, Pending};
+
 use super::{format::DataFormat, param::ModelParameters, AtomCollection};
 
 #[derive(Debug, Clone)]
-pub struct LatticeVectors<T> {
+pub struct LatticeVectors<T: DataFormat> {
     data: Matrix3<f64>,
     format: PhantomData<T>,
 }
 
-impl<T> LatticeVectors<T> {
+impl<T> LatticeVectors<T>
+where
+    T: DataFormat,
+{
     pub fn new(data: Matrix3<f64>) -> Self {
         Self {
             data,
@@ -25,12 +30,15 @@ impl<T> LatticeVectors<T> {
 
 #[derive(Debug, Clone)]
 pub struct LatticeModel<T: DataFormat> {
-    lattice_vectors: Option<LatticeVectors<T>>,
-    atoms: AtomCollection<T>,
-    settings: ModelParameters<T>,
+    pub(crate) lattice_vectors: Option<LatticeVectors<T>>,
+    pub(crate) atoms: AtomCollection<T>,
+    pub(crate) settings: ModelParameters<T>,
 }
 
 impl<T: DataFormat> LatticeModel<T> {
+    pub fn builder() -> LatticeModelBuilder<T, Pending> {
+        LatticeModelBuilder::<T, Pending>::new()
+    }
     pub fn lattice_vectors(&self) -> Option<&LatticeVectors<T>> {
         self.lattice_vectors.as_ref()
     }

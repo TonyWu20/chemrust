@@ -3,7 +3,7 @@
 [workspace]
 members = [
     "chemrust-core",
-    "chemrust-input-parser",
+    "chemrust-parser",
     "chemrust-formats"
 ]
 

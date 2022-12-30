@@ -1,5 +1,3 @@
-use std::{collections::HashMap, ops::Index};
-
 use crate::data::{format::DataFormat, param::KPoint};
 
 pub fn grid_size_determine(length: f64, spacing: f64) -> u32 {
@@ -14,7 +12,7 @@ pub fn grid_size_determine(length: f64, spacing: f64) -> u32 {
 
 pub fn mp_grid_generate(norms: &[f64; 3], spacing: f64) -> [u32; 3] {
     let grid: Vec<u32> = norms
-        .into_iter()
+        .iter()
         .map(|&i| grid_size_determine(i, spacing))
         .collect();
     grid.try_into().unwrap()
@@ -49,46 +47,6 @@ pub fn reducible_kpts(grid: &[u32; 3]) -> Vec<[f64; 3]> {
                 .collect()
         })
         .collect()
-}
-
-fn grid_common_multiple(grid: &[u32; 3]) -> f64 {
-    grid.into_iter().fold(1, |res, &i| res * i) as f64 * 2.0
-}
-
-fn hash_kpt_key(kpt: &[f64; 3], common_multiple: f64) -> u32 {
-    kpt.iter()
-        .map(|&f| f * common_multiple)
-        .reduce(|acc, e| acc + e)
-        .unwrap()
-        .round()
-        .abs() as u32
-}
-
-fn update_translational_hashmap(
-    hash_tab: &mut HashMap<u32, [f64; 3]>,
-    kpt: &[f64; 3],
-    common_multiple: f64,
-) {
-    // Get the hash key for the kpt.
-    let sum = hash_kpt_key(kpt, common_multiple);
-    // Check if this key has already been occupied.
-    let check = hash_tab.get(&sum);
-    match check {
-        None => {
-            hash_tab.insert(sum, *kpt);
-        }
-        // Deal with conflict.
-        Some(previous) => {
-            let first_diff = kpt[0] - previous[0];
-            let sec_diff = kpt[1] - previous[1];
-            // If occupied, we want the Rx to be positive or zero, and Ry to be positive if Rx is zero.
-            if first_diff > 0.0 || (first_diff == 0.0 && sec_diff > 0.0) {
-                hash_tab.insert(sum, *kpt);
-            } else {
-                ()
-            }
-        }
-    }
 }
 
 fn kpt_coeff_upper(grid: &[u32; 3]) -> Vec<[i32; 3]> {

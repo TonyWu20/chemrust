@@ -1,12 +1,26 @@
-use crate::data::format::DataFormat;
+use crate::data::{format::DataFormat, param::markers::ParamMarker};
 
 use super::markers::*;
 use std::{fmt::Debug, marker::PhantomData};
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ParamAttr<T, M: ParamMarker, F: DataFormat>(T, PhantomData<M>, PhantomData<F>)
 where
     M: ParamMarker,
     F: DataFormat;
+
+impl<T, M, F> Debug for ParamAttr<T, M, F>
+where
+    T: Debug,
+    M: ParamMarker,
+    F: DataFormat,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("ParamAttr")
+            .field(&self.0)
+            .field(&self.1)
+            .finish()
+    }
+}
 
 macro_rules! def_param_type {
     ($(($type_name: ident,$type: ty,  $marker: ty)), *) => {

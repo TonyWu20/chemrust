@@ -11,5 +11,6 @@ description.workspace = true
 nalgebra = {version="0.*", features=["debug", "compare", "rand","macros", "alloc", "arbitrary"]}
 castep-periodic-table = "0.1.*"
 nom = "7"
+num = "0.4.0"
 # rayon = "1.*"
 # glob = "0"

@@ -3,6 +3,8 @@ use crate::data::{
     param::{KPoint, ModelParameters},
 };
 
+mod kpoints_generator;
+
 impl<T> Default for ModelParameters<T>
 where
     T: DataFormat,

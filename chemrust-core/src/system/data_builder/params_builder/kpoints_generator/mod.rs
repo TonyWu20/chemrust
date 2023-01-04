@@ -4,7 +4,7 @@ use nalgebra::Matrix3;
 
 use crate::data::{format::DataFormat, lattice::LatticeVectors};
 
-use self::helper_functions::{irreducible_kpts, mp_grid_generate, weighted_kpts};
+use self::helper_functions::mp_grid_generate;
 use self::param_markers::{Coarse, IsMetal, SamplingQuality, Yes};
 
 use super::KPoint;
@@ -13,10 +13,9 @@ mod helper_functions;
 mod param_markers;
 mod symmetry_reduction;
 
-pub use helper_functions::kpt_coeff_upper;
 pub use symmetry_reduction::*;
 
-struct ReciprocalLatticeVector<T: DataFormat> {
+pub struct ReciprocalLatticeVector<T: DataFormat> {
     data: Matrix3<f64>,
     format: PhantomData<T>,
 }
@@ -50,27 +49,33 @@ impl<T: DataFormat> ReciprocalLatticeVector<T> {
     }
 }
 
-pub struct KPointSampler<T, M, Q>
+pub struct KPointSampler<M, Q>
 where
-    T: DataFormat,
     M: IsMetal,
     Q: SamplingQuality,
 {
-    reciprocal_lattice_vectors: ReciprocalLatticeVector<T>,
     is_metal: PhantomData<M>,
     quality: PhantomData<Q>,
 }
 
 pub trait KPointGenerator<T: DataFormat> {
-    fn derive_kpoints(&self) -> Vec<KPoint<T>>;
+    fn derive_kpoints(
+        &self,
+        reciprocal_vectors: &ReciprocalLatticeVector<T>,
+        symmetry_ops: &[Matrix3<f64>],
+    ) -> Vec<KPoint<T>>;
 }
 
-impl<T: DataFormat> KPointGenerator<T> for KPointSampler<T, Yes, Coarse> {
-    fn derive_kpoints(&self) -> Vec<KPoint<T>> {
+impl<T: DataFormat> KPointGenerator<T> for KPointSampler<Yes, Coarse> {
+    fn derive_kpoints(
+        &self,
+        reciprocal_vectors: &ReciprocalLatticeVector<T>,
+        symmetry_ops: &[Matrix3<f64>],
+    ) -> Vec<KPoint<T>> {
         let spacing = 0.07;
-        let grid_size = self.reciprocal_lattice_vectors.norms();
+        let grid_size = reciprocal_vectors.norms();
         let mp_grid = mp_grid_generate(&grid_size, spacing);
-        let irreducible_kpts = irreducible_kpts(&mp_grid);
-        weighted_kpts(&irreducible_kpts)
+        let space = SymSpace::new(mp_grid, symmetry_ops, false);
+        space.weighted_kpoints()
     }
 }

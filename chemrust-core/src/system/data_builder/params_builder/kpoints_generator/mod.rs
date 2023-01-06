@@ -75,7 +75,6 @@ impl<T: DataFormat> KPointGenerator<T> for KPointSampler<Yes, Coarse> {
         let spacing = 0.07;
         let grid_size = reciprocal_vectors.norms();
         let mp_grid = mp_grid_generate(&grid_size, spacing);
-        let space = SymSpace::new(mp_grid, symmetry_ops, false);
-        space.weighted_kpoints()
+        todo!()
     }
 }

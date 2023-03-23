@@ -1,0 +1,14 @@
+[package]
+name = "chemrust-scanner"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+kd-tree = {git="https://github.com/TonyWu20/kd-tree.git", features=["nalgebra", "nalgebra-serde"]}
+nalgebra = "0.32.2"
+chemrust-core = {path = "../chemrust-core"}
+chemrust-parser = {path="../chemrust-parser"}

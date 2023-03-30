@@ -19,6 +19,6 @@ A table of the xyz coordinates of the sites and coordination numbers.
 - [x] Analyze the structure with kd-tree
 - [x] Search the space around each atom by a given bonding distance
 - [ ] Identify the coordination number
-  - [ ] 3d geometry problem
-    - [ ] Representation of sphere-sphere intersection: the circular curve
-    - [ ] Solvation of the intersection of the curves: two-points
+  - [x] 3d geometry problem
+    - [x] Representation of sphere-sphere intersection: the circular curve
+    - [x] Solvation of the intersection of the curves: two-points

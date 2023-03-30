@@ -3,6 +3,7 @@ mod planes_intersection;
 mod spheres_intersection;
 
 pub use circles_intersection::{CircleIntersectChecker, CircleIntersectResult};
+pub use spheres_intersection::SphereIntersectResult;
 
 use super::GeometryObject;
 

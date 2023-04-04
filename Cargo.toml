@@ -2,9 +2,11 @@
 
 [workspace]
 members = [
+    "cell_reader",
     "chemrust-core",
     "chemrust-parser",
-    "chemrust-formats"
+    "chemrust-formats",
+    "chemrust-scanner"
 ]
 
 [workspace.package]

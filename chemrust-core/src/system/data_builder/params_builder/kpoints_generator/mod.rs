@@ -62,7 +62,8 @@ pub trait KPointGenerator<T: DataFormat> {
     fn derive_kpoints(
         &self,
         reciprocal_vectors: &ReciprocalLatticeVector<T>,
-        symmetry_ops: &[Matrix3<f64>],
+        symmetry_ops: &[Matrix3<i32>],
+        is_hex: bool,
     ) -> Vec<KPoint<T>>;
 }
 
@@ -70,11 +71,18 @@ impl<T: DataFormat> KPointGenerator<T> for KPointSampler<Yes, Coarse> {
     fn derive_kpoints(
         &self,
         reciprocal_vectors: &ReciprocalLatticeVector<T>,
-        symmetry_ops: &[Matrix3<f64>],
+        symmetry_ops: &[Matrix3<i32>],
+        is_hex: bool,
     ) -> Vec<KPoint<T>> {
         let spacing = 0.07;
         let grid_size = reciprocal_vectors.norms();
         let mp_grid = mp_grid_generate(&grid_size, spacing);
-        todo!()
+        let sym_ops: Vec<SymOps> = symmetry_ops
+            .iter()
+            .enumerate()
+            .map(|(i, &ops)| SymOps(ops, i as i32))
+            .collect();
+        let sym_space = SymSpace::new(mp_grid, &sym_ops, is_hex);
+        sym_space.weighted_kpoints()
     }
 }

@@ -13,7 +13,7 @@
 /// 6. The final table will naturally indicates the degeneracies of the irreducible k-points, which leads to
 /// the weight determination of these irreducible k-points. From all the possible k-points, select the one with least
 /// negative numbers as the "representative", which is just a convention.
-use nalgebra::{Matrix3, Matrix4, Point3, Point4, Vector3, Vector4};
+use nalgebra::{Matrix3, Point3, Vector3};
 use num::integer::lcm;
 use std::collections::{HashMap, HashSet};
 
@@ -34,7 +34,7 @@ struct SymKPoint {
 }
 
 #[derive(Debug, Clone)]
-pub struct SymOps(Matrix3<i32>, i32);
+pub struct SymOps(pub(crate) Matrix3<i32>, pub(crate) i32);
 
 impl SymKPoint {
     fn new(coord: Point3<f64>, multiplicity: u32, kpt_image: Vec<i32>) -> Self {

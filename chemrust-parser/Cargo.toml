@@ -8,6 +8,7 @@ description.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+castep-periodic-table = "0.1.0"
 chemrust-core = {path = "../chemrust-core"}
-nalgebra = "0.31.4"
-nom = "7.1.1"
+nalgebra = "0.32.2"
+nom = "7.1.3"

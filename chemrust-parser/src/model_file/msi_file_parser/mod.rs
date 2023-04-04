@@ -1,9 +1,4 @@
-use chemrust_core::data::{
-    format::msi::Msi,
-    lattice::{LatticeModel, LatticeVectors},
-    param::{CryTolerance, ModelParameters, PeriodicType, SpaceGroup},
-    AtomCollection,
-};
+use chemrust_core::data::lattice::{LatticeModel, LatticeVectors};
 use nalgebra::{Matrix3, Point3};
 use nom::{
     branch::alt,
@@ -30,11 +25,11 @@ mod atom_parser;
 mod helper;
 mod model_attributes_parser;
 
-pub trait ParserState: Debug {}
+pub trait MsiParserState: Debug {}
 
 #[derive(Debug)]
 /// A parser changes its state line by line.
-pub struct MsiParser<'a, S: ParserState> {
+pub struct MsiParser<'a, S: MsiParserState> {
     // To denote the state that the input
     // has been completly consumed, use `None`
     to_parse: Option<&'a str>,
@@ -54,7 +49,7 @@ pub struct MsiParser<'a, S: ParserState> {
     state: PhantomData<S>,
 }
 /// Methods common for all states.
-impl<'a, S: ParserState> MsiParser<'a, S> {
+impl<'a, S: MsiParserState> MsiParser<'a, S> {
     /// Go to next field, consuming the opening left parenthesis "("
     /// # Example:
     /// \s\s(A I CRY/DISPLAY (192 256))\r\n -> A I CRY/DISPLAY (192 256))\r\n
@@ -123,7 +118,7 @@ impl<'a, S: ParserState> MsiParser<'a, S> {
 /// It will transits to `Model<ModelStates::Init>` with taking until
 /// the beginning of a model
 pub(crate) struct Loaded;
-impl ParserState for Loaded {}
+impl MsiParserState for Loaded {}
 
 impl<'a> MsiParser<'a, Loaded> {
     /// Init a new parser by feeding the `msi` file,
@@ -187,7 +182,7 @@ impl<'a> MsiParser<'a, Loaded> {
 /// interested in.
 #[derive(Debug)]
 pub(crate) struct Start {}
-impl ParserState for Start {}
+impl MsiParserState for Start {}
 
 impl<'a> MsiParser<'a, Start> {
     /// Push the content to `self.atoms`, increment the counter by 1.
@@ -256,7 +251,7 @@ impl<'a> MsiParser<'a, Start> {
 
 #[derive(Debug)]
 pub(crate) struct Analyzed {}
-impl ParserState for Analyzed {}
+impl MsiParserState for Analyzed {}
 
 impl<'a> MsiParser<'a, Analyzed> {
     fn parse_attributes(&self) -> ModelParameters<Msi> {

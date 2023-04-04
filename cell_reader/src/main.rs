@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .to_lattice_cart()
         .to_positions()
         .build_lattice();
-    if let Some(true) = cli.dryrun {
+    if cli.dryrun {
         println!("{}", cell_model);
     } else {
         println!("Hello, world!");

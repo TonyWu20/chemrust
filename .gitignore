@@ -14,3 +14,9 @@ Cargo.lock
 
 /target
 /Cargo.lock
+
+# For development ease
+chemrust-core/old_codebase
+chemrust-core/Symmetry_example
+chemrust-core/kpt_test.txt
+chemrust-core/*.msi

@@ -7,7 +7,7 @@ use crate::data::{
     FractionalCoord,
 };
 
-use super::{BuilderState, Pending, Ready};
+use crate::builder_state::{BuilderState, Pending, Ready};
 
 pub struct AtomCollectionBuilder<T, S>
 where

@@ -7,7 +7,7 @@ use crate::data::{
     AtomCollection,
 };
 
-use super::{BuilderState, Pending, Ready};
+use crate::builder_state::{BuilderState, Pending, Ready};
 
 #[derive(Debug)]
 pub struct LatticeModelBuilder<T: DataFormat, S: BuilderState> {

@@ -58,6 +58,12 @@ impl AtomCollections {
     }
 }
 
+impl From<&[Atom]> for AtomCollections {
+    fn from(value: &[Atom]) -> Self {
+        value.to_vec().into()
+    }
+}
+
 impl From<Vec<Atom>> for AtomCollections {
     fn from(value: Vec<Atom>) -> Self {
         let collection_size = value.len();

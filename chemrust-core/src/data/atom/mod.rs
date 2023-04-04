@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use nalgebra::Point3;
 
 use crate::builder_state::Pending;
@@ -7,7 +9,9 @@ use self::builder::AtomBuilder;
 mod builder;
 mod collection;
 
-#[derive(Debug, PartialEq, PartialOrd)]
+pub use collection::AtomCollections;
+
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct Atom {
     symbol: String,
     atomic_number: u8,
@@ -37,6 +41,18 @@ impl Atom {
     }
 }
 
-// Unit tests for Atom
-#[cfg(test)]
-mod test {}
+impl Display for Atom {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            r#"Atom {}:
+  Atomic Number: {}
+  Element Symbol: {}
+  XYZ: {:#}"#,
+            self.index + 1,
+            self.atomic_number,
+            self.symbol,
+            self.cartesian_coord
+        )
+    }
+}

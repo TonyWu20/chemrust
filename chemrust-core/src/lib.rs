@@ -1,26 +1,10 @@
+//! The core module of `chemrust` is responsible for the abstraction of the data input/output for
+//! the chemical models, regardless of the detailed file formats. The designs and implementations
+//! of the structs, traits and patterns serve the internal running logics of the library. Only
+//! essential data structures and data manipulations are presented here.
 #![allow(dead_code)]
+
+/// This module provides the basic supports for builder patterns.
+pub mod builder_state;
+/// This module settles the abstraction of essential data in the chemical molecule and lattice models
 pub mod data;
-pub mod system;
-// pub mod atom;
-// pub mod bond;
-// pub mod builder_typestate;
-// pub mod error;
-// pub mod formats;
-// pub mod lattice;
-// pub mod params;
-// #[cfg(test)]
-// mod test;
-
-use castep_periodic_table as cpt;
-use nalgebra as na;
-
-use na::UnitQuaternion;
-use std::fmt::Debug;
-
-/// Trait bound for Model Formats
-pub trait ModelInfo: Debug + Clone + Default {}
-/// Transformation for atoms and lattices.
-pub trait Transformation {
-    fn rotate(&mut self, rotate_quatd: &UnitQuaternion<f64>);
-    fn translate(&mut self, translate_matrix: &na::Translation<f64, 3>);
-}

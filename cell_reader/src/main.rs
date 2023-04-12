@@ -24,3 +24,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use std::{fs::read_to_string, path::Path};
+
+    use chemrust_formats::{Msi, StructureFile};
+    use chemrust_parser::CellParser;
+
+    #[test]
+    fn test_write_msi() {
+        let cell_filename = "../chemrust-parser/SAC_GDY_V.cell";
+        let cell_file_text = read_to_string(cell_filename).unwrap();
+        let cell_model = CellParser::new(&cell_file_text)
+            .to_lattice_cart()
+            .to_positions()
+            .build_lattice();
+        let msi_file: StructureFile<Msi> = StructureFile::new(cell_model);
+        println!("{}", msi_file.export_msi());
+    }
+}

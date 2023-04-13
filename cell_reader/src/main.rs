@@ -1,5 +1,10 @@
-use std::{error::Error, fs::read_to_string, path::Path};
+use std::{
+    error::Error,
+    fs::{self, read_to_string},
+    path::Path,
+};
 
+use chemrust_formats::{Msi, StructureFile};
 use chemrust_parser::CellParser;
 use clap::Parser;
 
@@ -20,14 +25,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     if cli.dryrun {
         println!("{}", cell_model);
     } else {
-        println!("Hello, world!");
+        let msi_file: StructureFile<Msi> = StructureFile::new(cell_model);
+        if let Some(output_name) = cli.output_name {
+            fs::write(output_name, msi_file.export_msi())?;
+        } else {
+            let output_name = format!(
+                "{}.msi",
+                cell_filepath.file_stem().unwrap().to_str().unwrap()
+            );
+            fs::write(output_name, msi_file.export_msi())?;
+        }
     }
     Ok(())
 }
 
 #[cfg(test)]
 mod test {
-    use std::{fs::read_to_string, path::Path};
+    use std::fs::read_to_string;
 
     use chemrust_formats::{Msi, StructureFile};
     use chemrust_parser::CellParser;

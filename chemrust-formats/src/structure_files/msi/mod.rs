@@ -52,7 +52,6 @@ impl StructureFile<Msi> {
     }
     fn rotated_lattice_vector(&self) -> Option<LatticeVectors> {
         if let Some(vectors) = self.lattice_model.lattice_vectors() {
-            dbg!(vectors);
             let rotated_vectors = self.rotate_to_standard_direction().unwrap() * vectors.data();
             Some(LatticeVectors::new(rotated_vectors))
         } else {
@@ -76,7 +75,7 @@ impl StructureFile<Msi> {
         lines.concat()
     }
     pub fn export_msi(&self) -> String {
-        let headers = if let Some(_) = self.lattice_model.lattice_vectors() {
+        let headers = if self.lattice_model.lattice_vectors().is_some() {
             let rotated_vectors = self.rotated_lattice_vector().unwrap();
 
             format!(
@@ -85,8 +84,7 @@ impl StructureFile<Msi> {
   (A I CRY/DISPLAY (192 256))
   (A I PeriodicType 100)
   (A C SpaceGroup "1 1")
-{}
-  (A D CRY/TOLERANCE 0.05)
+{}  (A D CRY/TOLERANCE 0.05)
 "#,
                 Self::lattice_vector_export(&rotated_vectors)
             )
@@ -117,7 +115,7 @@ impl StructureFile<Msi> {
                 .lattice_model
                 .atoms()
                 .iter()
-                .map(|atom| Self::atom_export(atom))
+                .map(Self::atom_export)
                 .collect(),
         };
         format!("{headers}{atoms_text})", atoms_text = atoms.concat())

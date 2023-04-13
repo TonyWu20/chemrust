@@ -106,8 +106,7 @@ impl<'a> CellParser<'a, LatticeCart> {
             .iter()
             .map(|col| Vector3::from_vec(col.to_vec()))
             .collect();
-        let data = Matrix3::from_columns(&columns_vector);
-        data
+        Matrix3::from_columns(&columns_vector)
     }
     pub fn to_positions(self) -> CellParser<'a, Positions> {
         let lattice_vectors_data = self.parse_lattice_vectors();

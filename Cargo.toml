@@ -6,7 +6,8 @@ members = [
     "chemrust-core",
     "chemrust-parser",
     "chemrust-formats",
-    "chemrust-scanner"
+    "chemrust-scanner",
+    "chemrust-settings"
 ]
 
 [workspace.package]

@@ -18,7 +18,12 @@ A table of the xyz coordinates of the sites and coordination numbers.
 - [x] Read-in a `cell`
 - [x] Analyze the structure with kd-tree
 - [x] Search the space around each atom by a given bonding distance
-- [ ] Identify the coordination number
-  - [x] 3d geometry problem
-    - [x] Representation of sphere-sphere intersection: the circular curve
-    - [x] Solvation of the intersection of the curves: two-points
+- [x] 3d geometry problem
+  - [x] Representation of sphere-sphere intersection: the circular curve
+  - [x] Solvation of the intersection of the curves: two-points
+- [ ] Whole intersect determination workflow
+  - [ ] Build spheres for each coordinate points in kd-tree
+  - [ ] Iterate the sphere kd-tree, check intersections, build circles
+  - [ ] From the circles kd-tree, find intersection points between circles
+  - [ ] Each found point will be added into a vec with a counting index, if next found intersect point between circles repeats with the previously found one, add counting index.
+  - [ ] Summarize the number of spheres, circles, and points. Sphere-1 C.N., circle-2 C.N., points-at least 4

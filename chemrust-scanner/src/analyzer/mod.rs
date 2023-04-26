@@ -15,12 +15,15 @@ mod test {
     use kd_tree::KdIndexTree;
     use nalgebra::Point3;
 
-    use crate::analyzer::geometry::{
-        Circle, CircleIntersectChecker, CircleIntersectResult, Intersect, Sphere,
-        SphereIntersectResult,
+    use crate::analyzer::{
+        algorithm::Ready,
+        geometry::{
+            Circle, CircleIntersectChecker, CircleIntersectResult, Intersect, Sphere,
+            SphereIntersectResult,
+        },
     };
 
-    use super::algorithm::{IntersectChecker, Ready};
+    use super::algorithm::IntersectChecker;
 
     #[test]
     fn test_kd_tree() {

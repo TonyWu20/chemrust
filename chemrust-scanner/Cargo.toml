@@ -12,3 +12,4 @@ kd-tree = {git="https://github.com/TonyWu20/kd-tree.git", features=["nalgebra", 
 nalgebra = "0.32.2"
 chemrust-core = {path = "../chemrust-core"}
 chemrust-parser = {path="../chemrust-parser"}
+itertools = "0.10.5"

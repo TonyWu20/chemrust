@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+mod algorithm;
 mod geometry;
 
 #[cfg(test)]
@@ -19,6 +20,8 @@ mod test {
         SphereIntersectResult,
     };
 
+    use super::algorithm::{IntersectChecker, Ready};
+
     #[test]
     fn test_kd_tree() {
         let cell = read_to_string("../chemrust-parser/SAC_GDY_V.cell").unwrap();
@@ -28,7 +31,7 @@ mod test {
             .build_lattice();
         let atom_collections: AtomCollections = lattice.atoms().into();
         let coords: Vec<Point3<f64>> = atom_collections.cartesian_coords().to_vec();
-        let kdtree = KdIndexTree::build_by_ordered_float(&coords);
+        let kdtree: KdIndexTree<Point3<f64>> = KdIndexTree::build_by_ordered_float(&coords);
         let mut buffer = String::new();
         let stdin = io::stdin();
         let mut handle = stdin.lock();
@@ -46,22 +49,6 @@ mod test {
                 let this_sphere = spheres[i];
                 let intersects = this_sphere.intersects(&found_sphere);
                 intersects
-                // if let None = walked_over_set.get(found_id) {
-                //     let distance = found.get(1).unwrap().squared_distance;
-                //     if (2.0 * radius - distance).abs() <= 0.001 {
-                //         println!("One intersect between atom {} and {}", i, found_id);
-                //     } else if 2.0 * radius - distance > 0.001 {
-                //         println!("Two intersects between atom {} and {}", i, found_id);
-                //         let circle_center = center(&p, &coords[*found_id]);
-                //         let circle_radius = (radius.powi(2) - (distance / 2.0).powi(2)).sqrt();
-                //         let normal = Unit::new_normalize(coords[*found_id] - p);
-                //         let circle = Circle::new(circle_center, circle_radius, normal);
-                //         circles.push(circle);
-                //     } else {
-                //         println!("No intersect between atom {} and {}", i, found_id)
-                //     }
-                //     walked_over_set.insert(i);
-                // }
             })
             .collect();
         let mut single_coordination_sites: Vec<Sphere> = Vec::new();
@@ -121,5 +108,31 @@ mod test {
             pure_circles.len(),
             quad_coord_points.len()
         );
+    }
+    #[test]
+    fn test_checker() {
+        let cell = read_to_string("../chemrust-parser/SAC_GDY_V.cell").unwrap();
+        let lattice = CellParser::new(&cell)
+            .to_lattice_cart()
+            .to_positions()
+            .build_lattice();
+        let atom_collections: AtomCollections = lattice.atoms().into();
+        let coords: Vec<Point3<f64>> = atom_collections.cartesian_coords().to_vec();
+        let intersect_checker = IntersectChecker::<Ready>::new(&coords)
+            .start_with_radius(1.45)
+            .check_spheres()
+            .analyze_circle_intersects();
+        let final_report = intersect_checker.report();
+        println!("Spheres: {}", final_report.sphere_sites().len());
+        println!("Circles: {}", final_report.circles().len());
+        println!("Cut points: {}", final_report.cut_points().len());
+        println!("Multi points: {}", final_report.multi_cn_points().len());
+        final_report.multi_cn_points().iter().for_each(|p| {
+            println!(
+                "Coord: {:#}, Connecting: {:?}",
+                p.coord(),
+                p.connecting_atom_ids()
+            )
+        })
     }
 }

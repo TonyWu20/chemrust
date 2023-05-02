@@ -2,6 +2,7 @@
 
 [workspace]
 members = [
+    "mount_scanner",
     "cell_reader",
     "chemrust-core",
     "chemrust-parser",

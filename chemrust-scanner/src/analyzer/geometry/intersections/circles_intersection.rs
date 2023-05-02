@@ -57,25 +57,30 @@ impl CircleIntersectChecker {
             CheckStage::Noncoplanar => self.noncoplanar_check(),
         }
     }
+    /// Seems here have problems
     fn coplanar_check(&self) -> CircleIntersectResult {
         let d1d2 = self.c2.center - self.c1.center;
-        if d1d2.dot(&self.c1.normal) != 0.0 {
+        // If the line between two circle is not orthogonal to the circle normal, not coplanar
+        if d1d2.dot(&self.c1.normal) > 1e-6 {
             CircleIntersectResult::Zero
         } else {
             let radius_sum = self.c1.radius + self.c2.radius;
             let radius_difference = self.c1.radius - self.c2.radius;
             let d = d1d2.norm();
-            if d > radius_sum || d == 0.0 && radius_difference != 0.0 || d < radius_difference {
+            if d > radius_sum
+                || d < 1e-6 && radius_difference > 1e-6
+                || (d - radius_difference) < 1e-6
+            {
                 // Two circles out of distance or concentric or one circle is inside but not touching the edge
                 CircleIntersectResult::Zero
-            } else if d == radius_sum {
+            } else if (d - radius_sum).abs() < 1e-6 {
                 let p = self.c1.center + d1d2.scale(self.c1.radius);
                 CircleIntersectResult::Single(p)
-            } else if d == radius_difference.abs() {
-                if radius_difference == 0.0 {
+            } else if (d - radius_difference.abs()) < 1e-6 {
+                if radius_difference.abs() < 1e-6 {
                     // c1 overlaps with c2 with the same radius
                     CircleIntersectResult::Whole(self.c1)
-                } else if radius_difference > 0.0 {
+                } else if radius_difference > 1e-6 {
                     // c1 contains c2
                     let n = Unit::new_normalize(d1d2);
                     let distance = n.scale(self.c2.radius);
@@ -183,5 +188,22 @@ fn check_identity_points(p1: &Point3<f64>, p2: &Point3<f64>) -> Option<Point3<f6
         Some(*p1)
     } else {
         None
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use nalgebra::{Point3, Vector3};
+
+    use crate::analyzer::geometry::Circle;
+
+    use super::two_circles_between;
+
+    #[test]
+    fn two_circles() {
+        let c1 = Circle::new(Point3::origin(), 2.0, Vector3::z_axis());
+        let c2 = Circle::new(Point3::new(0.0, 3.0, 0.0), 2.0, Vector3::z_axis());
+        let points = two_circles_between(&c1, &c2);
+        dbg!(points);
     }
 }

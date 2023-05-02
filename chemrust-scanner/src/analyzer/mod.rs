@@ -3,6 +3,8 @@
 mod algorithm;
 mod geometry;
 
+pub use algorithm::IntersectChecker;
+
 #[cfg(test)]
 mod test {
     use std::{
@@ -122,7 +124,7 @@ mod test {
         let atom_collections: AtomCollections = lattice.atoms().into();
         let coords: Vec<Point3<f64>> = atom_collections.cartesian_coords().to_vec();
         let intersect_checker = IntersectChecker::<Ready>::new(&coords)
-            .start_with_radius(1.45)
+            .start_with_radius(0.7)
             .check_spheres()
             .analyze_circle_intersects();
         let final_report = intersect_checker.report();

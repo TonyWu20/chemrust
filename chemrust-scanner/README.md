@@ -21,9 +21,14 @@ A table of the xyz coordinates of the sites and coordination numbers.
 - [x] 3d geometry problem
   - [x] Representation of sphere-sphere intersection: the circular curve
   - [x] Solvation of the intersection of the curves: two-points
-- [ ] Whole intersect determination workflow
-  - [ ] Build spheres for each coordinate points in kd-tree
-  - [ ] Iterate the sphere kd-tree, check intersections, build circles
-  - [ ] From the circles kd-tree, find intersection points between circles
-  - [ ] Each found point will be added into a vec with a counting index, if next found intersect point between circles repeats with the previously found one, add counting index.
-  - [ ] Summarize the number of spheres, circles, and points. Sphere-1 C.N., circle-2 C.N., points-at least 4
+- [x] Whole intersect determination workflow
+  - [x] Build spheres for each coordinate points in kd-tree
+  - [x] Iterate the sphere kd-tree, check intersections, build circles
+  - [x] From the circles kd-tree, find intersection points between circles
+  - [x] Each found point will be added into a vec with a counting index, if next found intersect point between circles repeats with the previously found one, add counting index.
+  - [x] Summarize the number of spheres, circles, and points. Sphere-1 C.N., circle-2 C.N., points-at least 4
+
+## Bug investigations
+
+- [x] Incorrect sphere intersections of circles (Fixed on May 2nd)
+- [ ] Check if we need to consider more spheres/circles/points with equal distance, instead of finding just the nearest one to each coord.

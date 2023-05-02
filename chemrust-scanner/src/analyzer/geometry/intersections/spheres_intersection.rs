@@ -46,7 +46,7 @@ fn two_spheres_between(s1: &Sphere, s2: &Sphere) -> Circle {
     // First transfer to a 2d, circle-circle problem, as the projections of the spheres.
     let d1d2 = s2.center - s1.center;
     let d = d1d2.norm();
-    let det = d.powi(2) - s2.radius.powi(2) - s1.radius.powi(2);
+    let det = d.powi(2) - s2.radius.powi(2) + s1.radius.powi(2);
     let x = det / (2.0 * d);
     // radius of the circle
     let a = (4.0 * d.powi(2) * s1.radius.powi(2) - det.powi(2)).sqrt() / (2.0 * d);
@@ -54,4 +54,21 @@ fn two_spheres_between(s1: &Sphere, s2: &Sphere) -> Circle {
     let n = Unit::new_normalize(d1d2);
     let pt = s1.center + n.scale(x);
     Circle::new(pt, a, n)
+}
+
+#[cfg(test)]
+mod test {
+    use nalgebra::Point3;
+
+    use crate::analyzer::geometry::Sphere;
+
+    use super::two_spheres_between;
+
+    #[test]
+    fn two_spheres() {
+        let s1 = Sphere::new(Point3::new(0.0, 0.0, 0.0), 2.0);
+        let s2 = Sphere::new(Point3::new(0.0, 3.0, 0.0), 2.0);
+        let c = two_spheres_between(&s1, &s2);
+        dbg!(c);
+    }
 }

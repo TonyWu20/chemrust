@@ -1,0 +1,15 @@
+[package]
+name = "mount_scanner"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chemrust-core = {path = "../chemrust-core"}
+chemrust-parser = {path = "../chemrust-parser"}
+chemrust-formats = {path = "../chemrust-formats"}
+chemrust-scanner = {path = "../chemrust-scanner"}
+clap = {version = "4", features = ["derive"]}

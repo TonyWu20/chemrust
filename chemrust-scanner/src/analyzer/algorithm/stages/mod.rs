@@ -1,8 +1,9 @@
+use chemrust_core::data::Atom;
 use nalgebra::Point3;
 
 use crate::analyzer::geometry::Sphere;
 
-use super::{BondingCircle, BondingSphere, CoordinationPoint};
+use super::{BondingCircle, BondingSphere, CoordinationPoint, Visualize};
 
 pub trait CheckStage {}
 #[derive(Default)]
@@ -102,6 +103,31 @@ impl PointStage {
 
     pub fn multi_cn_points(&self) -> &[CoordinationPoint] {
         self.multi_cn_points.as_ref()
+    }
+    pub fn visualize_atoms(&self) -> Vec<Atom> {
+        let spheres: Vec<Vec<Atom>> = self
+            .sphere_sites()
+            .iter()
+            .map(|s| s.draw_with_atoms())
+            .collect();
+        let circles: Vec<Vec<Atom>> = self.circles().iter().map(|c| c.draw_with_atoms()).collect();
+        let sphere_cut_points: Vec<Atom> = self
+            .cut_points()
+            .iter()
+            .map(|p| p.draw_with_atoms())
+            .collect();
+        let multi_points: Vec<Atom> = self
+            .multi_cn_points()
+            .iter()
+            .map(|p| p.draw_with_atoms())
+            .collect();
+        let total_atoms = vec![
+            spheres.concat(),
+            circles.concat(),
+            sphere_cut_points,
+            multi_points,
+        ];
+        total_atoms.concat()
     }
 }
 

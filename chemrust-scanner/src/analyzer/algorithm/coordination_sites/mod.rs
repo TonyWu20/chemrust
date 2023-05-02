@@ -2,6 +2,9 @@ use nalgebra::Point3;
 
 use crate::analyzer::geometry::{Circle, Sphere};
 
+mod visualize;
+pub use visualize::Visualize;
+
 /// Sphere with location atom information
 #[derive(Debug, Clone, Copy)]
 pub struct BondingSphere {

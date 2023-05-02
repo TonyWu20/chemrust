@@ -17,8 +17,8 @@ pub struct IntersectChecker<'a, T: CheckStage> {
     state: T,
 }
 
-impl<'a, T: CheckStage> IntersectChecker<'a, T> {
-    pub fn new(coords: &'a [Point3<f64>]) -> IntersectChecker<Ready> {
+impl<'a> IntersectChecker<'a, Ready> {
+    pub fn new(coords: &'a [Point3<f64>]) -> Self {
         let coords_kdtree = KdIndexTree::build_by_ordered_float(coords);
         IntersectChecker {
             coords,
@@ -26,9 +26,6 @@ impl<'a, T: CheckStage> IntersectChecker<'a, T> {
             state: Ready::default(),
         }
     }
-}
-
-impl<'a> IntersectChecker<'a, Ready> {
     pub fn start_with_radius(self, radius: f64) -> IntersectChecker<'a, SphereStage> {
         IntersectChecker {
             coords: self.coords,

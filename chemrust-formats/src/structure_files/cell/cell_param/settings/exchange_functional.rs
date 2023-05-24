@@ -38,3 +38,9 @@ impl Display for XCFunctional {
         }
     }
 }
+
+impl Default for XCFunctional {
+    fn default() -> Self {
+        XCFunctional::PBE
+    }
+}

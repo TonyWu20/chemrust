@@ -104,8 +104,7 @@ impl StructureFile<Msi> {
                             .with_index(atom.index())
                             .with_atomic_number(atom.atomic_number())
                             .with_symbol(atom.symbol())
-                            .finish()
-                            .unwrap()
+                            .ready()
                             .build();
                         Self::atom_export(&rotated_atom)
                     })

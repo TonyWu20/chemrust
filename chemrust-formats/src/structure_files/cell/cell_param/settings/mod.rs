@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-pub mod electronic_minimizers;
+mod electronic_minimizers;
+mod exchange_functional;
+
+pub use electronic_minimizers::*;
 
 #[derive(Debug)]
 pub enum FiniteBasisCorr {

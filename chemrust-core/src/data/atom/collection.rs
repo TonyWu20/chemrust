@@ -2,7 +2,8 @@ use nalgebra::Point3;
 
 use super::Atom;
 
-#[derive(Debug, PartialEq, PartialOrd)]
+/// Struct of Array style, memory allocation is continuous when modifying the same attribute for all atoms.
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct AtomCollections {
     symbols: Vec<String>,
     atomic_numbers: Vec<u8>,
@@ -50,20 +51,21 @@ impl AtomCollections {
                     .with_atomic_number(*atomic_num)
                     .with_coord(cartesian_coord)
                     .with_index(index)
-                    .finish()
-                    .unwrap()
+                    .ready()
                     .build(),
             )
         }
     }
 }
 
+/// Conversion from `&[Atom]` to `AtomCollections`
 impl From<&[Atom]> for AtomCollections {
     fn from(value: &[Atom]) -> Self {
         value.to_vec().into()
     }
 }
 
+/// Conversion from `Vec<Atom>` to `AtomCollections`
 impl From<Vec<Atom>> for AtomCollections {
     fn from(value: Vec<Atom>) -> Self {
         let collection_size = value.len();
@@ -78,6 +80,7 @@ impl From<Vec<Atom>> for AtomCollections {
     }
 }
 
+/// Conversion from `AtomCollections` to `Vec<Atom>`
 impl From<AtomCollections> for Vec<Atom> {
     fn from(value: AtomCollections) -> Self {
         let collection_size = value.indexes().len();

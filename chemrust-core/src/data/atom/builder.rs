@@ -65,24 +65,13 @@ impl AtomBuilder<Pending> {
             state: PhantomData,
         }
     }
-    pub fn finish(self) -> Result<AtomBuilder<Ready>, AtomBuilderIncomplete> {
-        if let Self {
-            symbol: Some(symbol),
-            atomic_number: Some(atomic_number),
-            cartesian_coord: Some(cart),
-            index: Some(index),
-            state: _,
-        } = self
-        {
-            Ok(AtomBuilder {
-                symbol: Some(symbol),
-                atomic_number: Some(atomic_number),
-                cartesian_coord: Some(cart),
-                index: Some(index),
-                state: PhantomData,
-            })
-        } else {
-            Err(AtomBuilderIncomplete)
+    pub fn ready(self) -> AtomBuilder<Ready> {
+        AtomBuilder {
+            symbol: self.symbol,
+            atomic_number: self.atomic_number,
+            cartesian_coord: self.cartesian_coord,
+            index: self.index,
+            state: PhantomData,
         }
     }
 }
@@ -97,10 +86,10 @@ impl AtomBuilder<Ready> {
             state: _,
         } = self;
         Atom {
-            symbol: symbol.unwrap(),
-            atomic_number: atomic_number.unwrap(),
-            cartesian_coord: cartesian_coord.unwrap(),
-            index: index.unwrap(),
+            symbol: symbol.unwrap_or("H".to_owned()),
+            atomic_number: atomic_number.unwrap_or(0),
+            cartesian_coord: cartesian_coord.unwrap_or(Point3::origin()),
+            index: index.unwrap_or(0),
         }
     }
 }
@@ -130,8 +119,7 @@ mod test {
             .with_atomic_number(0)
             .with_symbol("H")
             .with_coord(&Point3::new(0.0, 0.0, 0.0))
-            .finish()
-            .unwrap()
+            .ready()
             .build();
         println!("{:?}", atom);
     }

@@ -4,6 +4,10 @@ use self::density_mixing::DensityMixing;
 
 mod density_mixing;
 
+pub use density_mixing::*;
+
+pub trait SchemeOptions {}
+
 #[derive(Debug)]
 pub(crate) enum MetalsMethod {
     Dm(DensityMixing),

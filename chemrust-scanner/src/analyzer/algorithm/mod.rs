@@ -127,7 +127,16 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                 _ => (),
             }
         });
-        let dedup_point_only = Self::analyze_points(&mut points_only_sites);
+        pure_circles.dedup_by(|a, b| {
+            (a.circle().center.x - b.circle().center.x).abs() < 1e-6
+                && (a.circle().center.y - b.circle().center.y).abs() < 1e-6
+                && (a.circle().center.z - b.circle().center.z).abs() < 1e-6
+        });
+        let dedup_point_only = if points_only_sites.len() > 0 {
+            Self::analyze_points(&mut points_only_sites)
+        } else {
+            points_only_sites
+        };
         let point_stage = PointStage::new(
             self.state.sphere_sites,
             pure_circles,

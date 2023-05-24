@@ -50,9 +50,28 @@ fn main() -> Result<(), Box<dyn Error>> {
             fs::write(output_name, output_cell_atoms)?;
         }
     }
-    println!("Spheres: {}", final_report.sphere_sites().len());
-    println!("Circles: {}", final_report.circles().len());
-    println!("Cut points: {}", final_report.cut_points().len());
+    println!("Scanning model: {}", cell_filename);
+    println!("Target bondlength: {} Å", radius);
+    println!("---------------------------------");
+    println!("Number of CN = 1: {}", final_report.sphere_sites().len());
+    println!("Located as Spheres");
+    final_report.sphere_sites().iter().for_each(|p| {
+        println!(
+            "Sphere center: {}, around atom No.: {}",
+            p.sphere().center,
+            p.locating_atom_id()
+        )
+    });
+    println!("CN = 2: {}", final_report.circles().len());
+    println!("As circles between two atoms");
+    final_report.circles().iter().for_each(|p| {
+        println!(
+            "Located at {}, between atom {} and {}",
+            p.circle().center,
+            p.connecting_atoms()[0],
+            p.connecting_atoms()[1]
+        )
+    });
     println!("Multi points: {}", final_report.multi_cn_points().len());
     final_report.multi_cn_points().iter().for_each(|p| {
         println!(

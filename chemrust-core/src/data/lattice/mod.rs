@@ -57,6 +57,14 @@ impl LatticeModel {
     pub fn lattice_vectors_mut(&mut self) -> &mut Option<LatticeVectors> {
         &mut self.lattice_vectors
     }
+
+    pub fn set_lattice_vectors(&mut self, lattice_vectors: Option<LatticeVectors>) {
+        self.lattice_vectors = lattice_vectors;
+    }
+
+    pub fn set_atoms(&mut self, atoms: Vec<Atom>) {
+        self.atoms = atoms;
+    }
 }
 
 impl Display for LatticeModel {

@@ -14,3 +14,4 @@ pub mod lattice;
 
 // Re-export
 pub use atom::Atom;
+pub use lattice::{LatticeModel, LatticeVectors};

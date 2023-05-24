@@ -2,8 +2,6 @@ use castep_periodic_table::{data::ELEMENT_TABLE, element::LookupElement};
 
 use crate::{ModelFormat, StructureFile};
 
-mod castep_param;
-
 #[derive(Debug, Clone, Default)]
 /// A unit struct to mark `cell`format.
 pub struct Cell;

@@ -4,6 +4,7 @@ mod electronic_minimizers;
 mod exchange_functional;
 
 pub use electronic_minimizers::*;
+pub use exchange_functional::XCFunctional;
 
 #[derive(Debug)]
 pub enum FiniteBasisCorr {

@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::structure_files::cell::cell_param::Task;
+use crate::structure_files::cell::castep_param::Task;
 
 /// Parameters in `Geometry Optimization` only.
 #[derive(Debug, Clone, Copy)]

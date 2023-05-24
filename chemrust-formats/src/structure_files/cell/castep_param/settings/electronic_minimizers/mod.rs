@@ -14,6 +14,12 @@ pub(crate) enum MetalsMethod {
     Edft,
 }
 
+impl Default for MetalsMethod {
+    fn default() -> Self {
+        MetalsMethod::Dm(DensityMixingBuilder::<Pulay>::new().build())
+    }
+}
+
 impl Display for MetalsMethod {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

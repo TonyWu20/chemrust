@@ -1,16 +1,33 @@
 use std::f64::consts::PI;
 
 use chemrust_core::data::LatticeVectors;
-use crystallographic_group::{BravaisLattice, CrystalSystem, SpaceGroup};
+use crystallographic_group::{
+    BravaisLattice, CrystalSystem, PointGroup, PointGroupBuilder, SpaceGroup, Standard, Triclinic,
+    P,
+};
 use nalgebra::Matrix3;
+
+use self::helper_functions::mp_grid_generate;
+
+mod helper_functions;
 
 #[derive(Debug, Clone, Copy)]
 pub struct ReciprocalLatticeVectors(Matrix3<f64>);
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct ReciprocalLatticeSpace<S: CrystalSystem, B: BravaisLattice> {
     reciprocal_vector: ReciprocalLatticeVectors,
     space_group: SpaceGroup<S, B>,
+}
+
+impl<S: CrystalSystem, B: BravaisLattice> ReciprocalLatticeSpace<S, B> {
+    pub fn new(lattice_vectors: LatticeVectors, space_group: SpaceGroup<S, B>) -> Self {
+        let reciprocal_vector = lattice_vectors.into();
+        Self {
+            reciprocal_vector,
+            space_group,
+        }
+    }
 }
 
 impl ReciprocalLatticeVectors {
@@ -77,6 +94,9 @@ impl KPointSampler {
         &self,
         reciprocal_lattice_space: &ReciprocalLatticeSpace<S, B>,
     ) {
+        let spacing = self.kpoint_separation();
+        let grid_size = reciprocal_lattice_space.reciprocal_vector.norm();
+        let mp_grid = mp_grid_generate(&grid_size, spacing);
         todo!()
     }
 }

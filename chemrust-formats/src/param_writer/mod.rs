@@ -1,8 +1,4 @@
 // use cpt::{data::ELEMENT_TABLE, element::LookupElement};
-use std::{
-    ffi::OsString,
-    path::{Path, PathBuf},
-};
 
 pub mod castep_param;
 // pub mod ms_aux_files;

@@ -54,33 +54,34 @@ impl StructureFile<Cell> {
     }
     /// Miscellaneous parameters
     fn misc_options(&self) -> String {
-        let fix = format!(
-            "FIX_ALL_CELL : {}\n\nFIX_COM : {}\n{}",
-            self.settings().fix_all_cell(),
-            self.settings().fix_com(),
-            self.ionic_constraints()
-        );
-        let [ex, ey, ez] = self.settings().external_efield();
-        let external_efield = Cell::write_block((
-            "EXTERNAL_EFIELD".to_string(),
-            format!("{:16.10}{:16.10}{:16.10}\n", ex, ey, ez),
-        ));
-        let [rxx, rxy, rxz, ryy, ryz, rzz] = self.settings().external_pressure();
-        let external_pressure = Cell::write_block((
-            "EXTERNAL_PRESSURE".to_string(),
-            format!(
-                r#"{:16.10}{:16.10}{:16.10}
-                {:16.10}{:16.10}
-                                {:16.10}
-"#,
-                rxx, rxy, rxz, ryy, ryz, rzz
-            ),
-        ));
-        let mut misc = String::new();
-        misc.push_str(&fix);
-        misc.push_str(&external_efield);
-        misc.push_str(&external_pressure);
-        misc
+        todo!();
+        //         let fix = format!(
+        //             "FIX_ALL_CELL : {}\n\nFIX_COM : {}\n{}",
+        //             self.settings().fix_all_cell(),
+        //             self.settings().fix_com(),
+        //             self.ionic_constraints()
+        //         );
+        //         let [ex, ey, ez] = self.settings().external_efield();
+        //         let external_efield = Cell::write_block((
+        //             "EXTERNAL_EFIELD".to_string(),
+        //             format!("{:16.10}{:16.10}{:16.10}\n", ex, ey, ez),
+        //         ));
+        //         let [rxx, rxy, rxz, ryy, ryz, rzz] = self.settings().external_pressure();
+        //         let external_pressure = Cell::write_block((
+        //             "EXTERNAL_PRESSURE".to_string(),
+        //             format!(
+        //                 r#"{:16.10}{:16.10}{:16.10}
+        //                 {:16.10}{:16.10}
+        //                                 {:16.10}
+        // "#,
+        //                 rxx, rxy, rxz, ryy, ryz, rzz
+        //             ),
+        //         ));
+        //         let mut misc = String::new();
+        //         misc.push_str(&fix);
+        //         misc.push_str(&external_efield);
+        //         misc.push_str(&external_pressure);
+        //         misc
     }
     /**
     Species and mass table
@@ -95,15 +96,16 @@ impl StructureFile<Cell> {
     ```
     */
     fn species_mass(&self) -> String {
-        let element_list = self.element_set();
-        let mass_strings: Vec<String> = element_list
-            .iter()
-            .map(|elm| -> String {
-                let mass: f64 = ELEMENT_TABLE.get_by_symbol(elm).unwrap().mass();
-                format!("{:>8}{:17.10}\n", elm, mass)
-            })
-            .collect();
-        Cell::write_block(("SPECIES_MASS".to_string(), mass_strings.concat()))
+        todo!()
+        // let element_list = self.element_set();
+        // let mass_strings: Vec<String> = element_list
+        //     .iter()
+        //     .map(|elm| -> String {
+        //         let mass: f64 = ELEMENT_TABLE.get_by_symbol(elm).unwrap().mass();
+        //         format!("{:>8}{:17.10}\n", elm, mass)
+        //     })
+        //     .collect();
+        // Cell::write_block(("SPECIES_MASS".to_string(), mass_strings.concat()))
     }
     /**
     Species and potential table
@@ -118,15 +120,16 @@ impl StructureFile<Cell> {
     ```
     */
     fn species_pot_str(&self) -> String {
-        let element_list = self.element_set();
-        let pot_strings: Vec<String> = element_list
-            .iter()
-            .map(|elm| {
-                let pot_file = ELEMENT_TABLE.get_by_symbol(elm).unwrap().potential();
-                format!("{:>8}  {}\n", elm, pot_file)
-            })
-            .collect();
-        Cell::write_block(("SPECIES_POT".to_string(), pot_strings.concat()))
+        todo!()
+        // let element_list = self.element_set();
+        // let pot_strings: Vec<String> = element_list
+        //     .iter()
+        //     .map(|elm| {
+        //         let pot_file = ELEMENT_TABLE.get_by_symbol(elm).unwrap().potential();
+        //         format!("{:>8}  {}\n", elm, pot_file)
+        //     })
+        //     .collect();
+        // Cell::write_block(("SPECIES_POT".to_string(), pot_strings.concat()))
     }
     /**
     This data block defines the size of the LCAO basis set used for population analysis.
@@ -141,14 +144,15 @@ impl StructureFile<Cell> {
     ```
     */
     fn species_lcao_str(&self) -> String {
-        let element_list = self.element_set();
-        let lcao_strings: Vec<String> = element_list
-            .iter()
-            .map(|elm| {
-                let lcao_state = ELEMENT_TABLE.get_by_symbol(elm).unwrap().lcao();
-                format!("{:>8}{:9}\n", elm, lcao_state)
-            })
-            .collect();
-        Cell::write_block(("SPECIES_LCAO_STATES".to_string(), lcao_strings.concat()))
+        todo!()
+        // let element_list = self.element_set();
+        // let lcao_strings: Vec<String> = element_list
+        //     .iter()
+        //     .map(|elm| {
+        //         let lcao_state = ELEMENT_TABLE.get_by_symbol(elm).unwrap().lcao();
+        //         format!("{:>8}{:9}\n", elm, lcao_state)
+        //     })
+        //     .collect();
+        // Cell::write_block(("SPECIES_LCAO_STATES".to_string(), lcao_strings.concat()))
     }
 }

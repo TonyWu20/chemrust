@@ -13,3 +13,4 @@ nalgebra = "0.32.2"
 chemrust-core = {path = "../chemrust-core"}
 chemrust-parser = {path="../chemrust-parser"}
 itertools = "0.10.5"
+castep-periodic-table = "0.2.0"

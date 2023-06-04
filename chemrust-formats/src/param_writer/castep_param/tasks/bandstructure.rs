@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::structure_files::cell::castep_param::{settings::XCFunctional, Task};
+use crate::param_writer::castep_param::{settings::XCFunctional, Task};
 
 /// Parameters in `Band Structure` task only.
 pub struct BandStructureParam {

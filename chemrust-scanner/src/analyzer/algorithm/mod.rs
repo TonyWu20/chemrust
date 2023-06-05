@@ -32,7 +32,7 @@ impl<'a> IntersectChecker<'a, Ready> {
         IntersectChecker {
             coords: self.coords,
             coords_kdtree: self.coords_kdtree,
-            state: SphereStage::new(&self.coords, radius),
+            state: SphereStage::new(self.coords, radius),
         }
     }
 }
@@ -53,7 +53,7 @@ impl<'a> IntersectChecker<'a, SphereStage> {
             let found_id = found.get(1).unwrap().item;
             let found_sphere = self.state.get_sphere(*found_id).unwrap();
             let this_sphere = self.state.get_sphere(i).unwrap();
-            let intersect_result = this_sphere.intersects(&found_sphere);
+            let intersect_result = this_sphere.intersects(found_sphere);
             match intersect_result {
                 SphereIntersectResult::Zero => spheres.push(BondingSphere::new(*this_sphere, i)),
                 SphereIntersectResult::SinglePoint(p) => {
@@ -134,7 +134,7 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                 && (a.circle().center.y - b.circle().center.y).abs() < 1e-6
                 && (a.circle().center.z - b.circle().center.z).abs() < 1e-6
         });
-        let dedup_point_only = if points_only_sites.len() > 0 {
+        let dedup_point_only = if !points_only_sites.is_empty() {
             Self::analyze_points(&mut points_only_sites)
         } else {
             points_only_sites

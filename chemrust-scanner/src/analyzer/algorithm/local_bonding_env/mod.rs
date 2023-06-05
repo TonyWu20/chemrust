@@ -12,59 +12,18 @@
 //! 3. After a complete iteration, the local bonding environments inside the given structure will be determined.
 //! 4. Returns an array of local bonding environments. The new bonding site search will be conducted in each LBE.
 
-use chemrust_core::data::{atom::AtomCollections, Atom, LatticeModel};
-use kd_tree::KdMap;
-use nalgebra::Point3;
+use chemrust_core::data::Atom;
+
+mod bonding_scheme;
+mod builder;
+
+pub use builder::LocalBondingEnvBuilder;
 
 #[derive(Debug, Clone)]
 /// The local bonding environment around each atom.
+/// The lifetime ties to the `Atom` of `LatticeModel`
 pub struct LocalBondingEnv<'a> {
     center_atom: &'a Atom,
-    number_of_bonding_atoms: u32,
-    atoms: Vec<Atom>,
-}
-
-pub struct LocalBondingEnvBuilder {
-    atom_collections: AtomCollections,
-    coord_kdtree: KdMap<Point3<f64>, CheckAtom>,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct CheckAtom {
-    atomic_number: u8,
-    atom_index: usize,
-}
-
-impl CheckAtom {
-    pub fn new(atomic_number: u8, atom_index: usize) -> Self {
-        Self {
-            atomic_number,
-            atom_index,
-        }
-    }
-}
-
-impl LocalBondingEnvBuilder {
-    pub fn new(lattice_model: &LatticeModel) -> Self {
-        let atom_collections: AtomCollections = lattice_model.atoms().into();
-        let items = lattice_model
-            .atoms()
-            .iter()
-            .map(|atom| -> (Point3<f64>, CheckAtom) {
-                (
-                    atom.cartesian_coord(),
-                    CheckAtom::new(atom.atomic_number(), atom.index()),
-                )
-            })
-            .collect();
-        let coord_kdtree = KdMap::build_by_ordered_float(items);
-        Self {
-            atom_collections,
-            coord_kdtree,
-        }
-    }
-    pub fn local_bonding_env_search(&self, coord: &Point3<f64>) -> LocalBondingEnv {
-        let _found = self.coord_kdtree.nearests(coord, 5);
-        todo!()
-    }
+    number_of_bonding_atoms: usize,
+    atoms: Vec<&'a Atom>,
 }

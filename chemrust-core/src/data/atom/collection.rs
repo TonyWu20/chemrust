@@ -56,6 +56,10 @@ impl AtomCollections {
             )
         }
     }
+
+    pub fn size(&self) -> usize {
+        self.size
+    }
 }
 
 /// Conversion from `&[Atom]` to `AtomCollections`

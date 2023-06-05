@@ -21,10 +21,11 @@ impl Circle {
     }
     pub fn is_on_circle(&self, point: &Point3<f64>) -> bool {
         let distance = distance_squared(&self.center, point);
-        match distance.partial_cmp(&self.radius) {
-            Some(std::cmp::Ordering::Equal) => true,
-            _ => false,
-        }
+        // use `matches!` macro
+        matches!(
+            distance.partial_cmp(&self.radius),
+            Some(std::cmp::Ordering::Equal)
+        )
     }
     pub fn circle_plane(&self) -> Plane {
         Plane::from_point_normal(self.center, self.normal)

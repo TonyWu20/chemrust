@@ -1,4 +1,5 @@
 //! # This module is responsible for analyzing and building `LocalBondingEnv`
+//! # The `LocalBondingEnv` could be used for determining bonding.
 //! for all atoms in the given `LatticeModel`.
 //! - The local bonding environment is determined as follows:
 //!     1. Build an indexed Kd-tree for the coordinates of the atoms.
@@ -120,6 +121,7 @@ impl<'a> LocalBondingEnvBuilder<'a> {
         }
         bonded_num
     }
+    /// Returns the `LocalBondingEnv` of the atom.
     fn get_local_bonding_env(&'a self, atom: &'a Atom) -> LocalBondingEnv {
         let bonding_neighbors_num = self.determine_bonding_neighbors_num(atom);
         let found = self
@@ -127,6 +129,7 @@ impl<'a> LocalBondingEnvBuilder<'a> {
             .nearests(&atom.cartesian_coord(), bonding_neighbors_num);
         let atoms: Vec<&Atom> = found
             .iter()
+            .skip(1)
             .map(|res| {
                 let index = res.item.1.atom_index();
                 self.atoms.get(index).unwrap()
@@ -138,7 +141,7 @@ impl<'a> LocalBondingEnvBuilder<'a> {
             atoms,
         }
     }
-    /// Build `LocalBondingEnv` for all `Atom` in `LatticeModel`
+    /// Build `LocalBondingEnv` for all `Atom` in `LatticeMoel`
     pub fn build_local_bonding_envs(&self) -> Vec<LocalBondingEnv> {
         self.atoms
             .iter()

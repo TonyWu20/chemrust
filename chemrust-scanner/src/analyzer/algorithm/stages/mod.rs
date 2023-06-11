@@ -10,6 +10,7 @@ pub trait CheckStage {}
 pub struct Ready;
 pub struct SphereStage {
     spheres: Vec<Sphere>,
+    radius: f64,
 }
 
 impl SphereStage {
@@ -19,10 +20,15 @@ impl SphereStage {
                 .iter()
                 .map(|&center| Sphere::new(center, radius))
                 .collect(),
+            radius,
         }
     }
     pub fn get_sphere(&self, id: usize) -> Option<&Sphere> {
         self.spheres.get(id)
+    }
+
+    pub fn radius(&self) -> f64 {
+        self.radius
     }
 }
 

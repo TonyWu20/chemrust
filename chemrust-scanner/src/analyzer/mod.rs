@@ -2,6 +2,7 @@
 
 mod algorithm;
 mod geometry;
+mod mounting_analyze;
 
 pub use algorithm::IntersectChecker;
 

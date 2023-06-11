@@ -122,7 +122,7 @@ impl<'a> IntersectChecker<'a, CircleStage> {
         let mut pure_circles = Vec::new();
         let mut points_only_sites: Vec<CoordinationPoint> = Vec::new();
         let mut checked_pairs: HashSet<[usize; 2]> = HashSet::new();
-        self.state.circles.iter().for_each(|bond_circle| {
+        let radius = self.state.circles.iter().for_each(|bond_circle| {
             let center = bond_circle.circle().center;
             let found = circles_kdtree.nearests(&center, 2);
             let found_id = found.get(1).unwrap().item;

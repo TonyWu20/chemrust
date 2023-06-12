@@ -15,6 +15,14 @@ impl Visualize for BondingSphere {
         let x_shift = Vector3::x_axis().scale(radius);
         let y_shift = Vector3::y_axis().scale(radius);
         let z_shift = Vector3::z_axis().scale(radius);
+        // let report_coord = center + z_shift;
+        // vec![Atom::new_builder()
+        //     .with_index(0)
+        //     .with_symbol("H")
+        //     .with_atomic_number(0)
+        //     .with_coord(&report_coord)
+        //     .ready()
+        //     .build()]
         let repr_coords = vec![
             center + x_shift,
             center - x_shift,
@@ -50,6 +58,14 @@ impl Visualize for BondingCircle {
         let y_axis = rotation * Vector3::y_axis();
         let x_shift = x_axis.scale(self.circle().radius);
         let y_shift = y_axis.scale(self.circle().radius);
+        // let repr_coord = center + y_shift;
+        // vec![Atom::new_builder()
+        //     .with_index(0)
+        //     .with_symbol("O")
+        //     .with_atomic_number(8)
+        //     .with_coord(&repr_coord)
+        //     .ready()
+        //     .build()]
         [
             center + x_shift,
             center - x_shift,

@@ -27,11 +27,15 @@ A table of the xyz coordinates of the sites and coordination numbers.
   - [x] From the circles kd-tree, find intersection points between circles
   - [x] Each found point will be added into a vec with a counting index, if next found intersect point between circles repeats with the previously found one, add counting index.
   - [x] Summarize the number of spheres, circles, and points. Sphere-1 C.N., circle-2 C.N., points-at least 4
-- [ ] Limit bondlength to 2 Å? Or the results will not be practical.
+- [x] Limit bondlength to 2 Å? Or the results will not be practical.
+- [ ] Report in a more detailed and reasonable manner
 
 ## Bug investigations
 
 - [x] Incorrect sphere intersections of circles (Fixed on May 2nd)
-- [ ] Check if we need to consider more spheres/circles/points with equal distance/close distance, instead of finding just the nearest one to each coord.
-- [ ] Bondlength includes the atomic radius of elements.
-- [ ] Limit bondlength to 2-3 Å? Or determined by tolerance like Material Studios: ideal bondlength \*min_tolerance < ideal bondlength < ideal bondlength \*max_tolerance
+- [x] Check if we need to consider more spheres/circles/points with equal distance/close distance, instead of finding just the nearest one to each coord. (Done on June 10th)
+  - Sphere stage: using 2 \* desired bonding distance
+  - Circle stage: iterate through.
+- [x] Bondlength includes the atomic radius of elements: Use Materials Studio's bonding criteria to exclude impractical bonding possibilities. (Done on June 10th)
+- [x] Limit bondlength to 2-3 Å? Or determined by tolerance like Material Studios: ideal bondlength \*min_tolerance < ideal bondlength < ideal bondlength \*max_tolerance (Done on June 10th)
+- [ ] A "blacklist" of elements could be necessary to avoid considering impractical bonding combos. (June 12th)

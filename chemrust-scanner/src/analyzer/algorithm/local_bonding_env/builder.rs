@@ -17,9 +17,8 @@ use chemrust_core::data::{Atom, LatticeModel};
 use kd_tree::KdMap;
 use nalgebra::Point3;
 
-use crate::analyzer::algorithm::local_bonding_env::bonding_scheme::{
-    ideal_bondlength, is_bonded, LOWER_FAC, UPPER_FAC,
-};
+use crate::analyzer::algorithm::local_bonding_env::bonding_scheme::{ideal_bondlength, is_bonded};
+use crate::analyzer::mounting_analyze::{LOWER_FAC, UPPER_FAC};
 
 use super::LocalBondingEnv;
 /// Struct to build a `LocalBondingEnv`

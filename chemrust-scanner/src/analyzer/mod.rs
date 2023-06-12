@@ -4,6 +4,7 @@ mod algorithm;
 mod geometry;
 mod mounting_analyze;
 
+pub use crate::analyzer::mounting_analyze::MountingChecker;
 pub use algorithm::IntersectChecker;
 
 #[cfg(test)]
@@ -13,6 +14,7 @@ mod test {
         io::{self, BufRead},
     };
 
+    use castep_periodic_table::{data::ELEMENT_TABLE, element::LookupElement};
     use chemrust_core::data::atom::AtomCollections;
     use chemrust_parser::CellParser;
     use kd_tree::KdIndexTree;
@@ -24,6 +26,7 @@ mod test {
             Circle, CircleIntersectChecker, CircleIntersectResult, Intersect, Sphere,
             SphereIntersectResult,
         },
+        mounting_analyze::MountingChecker,
     };
 
     use super::algorithm::IntersectChecker;
@@ -122,13 +125,18 @@ mod test {
             .to_lattice_cart()
             .to_positions()
             .build_lattice();
-        let atom_collections: AtomCollections = lattice.atoms().into();
-        let coords: Vec<Point3<f64>> = atom_collections.cartesian_coords().to_vec();
-        let intersect_checker = IntersectChecker::<Ready>::new(&coords)
-            .start_with_radius(0.7)
-            .check_spheres()
-            .analyze_circle_intersects();
-        let final_report = intersect_checker.report();
+        let mount_element = ELEMENT_TABLE.get_by_symbol("Co").unwrap();
+        let mount_distance = 1.41;
+        let mount_checker = MountingChecker::new_builder()
+            .with_element(mount_element)
+            .with_bondlength(mount_distance)
+            .build();
+        let final_report = mount_checker.mount_search(lattice.atoms());
+        println!(
+            "New element: {}, bonding_distance: {}",
+            mount_element.symbol(),
+            mount_distance
+        );
         println!("Spheres: {}", final_report.sphere_sites().len());
         println!("Circles: {}", final_report.circles().len());
         println!("Cut points: {}", final_report.cut_points().len());

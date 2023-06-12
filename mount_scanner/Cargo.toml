@@ -12,4 +12,5 @@ chemrust-core = {path = "../chemrust-core"}
 chemrust-parser = {path = "../chemrust-parser"}
 chemrust-formats = {path = "../chemrust-formats"}
 chemrust-scanner = {path = "../chemrust-scanner"}
+castep-periodic-table = "0.2.0"
 clap = {version = "4", features = ["derive"]}

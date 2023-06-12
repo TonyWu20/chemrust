@@ -1,3 +1,3 @@
 mod analyzer;
 
-pub use analyzer::IntersectChecker;
+pub use analyzer::{IntersectChecker, MountingChecker};

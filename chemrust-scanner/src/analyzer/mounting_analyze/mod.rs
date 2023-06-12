@@ -2,9 +2,14 @@ use castep_periodic_table::{
     data::ELEMENT_TABLE,
     element::{Element, LookupElement},
 };
-use chemrust_core::data::Atom;
+use chemrust_core::data::{atom::AtomCollections, Atom};
 
-use crate::analyzer::algorithm::{ideal_bondlength, is_bonded};
+use crate::{
+    analyzer::algorithm::{ideal_bondlength, is_bonded},
+    IntersectChecker,
+};
+
+use super::algorithm::{PointStage, Ready};
 
 pub const LOWER_FAC: f64 = 0.6;
 pub const UPPER_FAC: f64 = 1.15;
@@ -30,8 +35,16 @@ impl MountingChecker {
             .map(|atom| atom.clone())
             .collect()
     }
-    pub fn sphere_stages(&self, atoms: &[Atom]) {
-        todo!();
+    pub fn mount_search<'a>(&self, atoms: &'a [Atom]) -> PointStage {
+        let available_atoms: Vec<Atom> = self.available_atoms(atoms);
+        let collections: AtomCollections = available_atoms.into();
+        let coords = collections.cartesian_coords().to_vec();
+        IntersectChecker::<Ready>::new(&coords)
+            .start_with_radius(self.mount_distance)
+            .check_spheres()
+            .analyze_circle_intersects()
+            .report()
+            .clone()
     }
 }
 

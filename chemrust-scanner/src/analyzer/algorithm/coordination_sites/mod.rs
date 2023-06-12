@@ -97,4 +97,8 @@ impl CoordinationPoint {
     pub fn coord(&self) -> Point3<f64> {
         self.coord
     }
+
+    pub fn set_coord(&mut self, coord: Point3<f64>) {
+        self.coord = coord;
+    }
 }

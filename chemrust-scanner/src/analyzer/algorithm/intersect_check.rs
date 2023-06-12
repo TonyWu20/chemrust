@@ -112,38 +112,65 @@ impl<'a> IntersectChecker<'a, CircleStage> {
         CoordinationPoint::new(*point, connecting_atoms.concat(), 4)
     }
     pub fn analyze_circle_intersects(self) -> IntersectChecker<'a, PointStage> {
-        let circle_centers: Vec<Point3<f64>> = self
-            .state
-            .circles
-            .iter()
-            .map(|c| c.circle().center)
-            .collect();
-        let circles_kdtree = KdIndexTree::build_by_ordered_float(&circle_centers);
         let mut pure_circles = Vec::new();
         let mut points_only_sites: Vec<CoordinationPoint> = Vec::new();
         let mut checked_pairs: HashSet<[usize; 2]> = HashSet::new();
-        let radius = self.state.circles.iter().for_each(|bond_circle| {
-            let center = bond_circle.circle().center;
-            let found = circles_kdtree.nearests(&center, 2);
-            let found_id = found.get(1).unwrap().item;
-            let found_circle = self.state.get_circle(*found_id).unwrap();
-            let res =
-                CircleIntersectChecker::new(&bond_circle.circle(), &found_circle.circle()).check();
-            match res {
-                CircleIntersectResult::Zero => pure_circles.push(*bond_circle),
-                CircleIntersectResult::Single(p) => {
-                    let point = Self::join_circle_points(&p, bond_circle, found_circle);
-                    points_only_sites.push(point);
+        self.state
+            .circles
+            .iter()
+            .enumerate()
+            .for_each(|(id_main, now_bond_circle)| {
+                let mut zero_intersect_count: usize = 0;
+                let mut to_check: usize = 0;
+                self.state
+                    .circles
+                    .iter()
+                    .enumerate()
+                    .filter(|&(id_sub, _)| match id_main == id_sub {
+                        true => return false,
+                        false => {
+                            let mut pair = [id_main, id_sub];
+                            pair.sort();
+                            checked_pairs.insert(pair)
+                        }
+                    })
+                    .for_each(|(_, bonding_circle)| {
+                        to_check += 1;
+                        let res = CircleIntersectChecker::new(
+                            &now_bond_circle.circle(),
+                            &bonding_circle.circle(),
+                        )
+                        .check();
+                        match res {
+                            CircleIntersectResult::Zero => {
+                                zero_intersect_count += 1;
+                            }
+                            CircleIntersectResult::Single(p) => {
+                                let point =
+                                    Self::join_circle_points(&p, now_bond_circle, bonding_circle);
+                                points_only_sites.push(point);
+                            }
+                            CircleIntersectResult::Double(points) => {
+                                let point_1 = Self::join_circle_points(
+                                    &points.0,
+                                    now_bond_circle,
+                                    bonding_circle,
+                                );
+                                let point_2 = Self::join_circle_points(
+                                    &points.1,
+                                    now_bond_circle,
+                                    bonding_circle,
+                                );
+                                points_only_sites.push(point_1);
+                                points_only_sites.push(point_2);
+                            }
+                            _ => (),
+                        }
+                    });
+                if zero_intersect_count == to_check {
+                    pure_circles.push(*now_bond_circle)
                 }
-                CircleIntersectResult::Double(points) => {
-                    let point_1 = Self::join_circle_points(&points.0, bond_circle, found_circle);
-                    let point_2 = Self::join_circle_points(&points.1, bond_circle, found_circle);
-                    points_only_sites.push(point_1);
-                    points_only_sites.push(point_2);
-                }
-                _ => (),
-            }
-        });
+            });
         pure_circles.dedup_by(|a, b| {
             (a.circle().center.x - b.circle().center.x).abs() < 1e-6
                 && (a.circle().center.y - b.circle().center.y).abs() < 1e-6
@@ -167,24 +194,37 @@ impl<'a> IntersectChecker<'a, CircleStage> {
         }
     }
     fn analyze_points(points: &mut [CoordinationPoint]) -> Vec<CoordinationPoint> {
+        points.iter_mut().for_each(|p| {
+            let floor_x = (p.coord().x * 1e5).floor() / 1e5;
+            let floor_y = (p.coord().y * 1e5).floor() / 1e5;
+            let floor_z = (p.coord().z * 1e5).floor() / 1e5;
+            p.set_coord(Point3::new(floor_x, floor_y, floor_z))
+        });
         points.sort_by(|a, b| {
             a.coord()
                 .x
                 .partial_cmp(&b.coord().x)
                 .unwrap_or_else(|| panic!("Comparing {} to {}", a.coord(), b.coord()))
+                .then(a.coord().y.partial_cmp(&b.coord().y).unwrap())
+                .then(a.coord().z.partial_cmp(&b.coord().z).unwrap())
         });
         let point_xyzs: Vec<Point3<f64>> = points.iter().map(|cp| cp.coord()).collect();
-        let dedup_points = points.iter().dedup_by_with_count(|a, b| {
-            (a.coord().x - b.coord().x).abs() < 1e-6
-                && (a.coord().y - b.coord().y).abs() < 1e-6
-                && (a.coord().z - b.coord().z).abs() < 1e-6
-        });
+        dbg!(point_xyzs.len());
+        let dedup_points: Vec<(usize, &CoordinationPoint)> = points
+            .iter()
+            .dedup_by_with_count(|a, b| {
+                (a.coord().x - b.coord().x).abs() < 1e-3
+                    && (a.coord().y - b.coord().y).abs() < 1e-3
+                    && (a.coord().z - b.coord().z).abs() < 1e-3
+            })
+            .collect();
         let point_kdtree = KdIndexTree::build_by_ordered_float(&point_xyzs);
-        dedup_points
+        dbg!(dedup_points.len());
+        let res: Vec<CoordinationPoint> = dedup_points
             .into_iter()
             .map(|(_, p)| {
                 let this_coord = p.coord();
-                let found = point_kdtree.within_radius(&this_coord, 0.1);
+                let found = point_kdtree.within_radius(&this_coord, 0.00001);
                 if found.len() == 1 {
                     p.clone()
                 } else {
@@ -199,7 +239,9 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                     CoordinationPoint::new(p.coord(), total_atoms, cn)
                 }
             })
-            .collect()
+            .collect();
+        dbg!(res.len());
+        res
     }
 }
 

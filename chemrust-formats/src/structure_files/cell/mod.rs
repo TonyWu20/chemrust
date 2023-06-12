@@ -40,12 +40,12 @@ impl StructureFile<Cell> {
                     "".into()
                 };
                 format!(
-                    "{:>3}{:20.16}{:20.16}{:20.16}{spin_str}",
+                    "{:>3}{:20.16}{:20.16}{:20.16}{spin_str}\n",
                     symbol, frac_xyz.x, frac_xyz.y, frac_xyz.z
                 )
             })
             .collect();
-        let all_atom_fracs = atom_frac_coords_text.join("\n");
+        let all_atom_fracs = atom_frac_coords_text.concat();
         Cell::write_block(("POSITIONS_FRAC".into(), all_atom_fracs))
     }
     /// No constraints. Future: adapt to settings

@@ -5,16 +5,23 @@ use std::{
 };
 
 use arg_parser::Args;
-use chemrust_core::data::{atom::AtomCollections, lattice::LatticeModel};
+use castep_periodic_table::{data::ELEMENT_TABLE, element::LookupElement};
+use chemrust_core::data::lattice::LatticeModel;
 use chemrust_formats::{Cell, StructureFile};
 use chemrust_parser::CellParser;
-use chemrust_scanner::IntersectChecker;
+use chemrust_scanner::MountingChecker;
 use clap::Parser;
 
 mod arg_parser;
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Args::parse();
     let radius = cli.radius;
+    let element = ELEMENT_TABLE.get_by_symbol(&cli.element).unwrap();
+    let mount_checker = MountingChecker::new_builder()
+        .with_element(element)
+        .with_bondlength(radius)
+        .build();
+    // Read from cell
     let cell_filename = cli.file;
     let cell_filepath = Path::new(&cell_filename);
     cell_filepath.try_exists()?;
@@ -23,13 +30,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .to_lattice_cart()
         .to_positions()
         .build_lattice();
-    let atom_collection: AtomCollections = cell_model.atoms().into();
-    let coords = atom_collection.cartesian_coords();
-    let checker = IntersectChecker::new(coords)
-        .start_with_radius(radius)
-        .check_spheres()
-        .analyze_circle_intersects();
-    let final_report = checker.report();
+    let final_report = mount_checker.mount_search(cell_model.atoms());
     let visualize_atoms = final_report.visualize_atoms();
     let cell_model_atoms = cell_model.atoms().clone();
     let new_all_atoms = vec![cell_model_atoms, &visualize_atoms];
@@ -51,7 +52,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     println!("Scanning model: {}", cell_filename);
-    println!("Target bondlength: {} Å", radius);
+    println!(
+        "New element: {}, Target bondlength: {} Å",
+        element.symbol(),
+        radius
+    );
     println!("---------------------------------");
     println!("Number of CN = 1: {}", final_report.sphere_sites().len());
     println!("Located as Spheres");

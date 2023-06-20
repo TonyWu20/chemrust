@@ -1,5 +1,6 @@
-use std::fmt::Display;
+use std::{collections::HashSet, fmt::Display};
 
+use itertools::Itertools;
 use nalgebra::Matrix3;
 
 use super::Atom;
@@ -64,6 +65,20 @@ impl LatticeModel {
 
     pub fn set_atoms(&mut self, atoms: Vec<Atom>) {
         self.atoms = atoms;
+    }
+    pub fn element_list(&self) -> Vec<String> {
+        let all_atom_elements = self
+            .atoms
+            .iter()
+            .map(|atom| (atom.atomic_number(), atom.symbol()))
+            .collect::<Vec<(u8, &str)>>()
+            .drain(..)
+            .collect::<HashSet<(u8, &str)>>();
+        let element_list: Vec<(u8, &str)> = all_atom_elements.into_iter().collect();
+        element_list
+            .iter()
+            .map(|(_, symbol)| symbol.to_string())
+            .collect()
     }
 }
 

@@ -31,7 +31,8 @@ impl Display for MetalsMethod {
 
 #[cfg(test)]
 mod test {
-    use crate::structure_files::cell::cell_param::settings::electronic_minimizers::density_mixing::DensityMixingBuilder;
+
+    use crate::param_writer::castep_param::settings::DensityMixingBuilder;
 
     use super::{density_mixing::Pulay, MetalsMethod};
 

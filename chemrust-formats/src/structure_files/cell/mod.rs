@@ -20,6 +20,18 @@ impl Cell {
 }
 
 impl StructureFile<Cell> {
+    pub fn write_lattice_vectors(&self) -> String {
+        let formatted_vector: Vec<String> = self
+            .lattice_model
+            .lattice_vectors()
+            .unwrap()
+            .data()
+            .column_iter()
+            .map(|col| format!("{:24.18}{:24.18}{:24.18}\n", col.x, col.y, col.z))
+            .collect();
+        let formatted_vector = formatted_vector.concat();
+        Cell::write_block(("LATTICE_CART".to_string(), formatted_vector))
+    }
     pub fn write_atoms(&self) -> String {
         let cart_to_frac_matrix = self
             .lattice_model

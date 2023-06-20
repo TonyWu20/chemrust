@@ -37,18 +37,24 @@ fn main() -> Result<(), Box<dyn Error>> {
     let new_all_atoms = new_all_atoms.concat();
     let new_lattice_vectors = cell_model.lattice_vectors().unwrap().to_owned();
     let new_cell_model = LatticeModel::new(&Some(new_lattice_vectors), &new_all_atoms);
-    let output_cell_atoms = StructureFile::<Cell>::new(new_cell_model).write_atoms();
+    let cell_output_file = StructureFile::<Cell>::new(new_cell_model);
+    let lattice_vector_text = cell_output_file.write_lattice_vectors();
+    let output_cell_atoms = cell_output_file.write_atoms();
     if cli.dryrun {
         println!("{}", output_cell_atoms);
     } else {
         if let Some(output_name) = cli.output_name {
-            fs::write(output_name, output_cell_atoms)?;
+            let contents = vec![lattice_vector_text, output_cell_atoms];
+            let contents = contents.join("\n");
+            fs::write(output_name, contents)?;
         } else {
             let output_name = format!(
-                "{}.txt",
+                "{}.cell",
                 cell_filepath.file_stem().unwrap().to_str().unwrap()
             );
-            fs::write(output_name, output_cell_atoms)?;
+            let contents = vec![lattice_vector_text, output_cell_atoms];
+            let contents = contents.join("\n");
+            fs::write(output_name, contents)?;
         }
     }
     println!("Scanning model: {}", cell_filename);
@@ -57,26 +63,29 @@ fn main() -> Result<(), Box<dyn Error>> {
         element.symbol(),
         radius
     );
+    let available_elements = mount_checker.available_elements(cell_model.atoms());
+    println!("Available bonding elements:");
+    available_elements.iter().for_each(|elm| println!("{elm}"));
     println!("---------------------------------");
     println!("Number of CN = 1: {}", final_report.sphere_sites().len());
     println!("Located as Spheres");
-    final_report.sphere_sites().iter().for_each(|p| {
-        println!(
-            "Sphere center: {}, around atom No.: {}",
-            p.sphere().center,
-            p.locating_atom_id()
-        )
-    });
+    // final_report.sphere_sites().iter().for_each(|p| {
+    //     println!(
+    //         "Sphere center: {}, around atom No.: {}",
+    //         p.sphere().center,
+    //         p.locating_atom_id()
+    //     )
+    // });
     println!("CN = 2: {}", final_report.circles().len());
     println!("As circles between two atoms");
-    final_report.circles().iter().for_each(|p| {
-        println!(
-            "Located at {}, between atom {} and {}",
-            p.circle().center,
-            p.connecting_atoms()[0],
-            p.connecting_atoms()[1]
-        )
-    });
+    // final_report.circles().iter().for_each(|p| {
+    //     println!(
+    //         "Located at {}, between atom {} and {}",
+    //         p.circle().center,
+    //         p.connecting_atoms()[0],
+    //         p.connecting_atoms()[1]
+    //     )
+    // });
     println!("Multi points: {}", final_report.multi_cn_points().len());
     final_report.multi_cn_points().iter().for_each(|p| {
         println!(

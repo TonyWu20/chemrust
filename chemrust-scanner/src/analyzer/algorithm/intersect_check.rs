@@ -209,7 +209,6 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                 .then(a.coord().z.partial_cmp(&b.coord().z).unwrap())
         });
         let point_xyzs: Vec<Point3<f64>> = points.iter().map(|cp| cp.coord()).collect();
-        dbg!(point_xyzs.len());
         let dedup_points: Vec<(usize, &CoordinationPoint)> = points
             .iter()
             .dedup_by_with_count(|a, b| {
@@ -219,7 +218,6 @@ impl<'a> IntersectChecker<'a, CircleStage> {
             })
             .collect();
         let point_kdtree = KdIndexTree::build_by_ordered_float(&point_xyzs);
-        dbg!(dedup_points.len());
         let res: Vec<CoordinationPoint> = dedup_points
             .into_iter()
             .map(|(_, p)| {
@@ -240,7 +238,6 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                 }
             })
             .collect();
-        dbg!(res.len());
         res
     }
 }

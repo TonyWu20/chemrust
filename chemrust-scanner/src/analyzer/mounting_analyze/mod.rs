@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use castep_periodic_table::{
     data::ELEMENT_TABLE,
     element::{Element, LookupElement},
@@ -34,6 +36,19 @@ impl MountingChecker {
             })
             .map(|atom| atom.clone())
             .collect()
+    }
+    pub fn available_elements(&self, atoms: &[Atom]) -> HashSet<String> {
+        atoms
+            .iter()
+            .filter(|atom| {
+                let ideal_bondlength =
+                    ideal_bondlength(atom.atomic_number(), self.mount_element.atomic_number());
+                is_bonded(self.mount_distance, ideal_bondlength, LOWER_FAC, UPPER_FAC)
+            })
+            .map(|atom| atom.symbol().into())
+            .collect::<Vec<String>>()
+            .drain(..)
+            .collect::<HashSet<String>>()
     }
     pub fn mount_search<'a>(&self, atoms: &'a [Atom]) -> PointStage {
         let available_atoms: Vec<Atom> = self.available_atoms(atoms);

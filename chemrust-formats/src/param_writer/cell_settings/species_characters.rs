@@ -50,13 +50,15 @@ impl SpeciesCharacteristics {
     }
 
     pub fn species_lcao_states(&self) -> String {
-        self.element_list
+        let text = self
+            .element_list
             .iter()
             .map(|symbol| {
                 let lcao_state = ELEMENT_TABLE.get_by_symbol(&symbol).unwrap().lcao();
                 format!("{:>8}{:9}\n", symbol, lcao_state)
             })
             .collect::<Vec<String>>()
-            .concat()
+            .concat();
+        Cell::write_block(("SPECIES_LCAO".into(), text))
     }
 }

@@ -43,18 +43,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     if cli.dryrun {
         println!("{}", output_cell_atoms);
     } else {
+        let text = cell_output_file.export_geom_cell();
         if let Some(output_name) = cli.output_name {
-            let contents = vec![lattice_vector_text, output_cell_atoms];
-            let contents = contents.join("\n");
-            fs::write(output_name, contents)?;
+            fs::write(output_name, text)?;
         } else {
             let output_name = format!(
                 "{}.cell",
                 cell_filepath.file_stem().unwrap().to_str().unwrap()
             );
-            let contents = vec![lattice_vector_text, output_cell_atoms];
-            let contents = contents.join("\n");
-            fs::write(output_name, contents)?;
+            fs::write(output_name, text)?;
         }
     }
     println!("Scanning model: {}", cell_filename);

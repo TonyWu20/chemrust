@@ -74,7 +74,8 @@ impl LatticeModel {
             .collect::<Vec<(u8, &str)>>()
             .drain(..)
             .collect::<HashSet<(u8, &str)>>();
-        let element_list: Vec<(u8, &str)> = all_atom_elements.into_iter().collect();
+        let mut element_list: Vec<(u8, &str)> = all_atom_elements.into_iter().collect();
+        element_list.sort_by(|a, b| a.0.cmp(&b.0));
         element_list
             .iter()
             .map(|(_, symbol)| symbol.to_string())

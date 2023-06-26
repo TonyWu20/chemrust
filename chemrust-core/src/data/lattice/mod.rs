@@ -40,6 +40,9 @@ impl LatticeModel {
             atoms: atoms.to_vec(),
         }
     }
+    pub fn number_of_atoms(&self) -> usize {
+        self.atoms.len()
+    }
     // pub fn builder() -> LatticeModelBuilder<T, Pending> {
     //     LatticeModelBuilder::<T, Pending>::new()
     // }
@@ -53,6 +56,10 @@ impl LatticeModel {
 
     pub fn atoms_mut(&mut self) -> &mut Vec<Atom> {
         &mut self.atoms
+    }
+
+    pub fn append_atom(&mut self, atoms: &mut Vec<Atom>) {
+        self.atoms.append(atoms)
     }
 
     pub fn lattice_vectors_mut(&mut self) -> &mut Option<LatticeVectors> {

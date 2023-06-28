@@ -20,7 +20,7 @@ impl Cell {
     pub fn write_block(block: (String, String)) -> String {
         let (block_name, content) = block;
         format!(
-            "%BlOCK {}\n{}%ENDBLOCK {}\n\n",
+            "%BLOCK {}\n{}%ENDBLOCK {}\n\n",
             block_name, content, block_name
         )
     }

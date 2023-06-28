@@ -5,7 +5,7 @@ mod geometry;
 mod mounting_analyze;
 
 pub use crate::analyzer::mounting_analyze::MountingChecker;
-pub use algorithm::IntersectChecker;
+pub use algorithm::{IntersectChecker, PointStage};
 
 #[cfg(test)]
 mod test {
@@ -21,15 +21,13 @@ mod test {
     use nalgebra::Point3;
 
     use crate::analyzer::{
-        algorithm::Ready,
+        algorithm::Visualize,
         geometry::{
             Circle, CircleIntersectChecker, CircleIntersectResult, Intersect, Sphere,
             SphereIntersectResult,
         },
         mounting_analyze::MountingChecker,
     };
-
-    use super::algorithm::IntersectChecker;
 
     #[test]
     fn test_kd_tree() {
@@ -137,6 +135,15 @@ mod test {
             mount_element.symbol(),
             mount_distance
         );
+        final_report.sphere_sites().iter().for_each(|sphere| {
+            let mut new_atoms = sphere.draw_with_element("Co");
+            let mut new_lattice = lattice.clone();
+            let current_num = new_lattice.number_of_atoms();
+            new_atoms
+                .iter_mut()
+                .for_each(|atom| atom.set_index(current_num + atom.index()));
+            new_lattice.append_atom(&mut new_atoms);
+        });
         println!("Spheres: {}", final_report.sphere_sites().len());
         println!("Circles: {}", final_report.circles().len());
         println!("Cut points: {}", final_report.cut_points().len());

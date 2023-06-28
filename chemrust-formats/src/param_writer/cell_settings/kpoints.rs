@@ -7,6 +7,13 @@ pub struct KPointsList {
     kpts: Vec<[f64; 4]>,
 }
 
+#[derive(Debug, Clone)]
+pub struct KptAux {
+    mp_grid: [u32; 3],
+    mp_offset: [f64; 3],
+    kpt_images: Vec<Vec<u32>>,
+}
+
 impl KPointsList {
     pub fn write_kpoints_list(&self) -> String {
         Cell::write_block(("KPOINTS_LIST".into(), format!("{self}")))

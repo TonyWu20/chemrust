@@ -3,7 +3,7 @@
 pub mod castep_param;
 pub mod cell_settings;
 // pub mod ms_aux_files;
-// pub mod seed_writer;
+pub mod seed_writer;
 // pub mod settings;
 
 // pub use self::settings::{BandStructureExport, DefaultExport, Settings};

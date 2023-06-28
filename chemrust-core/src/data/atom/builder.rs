@@ -3,6 +3,7 @@ use std::{
     marker::PhantomData,
 };
 
+use castep_periodic_table::{data::ELEMENT_TABLE, element::LookupElement};
 use nalgebra::Point3;
 
 use crate::builder_state::{BuilderState, Pending, Ready};
@@ -85,11 +86,36 @@ impl AtomBuilder<Ready> {
             index,
             state: _,
         } = self;
-        Atom {
-            symbol: symbol.unwrap_or("H".to_owned()),
-            atomic_number: atomic_number.unwrap_or(0),
-            cartesian_coord: cartesian_coord.unwrap_or(Point3::origin()),
-            index: index.unwrap_or(0),
+        // The input symbol is prioritized. If the symbol is wrong, fallback to Hydrogen.
+        if let Some(name) = symbol {
+            let element = ELEMENT_TABLE
+                .get_by_symbol(&name)
+                .unwrap_or(ELEMENT_TABLE.get_by_atomic_number(0).unwrap());
+            Atom {
+                symbol: element.symbol().into(),
+                atomic_number: element.atomic_number(),
+                cartesian_coord: cartesian_coord.unwrap_or(Point3::origin()),
+                index: index.unwrap_or(0),
+            }
+        } else if let Some(num) = atomic_number {
+            // If no symbol, but only atomic number, use atomic number.
+            let element = ELEMENT_TABLE
+                .get_by_atomic_number(num)
+                .unwrap_or(ELEMENT_TABLE.get_by_atomic_number(0).unwrap()); // fallback to Hydrogen if the number is wrong.
+            Atom {
+                symbol: element.symbol().into(),
+                atomic_number: element.atomic_number(),
+                cartesian_coord: cartesian_coord.unwrap_or(Point3::origin()),
+                index: index.unwrap_or(0),
+            }
+        } else {
+            // When symbol and atomic number are both absent, fallback to Hydrogen.
+            Atom {
+                symbol: "H".into(),
+                atomic_number: 0,
+                cartesian_coord: cartesian_coord.unwrap_or(Point3::origin()),
+                index: index.unwrap_or(0),
+            }
         }
     }
 }
@@ -122,5 +148,7 @@ mod test {
             .ready()
             .build();
         println!("{:?}", atom);
+        let atom_2 = Atom::new_builder().with_symbol("Co").ready().build();
+        println!("{:?}", atom_2);
     }
 }

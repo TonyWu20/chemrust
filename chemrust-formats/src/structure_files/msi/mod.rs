@@ -3,11 +3,11 @@ use std::{fs::File, io::Write};
 use chemrust_core::data::{lattice::LatticeVectors, Atom};
 use nalgebra::{Matrix3, Rotation3, Unit, Vector3};
 
-use crate::ModelFormat;
+use crate::{Cell, ModelFormat};
 
 use super::{FileExport, StructureFile};
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Copy, Default)]
 /// A unit struct to mark `msi` format
 pub struct Msi;
 
@@ -118,5 +118,11 @@ impl StructureFile<Msi> {
                 .collect(),
         };
         format!("{headers}{atoms_text})", atoms_text = atoms.concat())
+    }
+}
+
+impl From<StructureFile<Cell>> for StructureFile<Msi> {
+    fn from(value: StructureFile<Cell>) -> Self {
+        StructureFile::<Msi>::new(value.lattice_model)
     }
 }

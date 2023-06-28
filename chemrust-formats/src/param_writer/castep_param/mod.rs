@@ -91,6 +91,28 @@ where
             ..self
         }
     }
+    pub fn set_to_edft(self) -> Self {
+        Self {
+            metals_method: MetalsMethod::Edft,
+            ..self
+        }
+    }
+    pub fn ready(self) -> CastepParamBuilder<T, Ready> {
+        let Self {
+            task,
+            spin_total,
+            cut_off_energy,
+            metals_method,
+            state: _,
+        } = self;
+        CastepParamBuilder {
+            task,
+            spin_total,
+            cut_off_energy,
+            metals_method,
+            state: PhantomData,
+        }
+    }
 }
 
 /// When parameters are all settled, build `CastepParam<T>`
@@ -144,6 +166,88 @@ where
             calculate_densdiff: false,
             pdos_calculate_weights: true,
             extra_setting: T::default(),
+        }
+    }
+}
+
+impl<T> Display for CastepParam<T>
+where
+    T: Task + 'static,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let task_type_id = TypeId::of::<T>();
+        let task = if task_type_id == TypeId::of::<GeomOptParam>() {
+            "GeometryOptimization"
+        } else if task_type_id == TypeId::of::<BandStructureParam>() {
+            "BandStructure"
+        } else {
+            panic!("Unsupported task type!")
+        };
+        let content = format!(
+            r#"task : {}
+comment : CASTEP calculation from Materials Studio
+xc_functional : {}
+spin_polarized : {}
+spin :        {}
+opt_strategy : {}
+page_wvfns :        {}
+cut_off_energy :      {:18.15}
+grid_scale :        {:18.15}
+fine_grid_scale :        {:18.15}
+finite_basis_corr :        {}
+elec_energy_tol :   {:18.15e}
+max_scf_cycles :     {}
+fix_occupancy : {}
+{}
+perc_extra_bands : {}
+smearing_width :        {:18.15}
+spin_fix :        {}
+num_dump_cycles : {}
+{}
+calculate_ELF : {}
+calculate_stress : {}
+popn_calculate : {}
+calculate_hirshfeld : {}
+calculate_densdiff : {}
+pdos_calculate_weights : {}
+"#,
+            task,
+            self.xc_functional,
+            self.spin_polarized,
+            self.spin,
+            self.opt_strategy,
+            self.page_wvfns,
+            self.cut_off_energy,
+            self.grid_scale,
+            self.fine_grid_scale,
+            self.finite_basis_corr,
+            self.elec_energy_tol,
+            self.max_scf_cycles,
+            self.fix_occupancy,
+            self.metals_method,
+            self.perc_extra_bands,
+            self.smearing_width,
+            self.spin_fix,
+            self.num_dump_cycles,
+            self.extra_setting,
+            self.calculate_elf,
+            self.calculate_stress,
+            self.popn_calculate,
+            self.calculate_hirshfeld,
+            self.calculate_densdiff,
+            self.pdos_calculate_weights
+        );
+        write!(f, "{}", content)
+    }
+}
+
+impl From<CastepParam<GeomOptParam>> for CastepParam<BandStructureParam> {
+    fn from(geom_param: CastepParam<GeomOptParam>) -> Self {
+        CastepParam {
+            spin: geom_param.spin,
+            cut_off_energy: geom_param.cut_off_energy,
+            metals_method: geom_param.metals_method,
+            ..Default::default()
         }
     }
 }

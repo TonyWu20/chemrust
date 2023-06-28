@@ -39,6 +39,22 @@ impl Atom {
     pub fn index(&self) -> usize {
         self.index
     }
+
+    pub fn set_index(&mut self, index: usize) {
+        self.index = index;
+    }
+
+    pub fn set_cartesian_coord(&mut self, cartesian_coord: Point3<f64>) {
+        self.cartesian_coord = cartesian_coord;
+    }
+
+    pub fn set_atomic_number(&mut self, atomic_number: u8) {
+        self.atomic_number = atomic_number;
+    }
+
+    pub fn set_symbol(&mut self, symbol: String) {
+        self.symbol = symbol;
+    }
 }
 
 impl Display for Atom {

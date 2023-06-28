@@ -1,3 +1,4 @@
 mod analyzer;
+mod result_output;
 
-pub use analyzer::{IntersectChecker, MountingChecker};
+pub use analyzer::{IntersectChecker, MountingChecker, PointStage};

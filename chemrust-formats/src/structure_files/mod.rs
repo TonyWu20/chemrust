@@ -8,6 +8,7 @@ mod msi;
 pub use cell::Cell;
 pub use msi::Msi;
 
+#[derive(Debug, Clone)]
 pub struct StructureFile<T: ModelFormat> {
     lattice_model: LatticeModel,
     format: PhantomData<T>,
@@ -19,6 +20,10 @@ impl<T: ModelFormat> StructureFile<T> {
             lattice_model,
             format: PhantomData,
         }
+    }
+
+    pub fn lattice_model(&self) -> &LatticeModel {
+        &self.lattice_model
     }
 }
 

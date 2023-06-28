@@ -8,15 +8,11 @@ use std::{
 
 use cpt::{data::ELEMENT_TABLE, element::LookupElement};
 
-use chemrust_core::{
-    builder_state::{No, ToAssign, Yes},
-    data::lattice::LatticeModel,
-};
+use chemrust_core::builder_state::{No, ToAssign, Yes};
 
-use super::{
-    castep_param::{BandStructureParam, CastepParam, GeomOptParam, Task},
-    ms_aux_files::MsAuxWriter,
-};
+use crate::{Cell, Msi, StructureFile};
+
+use super::castep_param::{BandStructureParam, CastepParam, GeomOptParam, Task};
 
 #[derive(Debug)]
 /// Struct to present seed files export.
@@ -25,7 +21,7 @@ pub struct SeedWriter<'a, T>
 where
     T: Task,
 {
-    cell: &'a LatticeModel,
+    cell: StructureFile<Cell>,
     param: CastepParam<T>,
     seed_name: &'a str,
     export_loc: PathBuf,
@@ -38,7 +34,7 @@ where
     T: Task,
 {
     /// Call the builder
-    pub fn build(cell: &'a LatticeModel) -> SeedWriterBuilder<'a, T, No> {
+    pub fn build(cell: StructureFile<Cell>) -> SeedWriterBuilder<'a, T, No> {
         SeedWriterBuilder::<T, No>::new(cell)
     }
     /// method to handle export directory creation.
@@ -61,8 +57,9 @@ where
     /// take up much disk space.
     /// You can control this behaviour with `[cfg(not(debug_assertions))]`
     pub fn copy_potentials(&self) -> Result<(), io::Error> {
-        let element_list = self.cell.element_set();
-        element_list
+        self.cell
+            .lattice_model()
+            .element_list()
             .iter()
             .try_for_each(|elm| -> Result<(), io::Error> {
                 let pot_file = ELEMENT_TABLE.get_by_symbol(elm).unwrap().potential();
@@ -82,8 +79,8 @@ where
         let cell_name = self.seed_name;
         let cmd = format!("/home-yw/Soft/msi/MS70/MaterialsStudio7.0/etc/CASTEP/bin/RunCASTEP.sh -np $NP {cell_name}");
         let prefix = r#"APP_NAME=intelY_mid
-NP=12
-NP_PER_NODE=12
+NP=8
+NP_PER_NODE=8
 OMP_NUM_THREADS=1
 RUN="RAW"
 
@@ -99,7 +96,7 @@ RUN="RAW"
         let template = r#"#PBS -N HPL_short_run
 #PBS -q simple_q
 #PBS -l walltime=168:00:00
-#PBS -l nodes=1:ppn=24
+#PBS -l nodes=1:ppn=8
 #PBS -V
 
 cd $PBS_O_WORKDIR
@@ -169,21 +166,21 @@ impl<'a> From<SeedWriter<'a, GeomOptParam>> for SeedWriter<'a, BandStructurePara
 /// Methods for `SeedWriter<GeomOptParam>`
 impl<'a> SeedWriter<'a, GeomOptParam> {
     pub fn write_seed_files(&self) -> Result<(), io::Error> {
-        let ms_param = MsAuxWriter::build(self.seed_name, &self.export_loc)
-            .with_kptaux(self.cell.build_kptaux())
-            .with_trjaux(self.cell.build_trjaux())
-            .with_potentials_loc(&self.potential_loc)
-            .build();
-        ms_param.write_kptaux()?;
-        ms_param.write_bs_kptaux()?;
-        ms_param.write_trjaux()?;
+        // let ms_param = MsAuxWriter::build(self.seed_name, &self.export_loc)
+        //     .with_kptaux(self.cell.build_kptaux())
+        //     .with_trjaux(self.cell.build_trjaux())
+        //     .with_potentials_loc(&self.potential_loc)
+        //     .build();
+        // ms_param.write_kptaux()?;
+        // ms_param.write_bs_kptaux()?;
+        // ms_param.write_trjaux()?;
         let param_path = self.path_builder(".param")?;
         fs::write(param_path, format!("{}", self.param))?;
         let cell_path = self.path_builder(".cell")?;
-        fs::write(cell_path, DefaultExport::export(&self.cell))?;
+        fs::write(cell_path, self.cell.export_geom_cell())?;
         let msi_path = self.path_builder(".msi")?;
-        let msi_model: LatticeModel = self.cell.into();
-        fs::write(msi_path, msi_model.export())?;
+        let msi_model: StructureFile<Msi> = self.cell.clone().into();
+        fs::write(msi_path, msi_model.export_msi())?;
         self.write_lsf_script()?;
         self.write_hpc_sh_script()?;
         Ok(())
@@ -193,16 +190,16 @@ impl<'a> SeedWriter<'a, GeomOptParam> {
 /// Methods for `SeedWriter<BandStructureParam>`
 impl<'a> SeedWriter<'a, BandStructureParam> {
     pub fn write_seed_files(&self) -> Result<(), io::Error> {
-        let ms_param = MsAuxWriter::build(self.seed_name, &self.export_loc)
-            .with_kptaux(self.cell.build_kptaux())
-            .with_trjaux(self.cell.build_trjaux())
-            .with_potentials_loc(&self.potential_loc)
-            .build();
-        ms_param.write_bs_kptaux()?;
+        // let ms_param = MsAuxWriter::build(self.seed_name, &self.export_loc)
+        //     .with_kptaux(self.cell.build_kptaux())
+        //     .with_trjaux(self.cell.build_trjaux())
+        //     .with_potentials_loc(&self.potential_loc)
+        //     .build();
+        // ms_param.write_bs_kptaux()?;
         let param_path = self.path_builder("_DOS.param")?;
         fs::write(param_path, format!("{}", self.param))?;
         let cell_path = self.path_builder("_DOS.cell")?;
-        fs::write(cell_path, BandStructureExport::export(&self.cell))?;
+        fs::write(cell_path, self.cell.export_bs_cell())?;
         Ok(())
     }
 }
@@ -214,7 +211,7 @@ where
     T: Task,
     WithPotentialLoc: ToAssign,
 {
-    cell: &'a LatticeModel<CellModel>,
+    cell: StructureFile<Cell>,
     param: Option<CastepParam<T>>,
     seed_name: &'a str,
     export_loc: PathBuf,
@@ -229,7 +226,7 @@ where
     P: ToAssign,
 {
     /// Create a new builder. The `cell` is the mandatory field and thus it is required.
-    pub fn new(cell: &'a LatticeModel<CellModel>) -> SeedWriterBuilder<T, No> {
+    pub fn new(cell: StructureFile<Cell>) -> SeedWriterBuilder<'a, T, No> {
         SeedWriterBuilder {
             cell,
             param: None,
@@ -313,6 +310,34 @@ where
                     .get_final_cutoff_energy(self.potential_loc.to_str().unwrap())
                     .unwrap(),
             )
+            .ready()
+            .build();
+        let Self {
+            cell,
+            param: _,
+            seed_name,
+            export_loc,
+            potential_loc,
+            potential_set_state: _,
+        } = self;
+        SeedWriter {
+            cell,
+            param,
+            seed_name,
+            export_loc,
+            potential_loc,
+        }
+    }
+    pub fn build_edft(self) -> SeedWriter<'a, T> {
+        let param = CastepParam::<T>::build()
+            .with_spin_total(self.cell.spin_total())
+            .with_cut_off_energy(
+                self.cell
+                    .get_final_cutoff_energy(self.potential_loc.to_str().unwrap())
+                    .unwrap(),
+            )
+            .set_to_edft()
+            .ready()
             .build();
         let Self {
             cell,

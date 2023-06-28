@@ -1,10 +1,11 @@
 use chemrust_core::data::Atom;
-use nalgebra::{Rotation3, Vector3};
+use nalgebra::Vector3;
 
 use super::{BondingCircle, BondingSphere, CoordinationPoint};
 pub trait Visualize {
     type Output;
     fn draw_with_atoms(&self) -> Self::Output;
+    fn draw_with_element(&self, element_symbol: &str) -> Self::Output;
 }
 
 impl Visualize for BondingSphere {
@@ -12,38 +13,27 @@ impl Visualize for BondingSphere {
     fn draw_with_atoms(&self) -> Self::Output {
         let center = self.sphere.center;
         let radius = self.sphere.radius;
-        let x_shift = Vector3::x_axis().scale(radius);
-        let y_shift = Vector3::y_axis().scale(radius);
         let z_shift = Vector3::z_axis().scale(radius);
-        // let report_coord = center + z_shift;
-        // vec![Atom::new_builder()
-        //     .with_index(0)
-        //     .with_symbol("H")
-        //     .with_atomic_number(0)
-        //     .with_coord(&report_coord)
-        //     .ready()
-        //     .build()]
-        let repr_coords = vec![
-            center + x_shift,
-            center - x_shift,
-            center + y_shift,
-            center - y_shift,
-            center + z_shift,
-            center - z_shift,
-        ];
-        repr_coords
-            .iter()
-            .enumerate()
-            .map(|(i, coord)| {
-                Atom::new_builder()
-                    .with_index(i)
-                    .with_symbol("H")
-                    .with_atomic_number(0)
-                    .with_coord(coord)
-                    .ready()
-                    .build()
-            })
-            .collect()
+        let report_coord = center + z_shift;
+        vec![Atom::new_builder()
+            .with_index(0)
+            .with_symbol("H")
+            .with_atomic_number(0)
+            .with_coord(&report_coord)
+            .ready()
+            .build()]
+    }
+    fn draw_with_element(&self, element_symbol: &str) -> Self::Output {
+        let center = self.sphere.center;
+        let radius = self.sphere.radius;
+        let z_shift = Vector3::z_axis().scale(radius);
+        let report_coord = center + z_shift;
+        vec![Atom::new_builder()
+            .with_index(0)
+            .with_symbol(element_symbol)
+            .with_coord(&report_coord)
+            .ready()
+            .build()]
     }
 }
 
@@ -51,15 +41,9 @@ impl Visualize for BondingCircle {
     type Output = Vec<Atom>;
     fn draw_with_atoms(&self) -> Self::Output {
         let center = self.circle().center;
-        // let normal = self.circle().normal;
         let z_axis = Vector3::z_axis();
-        // let rotation = Rotation3::rotation_between(&z_axis, &normal).unwrap();
         let z_shift = self.circle().radius;
         let repr_coord = center + z_axis.scale(z_shift);
-        // let x_axis = rotation * Vector3::x_axis();
-        // let y_axis = rotation * Vector3::y_axis();
-        // let x_shift = x_axis.scale(self.circle().radius);
-        // let y_shift = y_axis.scale(self.circle().radius);
         vec![Atom::new_builder()
             .with_index(0)
             .with_symbol("O")
@@ -67,36 +51,38 @@ impl Visualize for BondingCircle {
             .with_coord(&repr_coord)
             .ready()
             .build()]
-        // [
-        //     center + x_shift,
-        //     center - x_shift,
-        //     center + y_shift,
-        //     center - y_shift,
-        // ]
-        // .into_iter()
-        // .enumerate()
-        // .map(|(i, coord)| {
-        //     Atom::new_builder()
-        //         .with_index(i)
-        //         .with_symbol("O")
-        //         .with_atomic_number(8)
-        //         .with_coord(&coord)
-        //         .ready()
-        //         .build()
-        // })
-        // .collect()
+    }
+    fn draw_with_element(&self, element_symbol: &str) -> Self::Output {
+        let center = self.circle().center;
+        let z_axis = Vector3::z_axis();
+        let z_shift = self.circle().radius;
+        let repr_coord = center + z_axis.scale(z_shift);
+        vec![Atom::new_builder()
+            .with_index(0)
+            .with_symbol(element_symbol)
+            .with_coord(&repr_coord)
+            .ready()
+            .build()]
     }
 }
 
 impl Visualize for CoordinationPoint {
-    type Output = Atom;
+    type Output = Vec<Atom>;
     fn draw_with_atoms(&self) -> Self::Output {
-        Atom::new_builder()
+        vec![Atom::new_builder()
             .with_index(0)
             .with_symbol("Nd")
             .with_atomic_number(60)
             .with_coord(&self.coord)
             .ready()
-            .build()
+            .build()]
+    }
+    fn draw_with_element(&self, element_symbol: &str) -> Self::Output {
+        vec![Atom::new_builder()
+            .with_index(0)
+            .with_symbol(element_symbol)
+            .with_coord(&self.coord)
+            .ready()
+            .build()]
     }
 }

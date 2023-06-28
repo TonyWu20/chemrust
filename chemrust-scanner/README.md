@@ -29,6 +29,7 @@ A table of the xyz coordinates of the sites and coordination numbers.
   - [x] Summarize the number of spheres, circles, and points. Sphere-1 C.N., circle-2 C.N., points-at least 4
 - [x] Limit bondlength to 2 Å? Or the results will not be practical.
 - [ ] Report in a more detailed and reasonable manner
+- [x] Package
 
 ## Bug investigations
 

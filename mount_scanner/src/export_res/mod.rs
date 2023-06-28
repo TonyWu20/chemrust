@@ -139,13 +139,14 @@ pub fn post_copy_potentials(
     target_directory: &str,
     potential_loc_str: &str,
 ) -> Result<(), io::Error> {
-    let cell_pattern = format!("{target_directory}/**/*.cell");
-    glob(&cell_pattern)
+    let msi_pattern = format!("{target_directory}/**/*.msi");
+    glob(&msi_pattern)
         .unwrap()
         .into_iter()
         .par_bridge()
         .try_for_each(|entry| -> Result<(), io::Error> {
-            let content = read_to_string(entry.as_ref().unwrap()).unwrap();
+            let cell_entry = entry.as_ref().unwrap().with_extension("cell");
+            let content = read_to_string(cell_entry).unwrap();
             let cell_model = CellParser::new(&content)
                 .to_lattice_cart()
                 .to_positions()

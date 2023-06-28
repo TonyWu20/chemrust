@@ -114,7 +114,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 post_copy_potentials(&export_loc, &potential_loc_path)?;
             }
             Mode::Clean => {
-                let target_dir = format!("{}_to_SAC_GDY", new_element.symbol());
+                let target_dir = format!("{}_{}_to_SAC_GDY", new_element.symbol(), radius);
                 if Path::new(&target_dir).exists() {
                     Command::new("rm")
                         .args(["-r", &target_dir])

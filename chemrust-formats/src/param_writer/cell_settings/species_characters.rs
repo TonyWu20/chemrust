@@ -59,6 +59,6 @@ impl SpeciesCharacteristics {
             })
             .collect::<Vec<String>>()
             .concat();
-        Cell::write_block(("SPECIES_LCAO".into(), text))
+        Cell::write_block(("SPECIES_LCAO_STATES".into(), text))
     }
 }

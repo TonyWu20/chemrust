@@ -180,7 +180,7 @@ impl PointStage {
                         let mut new_lattice = lattice_model.clone();
                         new_lattice.append_atom(&mut new_atoms);
                         let new_name = format!(
-                            "cn_{}_pt_atom_{}",
+                            "cn_{}_point_atom_{}",
                             cut_point.connecting_atom_ids().len(),
                             location
                         );

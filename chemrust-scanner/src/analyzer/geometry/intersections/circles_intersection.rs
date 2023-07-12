@@ -37,17 +37,18 @@ pub struct CircleIntersectChecker {
 impl CircleIntersectChecker {
     pub fn new(c1: &Circle, c2: &Circle) -> Self {
         let n3 = c1.normal.cross(&c2.normal);
-        if n3 != Vector3::zeros() {
+        // Ensure the 0.0 is proceeded and found correctly by using epsilon
+        if (n3.x - 0.0).abs() < 1e-6 && (n3.y - 0.0).abs() < 1e-6 && (n3.z - 0.0).abs() < 1e-6 {
             CircleIntersectChecker {
                 c1: *c1,
                 c2: *c2,
-                state: CheckStage::Noncoplanar,
+                state: CheckStage::Coplanar,
             }
         } else {
             CircleIntersectChecker {
                 c1: *c1,
                 c2: *c2,
-                state: CheckStage::Coplanar,
+                state: CheckStage::Noncoplanar,
             }
         }
     }
@@ -61,7 +62,8 @@ impl CircleIntersectChecker {
     fn coplanar_check(&self) -> CircleIntersectResult {
         let d1d2 = self.c2.center - self.c1.center;
         // If the line between two circle is not orthogonal to the circle normal, not coplanar
-        if d1d2.dot(&self.c1.normal) > 1e-6 {
+        // !!!! The dot product must use absolute value to compare with the epsilon.
+        if d1d2.dot(&self.c1.normal).abs() > 1e-6 {
             CircleIntersectResult::Zero
         } else {
             let radius_sum = self.c1.radius + self.c2.radius;
@@ -184,7 +186,8 @@ fn circle_intersection_line_intersect(c: &Circle, line: &Line) -> CircleIntersec
     }
 }
 fn check_identity_points(p1: &Point3<f64>, p2: &Point3<f64>) -> Option<Point3<f64>> {
-    if p1 == p2 {
+    // Ensure floating point cmp
+    if (p1.x - p2.x).abs() < 1e-6 && (p1.y - p2.y).abs() < 1e-6 && (p1.z - p2.z).abs() < 1e-6 {
         Some(*p1)
     } else {
         None

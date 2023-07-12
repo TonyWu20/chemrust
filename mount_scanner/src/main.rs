@@ -145,24 +145,5 @@ fn main() -> Result<(), Box<dyn Error>> {
             post_copy_potentials(&export_loc, &potential_loc_path)?;
         }
     };
-    // None => {
-    //     let export_manager =
-    //         ExportManager::new(new_element.symbol(), &export_loc, &potential_loc_path, edft);
-    //     export_manager.export_sphere_model(
-    //         &final_report,
-    //         &cell_model,
-    //         cell_seedname.to_str().unwrap(),
-    //     )?;
-    //     export_manager.export_circles_model(
-    //         &final_report,
-    //         &cell_model,
-    //         cell_seedname.to_str().unwrap(),
-    //     )?;
-    //     export_manager.export_points_model(
-    //         &final_report,
-    //         &cell_model,
-    //         cell_seedname.to_str().unwrap(),
-    //     )?;
-    // }
     Ok(())
 }

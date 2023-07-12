@@ -8,13 +8,15 @@ use std::{
 use chemrust_core::data::LatticeModel;
 use chemrust_formats::{
     castep_param::{BandStructureParam, GeomOptParam},
-    seed_writer::SeedWriter,
+    seed_writer::{MetalMethodsControl, SeedWriter},
     Cell, StructureFile,
 };
 use chemrust_parser::CellParser;
 use chemrust_scanner::PointStage;
 use glob::glob;
 use rayon::prelude::*;
+
+use crate::interactive_ui::ExportOptions;
 
 const CWD: &str = env!("CARGO_MANIFEST_DIR");
 
@@ -48,12 +50,8 @@ impl ExportManager {
         let geom_seed_writer = SeedWriter::<GeomOptParam>::build(cell_file)
             .with_seed_name(cell_name)
             .with_export_loc(&self.export_loc_str)
-            .with_potential_loc(&self.potential_loc_str);
-        let geom_seed_writer = if self.edft {
-            geom_seed_writer.build_edft()
-        } else {
-            geom_seed_writer.build()
-        };
+            .with_potential_loc(&self.potential_loc_str)
+            .build_edft(self.edft);
         geom_seed_writer.write_seed_files()?;
         copy_smcastep_extension(&geom_seed_writer)?;
         let bs_writer: SeedWriter<BandStructureParam> = geom_seed_writer.into();

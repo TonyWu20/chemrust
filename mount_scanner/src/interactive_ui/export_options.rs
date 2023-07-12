@@ -3,7 +3,7 @@ use std::str::FromStr;
 use castep_periodic_table::element::Element;
 use inquire::{Confirm, InquireError, Select, Text};
 
-use super::{kpoint_quality, FilePathCompleter, KPointQuality, RunMode};
+use super::{FilePathCompleter, KPointQuality, RunMode};
 
 pub struct ExportOptions {
     export_dir: String,

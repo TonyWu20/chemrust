@@ -1,11 +1,11 @@
 use std::fs::read_to_string;
-use std::str::FromStr;
+
 use std::{error::Error, path::Path, process::Command};
 
 use chemrust_parser::CellParser;
 use chemrust_scanner::MountingChecker;
 use export_res::{post_copy_potentials, ExportManager};
-use inquire::Select;
+
 use interactive_ui::{ExportOptions, RunMode, RunOptions};
 
 mod arg_parser;

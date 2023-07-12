@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::path::Path;
+
 pub use self::{
     execute_modes::RunMode, export_options::ExportOptions, filepath_completer::FilePathCompleter,
     kpoint_quality::KPointQuality, run_options::RunOptions,
@@ -14,12 +16,13 @@ mod run_options;
 #[test]
 fn test_prompts() {
     let options = RunOptions::new().unwrap();
-    let export_options = ExportOptions::new(
-        options.new_element(),
-        options.target_bondlength(),
-        options.filepath(),
-    )
-    .unwrap();
+    let filestem = Path::new(options.filepath())
+        .file_stem()
+        .unwrap()
+        .to_str()
+        .unwrap();
+    let export_options =
+        ExportOptions::new(options.new_element(), options.target_bondlength(), filestem).unwrap();
     println!(
         "Filename: {}, new_element: {}, bondlength: {}, edft: {}, kpoint_quality: {}",
         options.filepath(),

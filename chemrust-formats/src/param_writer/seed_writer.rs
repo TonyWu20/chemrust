@@ -328,17 +328,56 @@ where
             potential_loc,
         }
     }
-    pub fn build_edft(self) -> SeedWriter<'a, T> {
+    // pub fn build_edft(self) -> SeedWriter<'a, T> {
+    //     let param = CastepParam::<T>::build()
+    //         .with_spin_total(self.cell.spin_total())
+    //         .with_cut_off_energy(
+    //             self.cell
+    //                 .get_final_cutoff_energy(self.potential_loc.to_str().unwrap())
+    //                 .unwrap(),
+    //         )
+    //         .set_to_edft()
+    //         .ready()
+    //         .build();
+    //     let Self {
+    //         cell,
+    //         param: _,
+    //         seed_name,
+    //         export_loc,
+    //         potential_loc,
+    //         potential_set_state: _,
+    //     } = self;
+    //     SeedWriter {
+    //         cell,
+    //         param,
+    //         seed_name,
+    //         export_loc,
+    //         potential_loc,
+    //     }
+    // }
+}
+
+pub trait MetalMethodsControl<'a, T: Task> {
+    fn build_edft(self, edft: bool) -> SeedWriter<'a, T>;
+}
+
+impl<'a, T> MetalMethodsControl<'a, T> for SeedWriterBuilder<'a, T, Yes>
+where
+    T: Task + 'static,
+{
+    fn build_edft(self, edft: bool) -> SeedWriter<'a, T> {
         let param = CastepParam::<T>::build()
             .with_spin_total(self.cell.spin_total())
             .with_cut_off_energy(
                 self.cell
                     .get_final_cutoff_energy(self.potential_loc.to_str().unwrap())
                     .unwrap(),
-            )
-            .set_to_edft()
-            .ready()
-            .build();
+            );
+        let param = if edft {
+            param.set_to_edft().ready().build()
+        } else {
+            param.ready().build()
+        };
         let Self {
             cell,
             param: _,

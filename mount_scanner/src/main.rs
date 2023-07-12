@@ -33,6 +33,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         .to_positions()
         .build_lattice();
     let final_report = mount_checker.mount_search(cell_model.atoms());
+    println!(
+        "Search completed. Found results spheres: {}, circles: {}, points: {} cut + {} multi",
+        final_report.sphere_sites().len(),
+        final_report.circles().len(),
+        final_report.cut_points().len(),
+        final_report.multi_cn_points().len()
+    );
     let export_options = ExportOptions::new(
         run_options.new_element(),
         run_options.target_bondlength(),

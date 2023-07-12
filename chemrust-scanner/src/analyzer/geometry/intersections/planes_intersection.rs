@@ -9,7 +9,7 @@ impl Intersect<Plane> for Plane {
 
     fn intersects(&self, rhs: &Plane) -> Self::Result {
         let n3 = self.n.cross(&rhs.n);
-        if n3 == Vector3::zeros() {
+        if (n3.x - 0.0).abs() < 1e-6 && (n3.y - 0.0).abs() < 1e-6 && (n3.z - 0.0).abs() < 1e-6 {
             None
         } else {
             // Perform the reduction methods
@@ -26,7 +26,7 @@ impl Intersect<Plane> for Plane {
                 let solution = m_a
                     .lu()
                     .solve(&m_b)
-                    .expect("Linear resolution failed when z is set to 1");
+                    .expect(&format!("Linear resolution failed when z is set to 1, m_a: {}, m_b: {}, plane_normal: {}, {}, {}, n3: {}", m_a, m_b, self.n.x, self.n.y, self.n.z, n3));
                 let d = Unit::new_normalize(n3);
                 Some(Line::new(d, Point3::new(solution.x, solution.y, 1.0)))
             } else {

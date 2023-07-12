@@ -192,8 +192,6 @@ impl<'a> CellParser<'a, Positions> {
 mod cell_test {
     use std::fs::read_to_string;
 
-    use nalgebra::Vector3;
-
     use super::CellParser;
 
     #[test]

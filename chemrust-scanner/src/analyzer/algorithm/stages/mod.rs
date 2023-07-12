@@ -211,8 +211,11 @@ impl PointStage {
                         let mut new_atoms = pt.draw_with_element(new_element_symbol);
                         let mut new_lattice = lattice_model.clone();
                         new_lattice.append_atom(&mut new_atoms);
-                        let new_name =
-                            format!("cn_{}_pt_atom_{}", pt.connecting_atom_ids().len(), location);
+                        let new_name = format!(
+                            "cn_{}_point_atom_{}",
+                            pt.connecting_atom_ids().len(),
+                            location
+                        );
                         (new_name, new_lattice)
                     })
                     .collect(),

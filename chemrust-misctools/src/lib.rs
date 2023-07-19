@@ -14,13 +14,13 @@ pub fn write_lsf_script<P: AsRef<Path>>(cell_path: &P, num_nodes: u32) -> Result
     );
     let prefix = format!(
         r#"APP_NAME=intelY_mid
-NP=8
+NP={}
 NP_PER_NODE={}
 OMP_NUM_THREADS=1
 RUN="RAW"
 
 "#,
-        num_nodes
+        num_nodes, num_nodes
     );
     let content = format!("{prefix}{cmd}");
     let lsf_filepath = target_dir.join("MS70_YW_CASTEP.lsf");

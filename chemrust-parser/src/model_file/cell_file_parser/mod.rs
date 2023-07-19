@@ -18,7 +18,11 @@ use nom::{
 
 use crate::float;
 
+use self::cell_parse_error::SectionNotFound;
+
 pub trait CellParserState: Debug {}
+
+mod cell_parse_error;
 
 #[derive(Debug)]
 pub struct CellParser<'a, S: CellParserState> {
@@ -51,6 +55,17 @@ impl<'a, S: CellParserState> CellParser<'a, S> {
             )),
             2,
         ))(input)
+    }
+    fn search_block(input: &'a str, block_name: &str) -> IResult<&'a str, &'a str> {
+        let block_tag_line = format!("%BLOCK {block_name}");
+        let ret = take_until(block_tag_line.as_str())(input);
+        ret
+    }
+    fn split_lines(input: &str) -> IResult<&str, Vec<&str>> {
+        many0(alt((
+            terminated(take_until("\n"), line_ending),
+            terminated(take_until("\r\n"), line_ending),
+        )))(input)
     }
 }
 #[derive(Debug)]
@@ -87,6 +102,23 @@ impl<'a> CellParser<'a, Loaded> {
             lattice_vectors: None,
             atoms: None,
             state: PhantomData,
+        }
+    }
+    pub fn to_potentials(self) -> Result<CellParser<'a, Potentials>, SectionNotFound> {
+        let search_potential_block = Self::search_block(self.rest, "SPECIES_POT");
+        if let Ok((rest, _)) = search_potential_block {
+            let (rest, block_species_pot) = Self::next_block_name(rest).unwrap();
+            let (rest, species_pot_lines) =
+                Self::get_block_content(rest, block_species_pot).unwrap();
+            Ok(CellParser {
+                rest,
+                to_parse: Some(species_pot_lines),
+                lattice_vectors: None,
+                atoms: None,
+                state: PhantomData,
+            })
+        } else {
+            Err(SectionNotFound::new("SPECIES_POT"))
         }
     }
 }
@@ -129,12 +161,6 @@ pub struct Positions;
 impl CellParserState for Positions {}
 
 impl<'a> CellParser<'a, Positions> {
-    fn split_lines(input: &str) -> IResult<&str, Vec<&str>> {
-        many0(alt((
-            terminated(take_until("\n"), line_ending),
-            terminated(take_until("\r\n"), line_ending),
-        )))(input)
-    }
     fn get_element(input: &str) -> IResult<&str, &str> {
         preceded(multispace0, alpha1)(input)
     }
@@ -188,6 +214,20 @@ impl<'a> CellParser<'a, Positions> {
     // }
 }
 
+#[derive(Debug)]
+pub struct Potentials;
+impl CellParserState for Potentials {}
+
+impl<'a> CellParser<'a, Potentials> {
+    pub fn report_potential_files(&self) -> Vec<String> {
+        let (_, potential_lines) = Self::split_lines(self.to_parse.unwrap()).unwrap();
+        potential_lines
+            .iter()
+            .map(|line| line.split_whitespace().last().unwrap().to_string())
+            .collect()
+    }
+}
+
 #[cfg(test)]
 mod cell_test {
     use std::fs::read_to_string;
@@ -208,5 +248,16 @@ mod cell_test {
         // println!("{}", atoms.len());
         let lattice = cell.build_lattice();
         println!("{:#?}", lattice);
+    }
+    #[test]
+    fn cell_parse_potentials() {
+        let file = read_to_string("SAC_GDY_V.cell").unwrap();
+        let potentials = CellParser::new(&file)
+            .to_potentials()
+            .unwrap()
+            .report_potential_files();
+        for pot in potentials {
+            println!("{pot}")
+        }
     }
 }

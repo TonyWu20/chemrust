@@ -8,12 +8,13 @@ members = [
     "chemrust-parser",
     "chemrust-formats",
     "chemrust-scanner",
-    "chemrust-settings"
+    "chemrust-settings",
+    "chemrust-misctools"
 ]
 
 [workspace.package]
 name = "chemrust"
-description = "The core module defining the flow and structs of data in computational chemistry routines."
+description = "The core modules defining the flow and structs of data in computational chemistry routines."
 authors = ["TonyWu20"]
 readme = "README.md"
 homepage = "https://github.com/TonyWu20/chemrust"

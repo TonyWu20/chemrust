@@ -1,0 +1,17 @@
+[package]
+name = "chemrust-misctools"
+description.workspace = true
+authors.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+keywords.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chemrust-core = {path = "../chemrust-core"}
+chemrust-parser = {path = "../chemrust-parser"}

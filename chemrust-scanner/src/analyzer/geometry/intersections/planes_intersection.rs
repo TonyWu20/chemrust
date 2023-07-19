@@ -1,4 +1,4 @@
-use nalgebra::{Matrix2, Point3, Unit, Vector2, Vector3};
+use nalgebra::{Matrix2, Point3, Unit, Vector2};
 
 use crate::analyzer::geometry::{Line, Plane};
 

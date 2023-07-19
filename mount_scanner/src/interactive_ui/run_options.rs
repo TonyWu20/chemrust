@@ -1,9 +1,9 @@
-use std::str::FromStr;
+
 
 use castep_periodic_table::element::Element;
-use inquire::{required, validator::Validation, Confirm, CustomType, InquireError, Select, Text};
+use inquire::{required, validator::Validation, CustomType, InquireError, Text};
 
-use super::{filepath_completer::FilePathCompleter, KPointQuality};
+use super::{filepath_completer::FilePathCompleter};
 
 #[derive(Debug)]
 pub struct RunOptions {

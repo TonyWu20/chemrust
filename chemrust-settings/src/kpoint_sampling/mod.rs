@@ -2,8 +2,7 @@ use std::f64::consts::PI;
 
 use chemrust_core::data::LatticeVectors;
 use crystallographic_group::{
-    BravaisLattice, CrystalSystem, PointGroup, PointGroupBuilder, SpaceGroup, Standard, Triclinic,
-    P,
+    BravaisLattice, CrystalSystem, SpaceGroup,
 };
 use nalgebra::Matrix3;
 
@@ -96,7 +95,7 @@ impl KPointSampler {
     ) {
         let spacing = self.kpoint_separation();
         let grid_size = reciprocal_lattice_space.reciprocal_vector.norm();
-        let mp_grid = mp_grid_generate(&grid_size, spacing);
+        let _mp_grid = mp_grid_generate(&grid_size, spacing);
         todo!()
     }
 }

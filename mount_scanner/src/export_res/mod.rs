@@ -16,7 +16,7 @@ use chemrust_scanner::PointStage;
 use glob::glob;
 use rayon::prelude::*;
 
-use crate::interactive_ui::ExportOptions;
+
 
 const CWD: &str = env!("CARGO_MANIFEST_DIR");
 

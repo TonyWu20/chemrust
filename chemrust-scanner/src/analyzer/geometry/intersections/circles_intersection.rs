@@ -1,6 +1,6 @@
 use std::cmp::Ordering::{Equal, Greater, Less};
 
-use nalgebra::{Point3, Unit, Vector3};
+use nalgebra::{Point3, Unit};
 
 use crate::analyzer::geometry::{Circle, Line};
 

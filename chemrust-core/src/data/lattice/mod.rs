@@ -1,6 +1,5 @@
 use std::{collections::HashSet, fmt::Display};
 
-use itertools::Itertools;
 use nalgebra::Matrix3;
 
 use super::Atom;

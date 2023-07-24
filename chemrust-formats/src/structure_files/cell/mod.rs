@@ -69,9 +69,9 @@ impl StructureFile<Cell> {
     }
     pub fn spin_total(&self) -> u8 {
         self.lattice_model
-            .element_list()
+            .atoms()
             .iter()
-            .map(|symbol| ELEMENT_TABLE.get_by_symbol(&symbol).unwrap().spin())
+            .map(|atom| ELEMENT_TABLE.get_by_symbol(&atom.symbol()).unwrap().spin())
             .reduce(|total, next| total + next)
             .unwrap()
     }

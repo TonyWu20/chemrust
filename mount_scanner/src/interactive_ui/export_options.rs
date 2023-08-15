@@ -52,8 +52,8 @@ impl ExportOptions {
             .prompt()
     }
     fn ask_edft(new_element: &Element) -> Result<bool, InquireError> {
-        let edft_help_message = if (58..72).contains(&new_element.atomic_number())
-            || (90..104).contains(&new_element.atomic_number())
+        let edft_help_message = if (57..72).contains(&new_element.atomic_number())
+            || (89..104).contains(&new_element.atomic_number())
         {
             format!(
                 "The element {} belongs to the rare-earth series. edft method is suggested. (Type y/yes)",

@@ -57,6 +57,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         RunMode::Fast => {
             let export_manager =
                 ExportManager::new(new_element.symbol(), &export_loc, &potential_loc_path, edft);
+            export_manager.overall_in_one(
+                &final_report,
+                &cell_model,
+                cell_seedname.to_str().unwrap(),
+            )?;
             export_manager.export_sphere_model(
                 &final_report,
                 &cell_model,

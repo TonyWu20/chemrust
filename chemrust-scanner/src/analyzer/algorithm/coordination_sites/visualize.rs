@@ -17,8 +17,7 @@ impl Visualize for BondingSphere {
         let report_coord = center + z_shift;
         vec![Atom::new_builder()
             .with_index(0)
-            .with_symbol("H")
-            .with_atomic_number(0)
+            .with_symbol("He")
             .with_coord(&report_coord)
             .ready()
             .build()]
@@ -46,8 +45,7 @@ impl Visualize for BondingCircle {
         let repr_coord = center + z_axis.scale(z_shift);
         vec![Atom::new_builder()
             .with_index(0)
-            .with_symbol("O")
-            .with_atomic_number(8)
+            .with_symbol("Ne")
             .with_coord(&repr_coord)
             .ready()
             .build()]
@@ -71,8 +69,7 @@ impl Visualize for CoordinationPoint {
     fn draw_with_atoms(&self) -> Self::Output {
         vec![Atom::new_builder()
             .with_index(0)
-            .with_symbol("Nd")
-            .with_atomic_number(60)
+            .with_symbol("Ar")
             .with_coord(&self.coord)
             .ready()
             .build()]

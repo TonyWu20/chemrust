@@ -9,14 +9,12 @@ use chemrust_core::data::LatticeModel;
 use chemrust_formats::{
     castep_param::{BandStructureParam, GeomOptParam},
     seed_writer::{MetalMethodsControl, SeedWriter},
-    Cell, StructureFile,
+    Cell, FileExport, Msi, StructureFile,
 };
 use chemrust_parser::CellParser;
 use chemrust_scanner::PointStage;
 use glob::glob;
 use rayon::prelude::*;
-
-
 
 const CWD: &str = env!("CARGO_MANIFEST_DIR");
 
@@ -56,6 +54,28 @@ impl ExportManager {
         copy_smcastep_extension(&geom_seed_writer)?;
         let bs_writer: SeedWriter<BandStructureParam> = geom_seed_writer.into();
         bs_writer.write_seed_files()?;
+        Ok(())
+    }
+    pub fn overall_in_one(
+        &self,
+        final_report: &PointStage,
+        original_lattice_model: &LatticeModel,
+        lattice_name: &str,
+    ) -> Result<(), Box<dyn Error>> {
+        let new_atoms = [
+            original_lattice_model.atoms(),
+            &final_report.visualize_atoms(),
+        ]
+        .concat();
+        let new_lattice_vectors = original_lattice_model.lattice_vectors().unwrap().clone();
+        let new_lattice = LatticeModel::new(&Some(new_lattice_vectors), &new_atoms);
+        let new_cell = StructureFile::<Cell>::new(new_lattice);
+        let new_visualize_cell_text =
+            [new_cell.write_lattice_vectors(), new_cell.write_atoms()].join("\n");
+        let new_visualize_msi: StructureFile<Msi> = new_cell.into();
+        let export_name = format!("{}_all_sites_demo", lattice_name);
+        new_visualize_msi.write_to(&format!("{}.msi", &export_name))?;
+        fs::write(&format!("{}.cell", &export_name), new_visualize_cell_text)?;
         Ok(())
     }
     pub fn export_sphere_model(

@@ -251,6 +251,18 @@ impl PointStage {
         ];
         total_atoms.concat()
     }
+    /// Export all possible sites of one kind at once.
+    /// E.g., all `BondingSphere`, all `CoordinationPoint`
+    pub fn visualize_specific_sites<T>(&self, coordination_sites: &[T]) -> Vec<Atom>
+    where
+        T: Visualize<Output = Vec<Atom>>,
+    {
+        coordination_sites
+            .iter()
+            .map(|site| site.draw_with_atoms())
+            .collect::<Vec<Vec<Atom>>>()
+            .concat()
+    }
 }
 
 macro_rules! impl_check_stage {

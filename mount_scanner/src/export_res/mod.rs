@@ -5,7 +5,7 @@ use std::{
     io,
 };
 
-use chemrust_core::data::LatticeModel;
+use chemrust_core::data::{Atom, LatticeModel};
 use chemrust_formats::{
     castep_param::{BandStructureParam, GeomOptParam},
     seed_writer::{MetalMethodsControl, SeedWriter},
@@ -62,21 +62,63 @@ impl ExportManager {
         original_lattice_model: &LatticeModel,
         lattice_name: &str,
     ) -> Result<(), Box<dyn Error>> {
-        let new_atoms = [
-            original_lattice_model.atoms(),
-            &final_report.visualize_atoms(),
-        ]
-        .concat();
+        let spheres = final_report.visualize_specific_sites(final_report.sphere_sites());
+        let circles = final_report.visualize_specific_sites(final_report.circles());
+        let points = final_report.visualize_specific_sites(
+            &[final_report.cut_points(), final_report.multi_cn_points()].concat(),
+        );
+        if spheres.len() > 0 {
+            self.export_per_sites(
+                &spheres,
+                original_lattice_model,
+                lattice_name,
+                "single_spheres",
+            )?;
+            println!("Export all single sites")
+        }
+        if circles.len() > 0 {
+            self.export_per_sites(
+                &circles,
+                original_lattice_model,
+                lattice_name,
+                "double_circles",
+            )?;
+            println!("Export all double circles")
+        }
+        if points.len() > 0 {
+            self.export_per_sites(
+                &points,
+                original_lattice_model,
+                lattice_name,
+                "multi_points",
+            )?;
+            println!("Export all multi points")
+        }
+        Ok(())
+    }
+    fn visualize_per_sites(
+        &self,
+        new_atoms: &[Atom],
+        original_lattice_model: &LatticeModel,
+    ) -> StructureFile<Cell> {
+        let new_atoms = [original_lattice_model.atoms(), new_atoms].concat();
         let new_lattice_vectors = original_lattice_model.lattice_vectors().unwrap().clone();
         let new_lattice = LatticeModel::new(&Some(new_lattice_vectors), &new_atoms);
-        let new_cell = StructureFile::<Cell>::new(new_lattice);
-        let new_visualize_cell_text =
-            [new_cell.write_lattice_vectors(), new_cell.write_atoms()].join("\n");
+        StructureFile::<Cell>::new(new_lattice)
+    }
+    fn export_per_sites(
+        &self,
+        new_atoms: &[Atom],
+        original_lattice_model: &LatticeModel,
+        lattice_name: &str,
+        site_name: &str,
+    ) -> Result<(), io::Error> {
+        let new_cell = self.visualize_per_sites(new_atoms, original_lattice_model);
+        let new_text = [new_cell.write_lattice_vectors(), new_cell.write_atoms()].join("\n");
         let new_visualize_msi: StructureFile<Msi> = new_cell.into();
-        let export_name = format!("{}_all_sites_demo", lattice_name);
+        let export_name = format!("{lattice_name}_all_{site_name}_demo");
         new_visualize_msi.write_to(&format!("{}.msi", &export_name))?;
-        fs::write(&format!("{}.cell", &export_name), new_visualize_cell_text)?;
-        Ok(())
+        fs::write(&format!("{export_name}.cell"), new_text)
     }
     pub fn export_sphere_model(
         &self,

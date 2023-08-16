@@ -225,31 +225,11 @@ impl PointStage {
         }
     }
     pub fn visualize_atoms(&self) -> Vec<Atom> {
-        let spheres: Vec<Vec<Atom>> = self
-            .sphere_sites()
-            .iter()
-            .map(|s| s.draw_with_atoms())
-            .collect();
-        let circles: Vec<Vec<Atom>> = self.circles().iter().map(|c| c.draw_with_atoms()).collect();
-        let sphere_cut_points: Vec<Atom> = self
-            .cut_points()
-            .iter()
-            .map(|p| p.draw_with_atoms())
-            .collect::<Vec<Vec<Atom>>>()
-            .concat();
-        let multi_points: Vec<Atom> = self
-            .multi_cn_points()
-            .iter()
-            .map(|p| p.draw_with_atoms())
-            .collect::<Vec<Vec<Atom>>>()
-            .concat();
-        let total_atoms = vec![
-            spheres.concat(),
-            circles.concat(),
-            sphere_cut_points,
-            multi_points,
-        ];
-        total_atoms.concat()
+        let spheres: Vec<Atom> = self.visualize_specific_sites(self.sphere_sites());
+        let circles: Vec<Atom> = self.visualize_specific_sites(self.circles());
+        let points = [self.cut_points(), self.multi_cn_points()].concat();
+        let all_points: Vec<Atom> = self.visualize_specific_sites(&points);
+        [spheres, circles, all_points].concat()
     }
     /// Export all possible sites of one kind at once.
     /// E.g., all `BondingSphere`, all `CoordinationPoint`

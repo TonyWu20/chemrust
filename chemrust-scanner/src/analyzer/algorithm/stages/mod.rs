@@ -1,4 +1,4 @@
-use chemrust_core::data::{Atom, LatticeModel};
+use chemrust_core::data::{Atom, BasicLatticeModel};
 use nalgebra::Point3;
 
 use crate::analyzer::geometry::Sphere;
@@ -112,9 +112,9 @@ impl PointStage {
     }
     pub fn generate_sphere_models(
         &self,
-        lattice_model: &LatticeModel,
+        lattice_model: &BasicLatticeModel,
         new_element_symbol: &str,
-    ) -> Option<Vec<(String, LatticeModel)>> {
+    ) -> Option<Vec<(String, BasicLatticeModel)>> {
         if self.sphere_sites.len() > 0 {
             Some(
                 self.sphere_sites()
@@ -139,9 +139,9 @@ impl PointStage {
     }
     pub fn generate_circle_models(
         &self,
-        lattice_model: &LatticeModel,
+        lattice_model: &BasicLatticeModel,
         new_element_symbol: &str,
-    ) -> Option<Vec<(String, LatticeModel)>> {
+    ) -> Option<Vec<(String, BasicLatticeModel)>> {
         if self.circles.len() > 0 {
             Some(
                 self.circles()
@@ -162,9 +162,9 @@ impl PointStage {
     }
     pub fn generate_cut_point_models(
         &self,
-        lattice_model: &LatticeModel,
+        lattice_model: &BasicLatticeModel,
         new_element_symbol: &str,
-    ) -> Option<Vec<(String, LatticeModel)>> {
+    ) -> Option<Vec<(String, BasicLatticeModel)>> {
         if self.cut_points.len() > 0 {
             Some(
                 self.cut_points()
@@ -194,9 +194,9 @@ impl PointStage {
     }
     pub fn generate_multi_point_models(
         &self,
-        lattice_model: &LatticeModel,
+        lattice_model: &BasicLatticeModel,
         new_element_symbol: &str,
-    ) -> Option<Vec<(String, LatticeModel)>> {
+    ) -> Option<Vec<(String, BasicLatticeModel)>> {
         if self.multi_cn_points.len() > 0 {
             Some(
                 self.multi_cn_points()
@@ -239,7 +239,7 @@ impl PointStage {
     {
         coordination_sites
             .iter()
-            .map(|site| site.draw_with_atoms())
+            .map(|site| site.draw_with_element("He"))
             .collect::<Vec<Vec<Atom>>>()
             .concat()
     }

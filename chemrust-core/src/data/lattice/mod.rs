@@ -27,14 +27,14 @@ impl Display for LatticeVectors {
 }
 
 #[derive(Debug, Clone)]
-pub struct LatticeModel {
+pub struct BasicLatticeModel {
     pub(crate) lattice_vectors: Option<LatticeVectors>,
     pub(crate) atoms: Vec<Atom>,
 }
 
-impl LatticeModel {
+impl BasicLatticeModel {
     pub fn new(lattice_vectors: &Option<LatticeVectors>, atoms: &[Atom]) -> Self {
-        LatticeModel {
+        BasicLatticeModel {
             lattice_vectors: lattice_vectors.clone(),
             atoms: atoms.to_vec(),
         }
@@ -89,7 +89,7 @@ impl LatticeModel {
     }
 }
 
-impl Display for LatticeModel {
+impl Display for BasicLatticeModel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let lattice_vector_disp = if let Some(v) = &self.lattice_vectors {
             format!("{}", v)

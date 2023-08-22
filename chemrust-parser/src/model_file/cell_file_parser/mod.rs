@@ -2,7 +2,7 @@ use std::{fmt::Debug, marker::PhantomData};
 
 use castep_periodic_table::{data::ELEMENT_TABLE, element::LookupElement};
 use chemrust_core::data::{
-    lattice::{LatticeModel, LatticeVectors},
+    lattice::{BasicLatticeModel, LatticeVectors},
     Atom,
 };
 use nalgebra::{Matrix3, Point3, Vector3};
@@ -202,10 +202,10 @@ impl<'a> CellParser<'a, Positions> {
             })
             .collect()
     }
-    pub fn build_lattice(&self) -> LatticeModel {
+    pub fn build_lattice(&self) -> BasicLatticeModel {
         let atoms = self.parse_atoms();
         let lattice_vectors = self.lattice_vectors.clone();
-        LatticeModel::new(&lattice_vectors, &atoms)
+        BasicLatticeModel::new(&lattice_vectors, &atoms)
     }
     // fn create_atoms(&self) {
     //     let lattice_vectors = self.lattice_vectors.as_ref().unwrap().data();

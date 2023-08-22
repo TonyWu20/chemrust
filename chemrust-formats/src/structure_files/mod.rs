@@ -1,5 +1,5 @@
 use crate::ModelFormat;
-use chemrust_core::data::lattice::LatticeModel;
+use chemrust_core::data::lattice::BasicLatticeModel;
 use std::{io, marker::PhantomData, path::Path};
 
 mod cell;
@@ -10,19 +10,19 @@ pub use msi::Msi;
 
 #[derive(Debug, Clone)]
 pub struct StructureFile<T: ModelFormat> {
-    lattice_model: LatticeModel,
+    lattice_model: BasicLatticeModel,
     format: PhantomData<T>,
 }
 
 impl<T: ModelFormat> StructureFile<T> {
-    pub fn new(lattice_model: LatticeModel) -> Self {
+    pub fn new(lattice_model: BasicLatticeModel) -> Self {
         Self {
             lattice_model,
             format: PhantomData,
         }
     }
 
-    pub fn lattice_model(&self) -> &LatticeModel {
+    pub fn lattice_model(&self) -> &BasicLatticeModel {
         &self.lattice_model
     }
 }
@@ -31,8 +31,8 @@ pub trait FileExport {
     fn write_to<P: AsRef<Path>>(&self, path: &P) -> Result<(), io::Error>;
 }
 
-impl<T: ModelFormat> From<LatticeModel> for StructureFile<T> {
-    fn from(value: LatticeModel) -> Self {
+impl<T: ModelFormat> From<BasicLatticeModel> for StructureFile<T> {
+    fn from(value: BasicLatticeModel) -> Self {
         Self {
             lattice_model: value,
             format: PhantomData,

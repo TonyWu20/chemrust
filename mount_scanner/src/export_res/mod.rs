@@ -5,7 +5,7 @@ use std::{
     io,
 };
 
-use chemrust_core::data::{Atom, LatticeModel};
+use chemrust_core::data::{Atom, BasicLatticeModel};
 use chemrust_formats::{
     castep_param::{BandStructureParam, GeomOptParam},
     seed_writer::{MetalMethodsControl, SeedWriter},
@@ -59,7 +59,7 @@ impl ExportManager {
     pub fn overall_in_one(
         &self,
         final_report: &PointStage,
-        original_lattice_model: &LatticeModel,
+        original_lattice_model: &BasicLatticeModel,
         lattice_name: &str,
     ) -> Result<(), Box<dyn Error>> {
         let spheres = final_report.visualize_specific_sites(final_report.sphere_sites());
@@ -99,17 +99,17 @@ impl ExportManager {
     fn visualize_per_sites(
         &self,
         new_atoms: &[Atom],
-        original_lattice_model: &LatticeModel,
+        original_lattice_model: &BasicLatticeModel,
     ) -> StructureFile<Cell> {
         let new_atoms = [original_lattice_model.atoms(), new_atoms].concat();
         let new_lattice_vectors = original_lattice_model.lattice_vectors().unwrap().clone();
-        let new_lattice = LatticeModel::new(&Some(new_lattice_vectors), &new_atoms);
+        let new_lattice = BasicLatticeModel::new(&Some(new_lattice_vectors), &new_atoms);
         StructureFile::<Cell>::new(new_lattice)
     }
     fn export_per_sites(
         &self,
         new_atoms: &[Atom],
-        original_lattice_model: &LatticeModel,
+        original_lattice_model: &BasicLatticeModel,
         lattice_name: &str,
         site_name: &str,
     ) -> Result<(), io::Error> {
@@ -123,7 +123,7 @@ impl ExportManager {
     pub fn export_sphere_model(
         &self,
         final_report: &PointStage,
-        original_lattice_model: &LatticeModel,
+        original_lattice_model: &BasicLatticeModel,
         lattice_name: &str,
     ) -> Result<(), Box<dyn Error>> {
         if let Some(spheres_res) =
@@ -140,7 +140,7 @@ impl ExportManager {
     pub fn export_circles_model(
         &self,
         final_report: &PointStage,
-        original_lattice_model: &LatticeModel,
+        original_lattice_model: &BasicLatticeModel,
         lattice_name: &str,
     ) -> Result<(), Box<dyn Error>> {
         if let Some(circle_res) =
@@ -157,7 +157,7 @@ impl ExportManager {
     pub fn export_points_model(
         &self,
         final_report: &PointStage,
-        original_lattice_model: &LatticeModel,
+        original_lattice_model: &BasicLatticeModel,
         lattice_name: &str,
     ) -> Result<(), io::Error> {
         if let Some(cut_point_res) =

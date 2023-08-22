@@ -13,7 +13,7 @@
 //!         2. The final number of valid bonds is returned.
 //!     3. After a complete iteration, the local bonding environments inside the given structure will be determined.
 //!     4. Returns an array of local bonding environments. The new bonding site search will be conducted in each LBE.
-use chemrust_core::data::{Atom, LatticeModel};
+use chemrust_core::data::{Atom, BasicLatticeModel};
 use kd_tree::KdMap;
 use nalgebra::Point3;
 
@@ -59,7 +59,7 @@ impl CheckAtom {
 
 impl<'a> LocalBondingEnvBuilder<'a> {
     /// Initiate a builder instance. The lifetime is tied to that of the input `LatticeModel`.
-    pub fn new(lattice_model: &'a LatticeModel) -> Self {
+    pub fn new(lattice_model: &'a BasicLatticeModel) -> Self {
         let items = lattice_model
             .atoms()
             .iter()

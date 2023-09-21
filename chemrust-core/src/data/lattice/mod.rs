@@ -4,6 +4,8 @@ use nalgebra::Matrix3;
 
 use super::Atom;
 
+mod reciprocal_lattice;
+
 #[derive(Debug, Clone)]
 pub struct LatticeVectors(Matrix3<f64>);
 

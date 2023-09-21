@@ -2,7 +2,7 @@
 
 ## Todo
 
-- [ ] Prepare a fancy introduction video, reference: nvidia introducing AI
+- [x] Prepare a fancy introduction video, reference: nvidia introducing AI
 
 ## Plan
 
@@ -12,6 +12,7 @@
     - C, H, Nd: not good
     - He, Ne, Ar: colors too ugly
 - [ ] Try to view the models in Materials Studio
-- [ ] Record operations
-  - [ ] asciinema
-  - [ ] GUI records for model viewing
+
+## Feature request
+
+- [ ] Select a range on the z-direction to identify the mounting surface. (Case for Lulu's red phosphorus model)

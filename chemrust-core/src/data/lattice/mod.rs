@@ -34,6 +34,26 @@ pub struct BasicLatticeModel {
     pub(crate) atoms: Vec<Atom>,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct FractionalCoordRange(f64, f64);
+
+impl FractionalCoordRange {
+    /// Creates a `FractionalCoordRange` with the range restricted to `[0.0, 1.0]`
+    /// # Panics
+    /// Panics if `lower > higher`
+    pub fn new(lower: f64, higher: f64) -> Self {
+        assert!(lower <= higher);
+        Self(lower.clamp(0.0, 1.0), higher.clamp(0.0, 1.0))
+    }
+    fn is_in_range(&self, value: f64) -> bool {
+        if self.0 <= value && self.1 >= value {
+            true
+        } else {
+            false
+        }
+    }
+}
+
 impl BasicLatticeModel {
     pub fn new(lattice_vectors: &Option<LatticeVectors>, atoms: &[Atom]) -> Self {
         BasicLatticeModel {
@@ -88,6 +108,29 @@ impl BasicLatticeModel {
             .iter()
             .map(|(_, symbol)| symbol.to_string())
             .collect()
+    }
+    /// Select atoms by the given ranges of x, y, z in fractional coordinates
+    pub fn xyz_range_filter(
+        &self,
+        x_range: FractionalCoordRange,
+        y_range: FractionalCoordRange,
+        z_range: FractionalCoordRange,
+    ) -> Vec<&Atom> {
+        self.atoms
+            .iter()
+            .filter(|&atom| {
+                let frac_coord = self.lattice_vectors.as_ref().unwrap().mat_cart_to_frac()
+                    * atom.cartesian_coord();
+                if x_range.is_in_range(frac_coord.x)
+                    && y_range.is_in_range(frac_coord.y)
+                    && z_range.is_in_range(frac_coord.z)
+                {
+                    true
+                } else {
+                    false
+                }
+            })
+            .collect::<Vec<&Atom>>()
     }
 }
 

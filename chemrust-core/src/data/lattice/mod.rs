@@ -115,7 +115,7 @@ impl BasicLatticeModel {
         x_range: FractionalCoordRange,
         y_range: FractionalCoordRange,
         z_range: FractionalCoordRange,
-    ) -> Vec<&Atom> {
+    ) -> Vec<Atom> {
         self.atoms
             .iter()
             .filter(|&atom| {
@@ -130,7 +130,8 @@ impl BasicLatticeModel {
                     false
                 }
             })
-            .collect::<Vec<&Atom>>()
+            .cloned()
+            .collect::<Vec<Atom>>()
     }
 }
 

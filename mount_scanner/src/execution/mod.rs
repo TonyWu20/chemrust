@@ -1,0 +1,114 @@
+use std::{error::Error, fs, marker::PhantomData, path::Path};
+
+use castep_periodic_table::element::Element;
+use chemrust_core::data::{lattice::FractionalCoordRange, BasicLatticeModel};
+use chemrust_parser::CellParser;
+use chemrust_scanner::{MountingChecker, PointStage};
+
+use crate::{export_res::ExportManager, interactive_ui::RunOptions, yaml_parser::TaskTable};
+
+mod run_modes;
+
+pub trait RunState {}
+
+#[derive(Debug)]
+pub struct Interactive;
+
+#[derive(Debug)]
+pub struct Config;
+
+impl RunState for Interactive {}
+impl RunState for Config {}
+
+#[derive(Debug)]
+pub struct Executor<'a, T: RunState> {
+    new_element: &'a Element,
+    cell_filepath: &'a Path,
+    cell_model: BasicLatticeModel,
+    radius: f64,
+    state: PhantomData<T>,
+}
+
+impl<'a, T: RunState> Executor<'a, T> {
+    pub fn new(new_element: &'a Element, cell_filepath: &'a Path, radius: f64) -> Self {
+        let cell_text = fs::read_to_string(cell_filepath).unwrap();
+        let cell_model = CellParser::new(&cell_text)
+            .to_lattice_cart()
+            .to_positions()
+            .build_lattice();
+        Self {
+            new_element,
+            cell_filepath,
+            cell_model,
+            radius,
+            state: PhantomData,
+        }
+    }
+
+    fn search(
+        &self,
+        x_range: FractionalCoordRange,
+        y_range: FractionalCoordRange,
+        z_range: FractionalCoordRange,
+    ) -> Result<PointStage, Box<dyn Error>> {
+        let mount_checker = MountingChecker::new_builder()
+            .with_element(self.new_element)
+            .with_bondlength(self.radius)
+            .build();
+        let filtered_atoms = self.cell_model.xyz_range_filter(x_range, y_range, z_range);
+        Ok(mount_checker.mount_search(&filtered_atoms))
+    }
+    fn export_manager(&self, export_loc: &str, potential_loc: &str, edft: bool) -> ExportManager {
+        let lattice_name = self.cell_filepath.file_stem().unwrap().to_str().unwrap();
+        ExportManager::new(
+            self.new_element.symbol(),
+            export_loc,
+            potential_loc,
+            lattice_name,
+            edft,
+        )
+    }
+    fn export(
+        &self,
+        export_loc: &str,
+        potential_loc: &str,
+        edft: bool,
+        final_stage: &PointStage,
+    ) -> Result<(), Box<dyn Error>> {
+        let manager = self.export_manager(export_loc, potential_loc, edft);
+        manager.export_points_model(final_stage, &self.cell_model)?;
+        manager.export_circles_model(final_stage, &self.cell_model)?;
+        manager.export_sphere_model(final_stage, &self.cell_model)?;
+        manager.overall_in_one(final_stage, &self.cell_model)?;
+        Ok(())
+    }
+}
+
+impl<'a> Executor<'a, Interactive> {
+    pub fn run() -> Result<(), Box<dyn Error>> {
+        let run_options = RunOptions::new().unwrap();
+        let radius = run_options.target_bondlength();
+        let new_element = run_options.new_element();
+        let cell_filepath = Path::new(run_options.filepath());
+        todo!()
+    }
+}
+
+impl<'a> Executor<'a, Config> {
+    pub fn run(&self, config_table: &TaskTable) -> Result<(), Box<dyn Error>> {
+        let final_stage = self.search(
+            config_table.x_range(),
+            config_table.y_range(),
+            config_table.z_range(),
+        )?;
+        let cwd = env!("CARGO_MANIFEST_DIR");
+        self.export(
+            config_table.export_dir(),
+            config_table
+                .potential_dir()
+                .unwrap_or(&format!("{}/../Potentials", cwd)),
+            config_table.edft(),
+            &final_stage,
+        )
+    }
+}

@@ -1,6 +1,8 @@
 use std::{fmt::Display, str::FromStr};
 
-#[derive(Debug)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum KPointQuality {
     Coarse,
     Medium,

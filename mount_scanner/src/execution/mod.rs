@@ -1,35 +1,23 @@
-use std::{error::Error, fs, marker::PhantomData, path::Path};
+use std::{error::Error, fs, path::Path};
 
 use castep_periodic_table::element::Element;
 use chemrust_core::data::{lattice::FractionalCoordRange, BasicLatticeModel};
 use chemrust_parser::CellParser;
 use chemrust_scanner::{MountingChecker, PointStage};
 
-use crate::{export_res::ExportManager, interactive_ui::RunOptions, yaml_parser::TaskTable};
+use crate::{export_res::ExportManager, yaml_parser::TaskTable};
 
 mod run_modes;
 
-pub trait RunState {}
-
 #[derive(Debug)]
-pub struct Interactive;
-
-#[derive(Debug)]
-pub struct Config;
-
-impl RunState for Interactive {}
-impl RunState for Config {}
-
-#[derive(Debug)]
-pub struct Executor<'a, T: RunState> {
+pub struct Executor<'a> {
     new_element: &'a Element,
     cell_filepath: &'a Path,
     cell_model: BasicLatticeModel,
     radius: f64,
-    state: PhantomData<T>,
 }
 
-impl<'a, T: RunState> Executor<'a, T> {
+impl<'a> Executor<'a> {
     pub fn new(new_element: &'a Element, cell_filepath: &'a Path, radius: f64) -> Self {
         let cell_text = fs::read_to_string(cell_filepath).unwrap();
         let cell_model = CellParser::new(&cell_text)
@@ -41,7 +29,6 @@ impl<'a, T: RunState> Executor<'a, T> {
             cell_filepath,
             cell_model,
             radius,
-            state: PhantomData,
         }
     }
 
@@ -84,17 +71,7 @@ impl<'a, T: RunState> Executor<'a, T> {
     }
 }
 
-impl<'a> Executor<'a, Interactive> {
-    pub fn run() -> Result<(), Box<dyn Error>> {
-        let run_options = RunOptions::new().unwrap();
-        let radius = run_options.target_bondlength();
-        let new_element = run_options.new_element();
-        let cell_filepath = Path::new(run_options.filepath());
-        todo!()
-    }
-}
-
-impl<'a> Executor<'a, Config> {
+impl<'a> Executor<'a> {
     pub fn run(&self, config_table: &TaskTable) -> Result<(), Box<dyn Error>> {
         let final_stage = self.search(
             config_table.x_range(),

@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Display, str::FromStr};
+use std::{collections::HashSet, fmt::Display};
 
 use nalgebra::Matrix3;
 
@@ -57,6 +57,12 @@ impl FractionalCoordRange {
         } else {
             false
         }
+    }
+    pub fn min(&self) -> f64 {
+        self.0
+    }
+    pub fn max(&self) -> f64 {
+        self.1
     }
 }
 

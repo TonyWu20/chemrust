@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Display};
+use std::{collections::HashSet, fmt::Display, str::FromStr};
 
 use nalgebra::Matrix3;
 
@@ -36,6 +36,12 @@ pub struct BasicLatticeModel {
 
 #[derive(Debug, Clone, Copy)]
 pub struct FractionalCoordRange(f64, f64);
+
+impl Display for FractionalCoordRange {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.0, self.1)
+    }
+}
 
 impl FractionalCoordRange {
     /// Creates a `FractionalCoordRange` with the range restricted to `[0.0, 1.0]`

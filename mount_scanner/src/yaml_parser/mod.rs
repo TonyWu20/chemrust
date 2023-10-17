@@ -12,16 +12,16 @@ use crate::interactive_ui::KPointQuality;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TaskTable {
-    model_path: String,
-    new_element: String,
-    target_bondlength: f64,
-    x_range: (f64, f64),
-    y_range: (f64, f64),
-    z_range: (f64, f64),
-    export_dir: String,
-    potential_dir: Option<String>,
-    kpoint_quality: KPointQuality,
-    edft: bool,
+    pub(crate) model_path: String,
+    pub(crate) new_element: String,
+    pub(crate) target_bondlength: f64,
+    pub(crate) x_range: (f64, f64),
+    pub(crate) y_range: (f64, f64),
+    pub(crate) z_range: (f64, f64),
+    pub(crate) export_dir: String,
+    pub(crate) potential_dir: Option<String>,
+    pub(crate) kpoint_quality: KPointQuality,
+    pub(crate) edft: bool,
 }
 
 impl TaskTable {

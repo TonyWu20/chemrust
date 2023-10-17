@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use std::path::Path;
-
 pub use self::{
     execute_modes::RunMode, export_options::ExportOptions, filepath_completer::FilePathCompleter,
     kpoint_quality::KPointQuality, run_options::RunOptions,
@@ -16,7 +14,7 @@ mod run_options;
 #[test]
 fn test_prompts() {
     let options = RunOptions::new().unwrap();
-    let filestem = Path::new(options.filepath())
+    let filestem = std::path::Path::new(options.filepath())
         .file_stem()
         .unwrap()
         .to_str()

@@ -23,6 +23,7 @@ pub struct ExportManager {
     new_element_symbol: String,
     export_loc_str: String,
     potential_loc_str: String,
+    lattice_name: String,
     edft: bool,
 }
 
@@ -31,12 +32,14 @@ impl ExportManager {
         new_element_symbol: &str,
         export_loc_str: &str,
         potential_loc_str: &str,
+        lattice_name: &str,
         edft: bool,
     ) -> Self {
         Self {
             new_element_symbol: new_element_symbol.into(),
             export_loc_str: export_loc_str.into(),
             potential_loc_str: potential_loc_str.into(),
+            lattice_name: lattice_name.into(),
             edft,
         }
     }
@@ -60,7 +63,6 @@ impl ExportManager {
         &self,
         final_report: &PointStage,
         original_lattice_model: &BasicLatticeModel,
-        lattice_name: &str,
     ) -> Result<(), Box<dyn Error>> {
         let spheres = final_report.visualize_specific_sites(final_report.sphere_sites());
         let circles = final_report.visualize_specific_sites(final_report.circles());
@@ -68,30 +70,15 @@ impl ExportManager {
             &[final_report.cut_points(), final_report.multi_cn_points()].concat(),
         );
         if spheres.len() > 0 {
-            self.export_per_sites(
-                &spheres,
-                original_lattice_model,
-                lattice_name,
-                "single_spheres",
-            )?;
+            self.export_per_sites(&spheres, original_lattice_model, "single_spheres")?;
             println!("Export all single sites")
         }
         if circles.len() > 0 {
-            self.export_per_sites(
-                &circles,
-                original_lattice_model,
-                lattice_name,
-                "double_circles",
-            )?;
+            self.export_per_sites(&circles, original_lattice_model, "double_circles")?;
             println!("Export all double circles")
         }
         if points.len() > 0 {
-            self.export_per_sites(
-                &points,
-                original_lattice_model,
-                lattice_name,
-                "multi_points",
-            )?;
+            self.export_per_sites(&points, original_lattice_model, "multi_points")?;
             println!("Export all multi points")
         }
         Ok(())
@@ -110,13 +97,12 @@ impl ExportManager {
         &self,
         new_atoms: &[Atom],
         original_lattice_model: &BasicLatticeModel,
-        lattice_name: &str,
         site_name: &str,
     ) -> Result<(), io::Error> {
         let new_cell = self.visualize_per_sites(new_atoms, original_lattice_model);
         let new_text = [new_cell.write_lattice_vectors(), new_cell.write_atoms()].join("\n");
         let new_visualize_msi: StructureFile<Msi> = new_cell.into();
-        let export_name = format!("{lattice_name}_all_{site_name}_demo");
+        let export_name = format!("{}_all_{site_name}_demo", self.lattice_name);
         new_visualize_msi.write_to(&format!("{}.msi", &export_name))?;
         fs::write(&format!("{export_name}.cell"), new_text)
     }
@@ -124,14 +110,13 @@ impl ExportManager {
         &self,
         final_report: &PointStage,
         original_lattice_model: &BasicLatticeModel,
-        lattice_name: &str,
     ) -> Result<(), Box<dyn Error>> {
         if let Some(spheres_res) =
             final_report.generate_sphere_models(original_lattice_model, &self.new_element_symbol)
         {
             spheres_res.into_iter().try_for_each(|(name, model)| {
                 let cell_output = StructureFile::<Cell>::new(model);
-                let export_name = format!("{}_{}", lattice_name, name);
+                let export_name = format!("{}_{}", &self.lattice_name, name);
                 self.generate_seed_file(cell_output, &export_name)
             })?
         }
@@ -141,14 +126,13 @@ impl ExportManager {
         &self,
         final_report: &PointStage,
         original_lattice_model: &BasicLatticeModel,
-        lattice_name: &str,
     ) -> Result<(), Box<dyn Error>> {
         if let Some(circle_res) =
             final_report.generate_circle_models(original_lattice_model, &self.new_element_symbol)
         {
             circle_res.into_iter().try_for_each(|(name, model)| {
                 let cell_output = StructureFile::<Cell>::new(model);
-                let export_name = format!("{}_{}", lattice_name, name);
+                let export_name = format!("{}_{}", &self.lattice_name, name);
                 self.generate_seed_file(cell_output, &export_name)
             })?
         }
@@ -158,14 +142,13 @@ impl ExportManager {
         &self,
         final_report: &PointStage,
         original_lattice_model: &BasicLatticeModel,
-        lattice_name: &str,
     ) -> Result<(), io::Error> {
         if let Some(cut_point_res) =
             final_report.generate_cut_point_models(original_lattice_model, &self.new_element_symbol)
         {
             cut_point_res.into_iter().try_for_each(|(name, model)| {
                 let cell_output = StructureFile::<Cell>::new(model);
-                let export_name = format!("{}_{}", lattice_name, name);
+                let export_name = format!("{}_{}", &self.lattice_name, name);
                 self.generate_seed_file(cell_output, &export_name)
             })?
         }
@@ -174,7 +157,7 @@ impl ExportManager {
         {
             multi_point_res.into_iter().try_for_each(|(name, model)| {
                 let cell_output = StructureFile::<Cell>::new(model);
-                let export_name = format!("{}_{}", lattice_name, name);
+                let export_name = format!("{}_{}", &self.lattice_name, name);
                 self.generate_seed_file(cell_output, &export_name)
             })?
         }

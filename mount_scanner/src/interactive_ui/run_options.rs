@@ -47,14 +47,18 @@ impl RunOptions {
     }
     fn ask_frac_range(axis: &str) -> Result<FractionalCoordRange, InquireError> {
         let hint_message = format!(
-            "Enter the fractional coordinate range to search in the direction of {}: ",
+            "Enter the fractional coordinate range to search in the direction of {}:",
             axis
         );
         let min = CustomType::<f64>::new(&hint_message)
-            .with_help_message("Enter the minimum value, greater or equal to 0.0")
+            .with_help_message("Enter the lower limit, greater or equal to 0.0; press enter for default value (0.0)")
+            .with_default(0.0)
             .prompt()?;
         let max = CustomType::<f64>::new(&hint_message)
-            .with_help_message("Enter the minimum value, less or equal to 1.0")
+            .with_help_message(
+                "Enter the upper limit, less or equal to 1.0; press enter for default value (1.0)",
+            )
+            .with_default(1.0)
             .prompt()?;
         Ok(FractionalCoordRange::new(min, max))
     }

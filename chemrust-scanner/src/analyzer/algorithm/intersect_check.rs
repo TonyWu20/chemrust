@@ -15,6 +15,7 @@ use super::{
 pub struct IntersectChecker<'a, T: CheckStage> {
     coords: &'a [Point3<f64>],
     coords_kdtree: KdIndexTree<'a, Point3<f64>>,
+    bondlength: f64,
     state: T,
 }
 
@@ -24,6 +25,7 @@ impl<'a> IntersectChecker<'a, Ready> {
         IntersectChecker {
             coords,
             coords_kdtree,
+            bondlength: 0.0,
             state: Ready::default(),
         }
     }
@@ -31,6 +33,7 @@ impl<'a> IntersectChecker<'a, Ready> {
         IntersectChecker {
             coords: self.coords,
             coords_kdtree: self.coords_kdtree,
+            bondlength: radius,
             state: SphereStage::new(self.coords, radius),
         }
     }
@@ -89,11 +92,13 @@ impl<'a> IntersectChecker<'a, SphereStage> {
         let Self {
             coords,
             coords_kdtree,
+            bondlength,
             state: _,
         } = self;
         IntersectChecker {
             coords,
             coords_kdtree,
+            bondlength,
             state: circle_stage,
         }
     }
@@ -177,7 +182,7 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                 && (a.circle().center.z - b.circle().center.z).abs() < 1e-6
         });
         let dedup_point_only = if !points_only_sites.is_empty() {
-            Self::analyze_points(&mut points_only_sites)
+            self.analyze_points(&mut points_only_sites)
         } else {
             points_only_sites
         };
@@ -190,10 +195,11 @@ impl<'a> IntersectChecker<'a, CircleStage> {
         IntersectChecker {
             coords: self.coords,
             coords_kdtree: self.coords_kdtree,
+            bondlength: self.bondlength,
             state: point_stage,
         }
     }
-    fn analyze_points(points: &mut [CoordinationPoint]) -> Vec<CoordinationPoint> {
+    fn analyze_points(&self, points: &mut [CoordinationPoint]) -> Vec<CoordinationPoint> {
         points.iter_mut().for_each(|p| {
             let floor_x = (p.coord().x * 1e5).floor() / 1e5;
             let floor_y = (p.coord().y * 1e5).floor() / 1e5;
@@ -226,6 +232,8 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                 if found.len() == 1 {
                     p.clone()
                 } else {
+                    // There are more than one result due to the floating point inaccuracy.
+                    // Merge them into one coordination point result
                     let total_connected_atoms_vec: Vec<Vec<usize>> = found
                         .iter()
                         .map(|&&i| points[i].connecting_atom_ids().to_vec())
@@ -235,6 +243,21 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                     total_atoms.dedup();
                     let cn = total_atoms.len() as u32;
                     CoordinationPoint::new(p.coord(), total_atoms, cn)
+                }
+            })
+            // New: conditional check to rule out situations that the found point actually has closer connections to atoms in the original lattice model,
+            // besides the previously reported connected atoms
+            .filter(|cp| {
+                let this_coord = cp.coord();
+                let found = self
+                    .coords_kdtree
+                    .within_radius(&this_coord, self.bondlength + 0.0001);
+                // 0.0001 is the tolerance of floating point comparison.
+                // After adding this, no more cases of `found.len() < cp.cn()` is reported
+                if found.len() != cp.cn() as usize {
+                    false
+                } else {
+                    true
                 }
             })
             .collect();

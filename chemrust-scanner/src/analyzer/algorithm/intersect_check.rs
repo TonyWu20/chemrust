@@ -5,7 +5,7 @@ use crate::analyzer::geometry::{
 };
 use itertools::Itertools;
 use kd_tree::KdIndexTree;
-use nalgebra::Point3;
+use nalgebra::{distance, Point3};
 
 use super::{
     BondingCircle, BondingSphere, CheckStage, CircleStage, CoordinationPoint, PointStage, Ready,
@@ -106,7 +106,9 @@ impl<'a> IntersectChecker<'a, SphereStage> {
 
 impl<'a> IntersectChecker<'a, CircleStage> {
     /// Returns the analyze circle intersects of this [`IntersectChecker<CircleStage>`].
+    /// Bug when c2 contains c1
     fn join_circle_points(
+        &self,
         point: &Point3<f64>,
         circle_a: &BondingCircle,
         circle_b: &BondingCircle,
@@ -114,7 +116,22 @@ impl<'a> IntersectChecker<'a, CircleStage> {
         let atom_from_this = circle_a.connecting_atoms().to_vec();
         let atom_from_found = circle_b.connecting_atoms().to_vec();
         let connecting_atoms = vec![atom_from_this, atom_from_found];
-        CoordinationPoint::new(*point, connecting_atoms.concat(), 4)
+        let mut connecting_atoms = connecting_atoms.concat();
+        connecting_atoms.sort();
+        connecting_atoms.dedup();
+        let real_connecting_atoms: Vec<usize> = connecting_atoms
+            .into_iter()
+            .filter(|&atom_id| {
+                let distance = distance(point, self.coords.get(atom_id).unwrap());
+                if (distance - self.bondlength).abs() > 1e-6 {
+                    false
+                } else {
+                    true
+                }
+            })
+            .collect();
+        let coordination_number = real_connecting_atoms.len() as u32;
+        CoordinationPoint::new(*point, real_connecting_atoms, coordination_number)
     }
     pub fn analyze_circle_intersects(self) -> IntersectChecker<'a, PointStage> {
         let mut pure_circles = Vec::new();
@@ -147,21 +164,34 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                         )
                         .check();
                         match res {
-                            CircleIntersectResult::Zero => {
+                            CircleIntersectResult::CoplanarZero => {
+                                println!(
+                                    "Atom 1 {}, Atom 2 {}",
+                                    now_bond_circle.connecting_atoms()[0],
+                                    now_bond_circle.connecting_atoms()[1]
+                                );
+                                zero_intersect_count += 1;
+                            }
+                            CircleIntersectResult::NonCoplanarZero => {
+                                println!(
+                                    "Non coplanar Atom 1 {}, Atom 2 {}",
+                                    now_bond_circle.connecting_atoms()[0],
+                                    now_bond_circle.connecting_atoms()[1]
+                                );
                                 zero_intersect_count += 1;
                             }
                             CircleIntersectResult::Single(p) => {
                                 let point =
-                                    Self::join_circle_points(&p, now_bond_circle, bonding_circle);
+                                    self.join_circle_points(&p, now_bond_circle, bonding_circle);
                                 points_only_sites.push(point);
                             }
                             CircleIntersectResult::Double(points) => {
-                                let point_1 = Self::join_circle_points(
+                                let point_1 = self.join_circle_points(
                                     &points.0,
                                     now_bond_circle,
                                     bonding_circle,
                                 );
-                                let point_2 = Self::join_circle_points(
+                                let point_2 = self.join_circle_points(
                                     &points.1,
                                     now_bond_circle,
                                     bonding_circle,
@@ -181,6 +211,7 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                 && (a.circle().center.y - b.circle().center.y).abs() < 1e-6
                 && (a.circle().center.z - b.circle().center.z).abs() < 1e-6
         });
+        let analzyed_circles = self.analyze_pure_circles(&pure_circles);
         let dedup_point_only = if !points_only_sites.is_empty() {
             self.analyze_points(&mut points_only_sites)
         } else {
@@ -188,7 +219,7 @@ impl<'a> IntersectChecker<'a, CircleStage> {
         };
         let point_stage = PointStage::new(
             self.state.sphere_sites,
-            pure_circles,
+            analzyed_circles,
             self.state.sphere_cut_points,
             dedup_point_only,
         );
@@ -198,6 +229,31 @@ impl<'a> IntersectChecker<'a, CircleStage> {
             bondlength: self.bondlength,
             state: point_stage,
         }
+    }
+    /// 1. Get the nearests atoms around the circle center by `bondlength + circle radius``
+    /// 2. Determine the longest possible distance from each atom to the circle
+    /// 3. If the longest to circle distance of an atom is shorter than the bondlength, reject
+    /// 4. How far should we iterate?
+    fn analyze_pure_circles(&self, circles: &[BondingCircle]) -> Vec<BondingCircle> {
+        circles
+            .iter()
+            .filter(|bc| {
+                let center = bc.circle().center;
+
+                let atoms_found = self
+                    .coords_kdtree
+                    .within_radius(&center, bc.circle().radius + self.bondlength);
+                for &atom_id in atoms_found {
+                    let atom_coord = self.coords.get(atom_id).unwrap();
+                    let (_, max_distance) = bc.circle().point_to_circle_distances(atom_coord);
+                    if self.bondlength - max_distance > 1e-6 {
+                        return false;
+                    }
+                }
+                true
+            })
+            .map(|bc| bc.clone())
+            .collect()
     }
     fn analyze_points(&self, points: &mut [CoordinationPoint]) -> Vec<CoordinationPoint> {
         points.iter_mut().for_each(|p| {

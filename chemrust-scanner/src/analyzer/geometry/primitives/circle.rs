@@ -1,4 +1,4 @@
-use nalgebra::{distance_squared, Point3, UnitVector3};
+use nalgebra::{distance_squared, Point3, UnitVector3, Vector3};
 
 use super::{GeometryObject, Plane};
 
@@ -29,6 +29,24 @@ impl Circle {
     }
     pub fn circle_plane(&self) -> Plane {
         Plane::from_point_normal(self.center, self.normal)
+    }
+    pub fn point_to_circle_distances(&self, point: &Point3<f64>) -> (f64, f64) {
+        // Vector from center to point
+        let center_to_point: Vector3<f64> = point - self.center;
+        // Because norm is a unit vector, dot product of `cp` and `norm` is the length of
+        // the projection.
+        let dot_cp_norm: f64 = center_to_point.dot(&self.normal);
+        // Get the coordinate of the projection point
+        let projection_point: Point3<f64> = point - self.normal.scale(dot_cp_norm);
+        let center_to_projection_direction: UnitVector3<f64> =
+            UnitVector3::new_normalize(projection_point - self.center);
+        let closest_point: Point3<f64> =
+            self.center + center_to_projection_direction.scale(self.radius);
+        let closest_dist = (point - closest_point).norm();
+        let farthest_point: Point3<f64> =
+            self.center + center_to_projection_direction.scale(-1.0 * self.radius);
+        let farthest_dist = (point - farthest_point).norm();
+        (closest_dist, farthest_dist)
     }
 }
 

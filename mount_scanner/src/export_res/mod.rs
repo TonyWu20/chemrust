@@ -12,7 +12,8 @@ use chemrust_formats::{
     Cell, FileExport, Msi, StructureFile,
 };
 use chemrust_parser::CellParser;
-use chemrust_scanner::PointStage;
+
+use chemrust_scanner::FinalReport;
 use glob::glob;
 use rayon::prelude::*;
 
@@ -61,7 +62,7 @@ impl ExportManager {
     }
     pub fn overall_in_one(
         &self,
-        final_report: &PointStage,
+        final_report: &FinalReport,
         original_lattice_model: &BasicLatticeModel,
     ) -> Result<(), Box<dyn Error>> {
         let spheres = final_report.visualize_specific_sites(final_report.sphere_sites());
@@ -108,7 +109,7 @@ impl ExportManager {
     }
     pub fn export_sphere_model(
         &self,
-        final_report: &PointStage,
+        final_report: &FinalReport,
         original_lattice_model: &BasicLatticeModel,
     ) -> Result<(), Box<dyn Error>> {
         if let Some(spheres_res) =
@@ -124,7 +125,7 @@ impl ExportManager {
     }
     pub fn export_circles_model(
         &self,
-        final_report: &PointStage,
+        final_report: &FinalReport,
         original_lattice_model: &BasicLatticeModel,
     ) -> Result<(), Box<dyn Error>> {
         if let Some(circle_res) =
@@ -140,7 +141,7 @@ impl ExportManager {
     }
     pub fn export_points_model(
         &self,
-        final_report: &PointStage,
+        final_report: &FinalReport,
         original_lattice_model: &BasicLatticeModel,
     ) -> Result<(), io::Error> {
         if let Some(cut_point_res) =

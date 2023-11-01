@@ -11,7 +11,7 @@ use crate::{
     IntersectChecker,
 };
 
-use super::algorithm::{PointStage, Ready};
+use super::algorithm::{FinalReport, PointStage, Ready};
 
 pub const LOWER_FAC: f64 = 0.6;
 pub const UPPER_FAC: f64 = 1.15;
@@ -50,7 +50,7 @@ impl MountingChecker {
             .drain(..)
             .collect::<HashSet<String>>()
     }
-    pub fn mount_search<'a>(&self, atoms: &'a [Atom]) -> PointStage {
+    pub fn mount_search<'a>(&self, atoms: &'a [Atom]) -> FinalReport {
         let available_atoms: Vec<Atom> = self.available_atoms(atoms);
         let collections: AtomCollections = available_atoms.into();
         let coords = collections.cartesian_coords().to_vec();
@@ -58,6 +58,7 @@ impl MountingChecker {
             .start_with_radius(self.mount_distance)
             .check_spheres()
             .analyze_circle_intersects()
+            .analyze_points()
             .report()
             .clone()
     }

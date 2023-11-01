@@ -5,7 +5,7 @@ mod geometry;
 mod mounting_analyze;
 
 pub use crate::analyzer::mounting_analyze::MountingChecker;
-pub use algorithm::{IntersectChecker, PointStage};
+pub use algorithm::{FinalReport, IntersectChecker};
 
 #[cfg(test)]
 mod test {

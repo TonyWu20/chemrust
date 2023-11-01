@@ -36,17 +36,23 @@ impl Circle {
         // Because norm is a unit vector, dot product of `cp` and `norm` is the length of
         // the projection.
         let dot_cp_norm: f64 = center_to_point.dot(&self.normal);
+        if dot_cp_norm.abs() < 1e-6 {
+            return (self.radius, self.radius);
+        }
         // Get the coordinate of the projection point
         let projection_point: Point3<f64> = point - self.normal.scale(dot_cp_norm);
         let center_to_projection_direction: UnitVector3<f64> =
             UnitVector3::new_normalize(projection_point - self.center);
-        let closest_point: Point3<f64> =
-            self.center + center_to_projection_direction.scale(self.radius);
-        let closest_dist = (point - closest_point).norm();
-        let farthest_point: Point3<f64> =
+        let point_1: Point3<f64> = self.center + center_to_projection_direction.scale(self.radius);
+        let dist_1 = (point - point_1).norm();
+        let point_2: Point3<f64> =
             self.center + center_to_projection_direction.scale(-1.0 * self.radius);
-        let farthest_dist = (point - farthest_point).norm();
-        (closest_dist, farthest_dist)
+        let dist_2 = (point - point_2).norm();
+        if dist_1 < dist_2 {
+            (dist_1, dist_2)
+        } else {
+            (dist_2, dist_1)
+        }
     }
 }
 

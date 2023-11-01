@@ -8,8 +8,8 @@ use kd_tree::KdIndexTree;
 use nalgebra::{distance, Point3};
 
 use super::{
-    BondingCircle, BondingSphere, CheckStage, CircleStage, CoordinationPoint, PointStage, Ready,
-    SphereStage,
+    BondingCircle, BondingSphere, CheckStage, CircleStage, CoordinationPoint, FinalReport,
+    PointStage, Ready, SphereStage,
 };
 
 pub struct IntersectChecker<'a, T: CheckStage> {
@@ -56,8 +56,10 @@ impl<'a> IntersectChecker<'a, SphereStage> {
             let found = self.coords_kdtree.within_radius(p, 2.0 * radius);
             found
                 .iter()
-                .skip(1)
                 .filter(|found_id| -> bool {
+                    if i == ***found_id {
+                        return false;
+                    }
                     let mut pair: [usize; 2] = [i, ***found_id];
                     pair.sort();
                     checked_pairs.insert(pair)
@@ -165,19 +167,9 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                         .check();
                         match res {
                             CircleIntersectResult::CoplanarZero => {
-                                println!(
-                                    "Atom 1 {}, Atom 2 {}",
-                                    now_bond_circle.connecting_atoms()[0],
-                                    now_bond_circle.connecting_atoms()[1]
-                                );
                                 zero_intersect_count += 1;
                             }
                             CircleIntersectResult::NonCoplanarZero => {
-                                println!(
-                                    "Non coplanar Atom 1 {}, Atom 2 {}",
-                                    now_bond_circle.connecting_atoms()[0],
-                                    now_bond_circle.connecting_atoms()[1]
-                                );
                                 zero_intersect_count += 1;
                             }
                             CircleIntersectResult::Single(p) => {
@@ -212,16 +204,11 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                 && (a.circle().center.z - b.circle().center.z).abs() < 1e-6
         });
         let analzyed_circles = self.analyze_pure_circles(&pure_circles);
-        let dedup_point_only = if !points_only_sites.is_empty() {
-            self.analyze_points(&mut points_only_sites)
-        } else {
-            points_only_sites
-        };
         let point_stage = PointStage::new(
             self.state.sphere_sites,
             analzyed_circles,
             self.state.sphere_cut_points,
-            dedup_point_only,
+            points_only_sites,
         );
         IntersectChecker {
             coords: self.coords,
@@ -245,8 +232,12 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                     .within_radius(&center, bc.circle().radius + self.bondlength);
                 for &atom_id in atoms_found {
                     let atom_coord = self.coords.get(atom_id).unwrap();
-                    let (_, max_distance) = bc.circle().point_to_circle_distances(atom_coord);
+                    let (min_distance, max_distance) =
+                        bc.circle().point_to_circle_distances(atom_coord);
                     if self.bondlength - max_distance > 1e-6 {
+                        if bc.connecting_atoms().contains(&atom_id) {
+                            println!("{atom_id}, {min_distance}, {max_distance}")
+                        }
                         return false;
                     }
                 }
@@ -255,7 +246,31 @@ impl<'a> IntersectChecker<'a, CircleStage> {
             .map(|bc| bc.clone())
             .collect()
     }
-    fn analyze_points(&self, points: &mut [CoordinationPoint]) -> Vec<CoordinationPoint> {
+}
+
+impl<'a> IntersectChecker<'a, PointStage> {
+    pub fn analyze_points(self) -> IntersectChecker<'a, FinalReport> {
+        let mut points = self.state.multi_cn_points().to_owned();
+        let dedup_point_only = if !points.is_empty() {
+            self.merge_points(&mut points)
+        } else {
+            points
+        };
+        let final_stage = FinalReport::new(
+            self.state.sphere_sites,
+            self.state.circles,
+            self.state.cut_points,
+            dedup_point_only,
+        );
+        IntersectChecker {
+            coords: self.coords,
+            coords_kdtree: self.coords_kdtree,
+            bondlength: self.bondlength,
+            state: final_stage,
+        }
+    }
+    fn merge_points(&self, points: &mut [CoordinationPoint]) -> Vec<CoordinationPoint> {
+        // Floor to clear meaningless digits in f64 for the ease of sort and deduplicate
         points.iter_mut().for_each(|p| {
             let floor_x = (p.coord().x * 1e5).floor() / 1e5;
             let floor_y = (p.coord().y * 1e5).floor() / 1e5;
@@ -321,8 +336,8 @@ impl<'a> IntersectChecker<'a, CircleStage> {
     }
 }
 
-impl<'a> IntersectChecker<'a, PointStage> {
-    pub fn report(&self) -> &PointStage {
+impl<'a> IntersectChecker<'a, FinalReport> {
+    pub fn report(&self) -> &FinalReport {
         &self.state
     }
 }

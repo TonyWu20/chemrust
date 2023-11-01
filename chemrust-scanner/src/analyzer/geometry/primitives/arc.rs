@@ -28,6 +28,28 @@ impl Arc {
             radius_starting_dir,
         }
     }
+    pub fn from_two_points(
+        center: &Point3<f64>,
+        start_point: &Point3<f64>,
+        end_point: &Point3<f64>,
+    ) -> Option<Self> {
+        let sc = start_point - center;
+        let ec = end_point - center;
+        if (sc.norm() - ec.norm()).abs() > 1e-6 {
+            return None;
+        }
+        let radius = sc.norm();
+        let radius_starting_dir = UnitVector3::new_normalize(sc);
+        let normal = UnitVector3::new_normalize(sc.cross(&ec));
+        let theta = sc.angle(&ec);
+        Some(Self {
+            center: *center,
+            radius,
+            theta,
+            normal,
+            radius_starting_dir,
+        })
+    }
     pub fn is_on_arc(&self, point: &Point3<f64>) -> bool {
         let distance = distance_squared(&self.center, point);
         let same_distance = if (distance - self.radius).abs() < 1e-6 {

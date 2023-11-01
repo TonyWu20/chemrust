@@ -1,6 +1,6 @@
-use nalgebra::{Point3, UnitVector3};
+use nalgebra::Point3;
 
-use crate::analyzer::geometry::{Arc, Circle, Cone, Sphere};
+use crate::analyzer::geometry::{Arc, Circle, Sphere};
 
 mod visualize;
 pub use visualize::Visualize;
@@ -54,9 +54,19 @@ impl BondingCircle {
 }
 
 /// When the circle is interfered by certain points
+#[derive(Debug, Clone)]
 pub struct BondingArc {
     arc: Arc,
     connecting_atom_ids: [usize; 2],
+}
+
+impl BondingArc {
+    pub fn new(arc: Arc, connecting_atom_ids: [usize; 2]) -> Self {
+        Self {
+            arc,
+            connecting_atom_ids,
+        }
+    }
 }
 
 /// Point with bonding atom information

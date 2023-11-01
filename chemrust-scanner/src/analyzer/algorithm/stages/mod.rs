@@ -58,10 +58,10 @@ impl CircleStage {
 
 #[derive(Debug, Clone)]
 pub struct PointStage {
-    sphere_sites: Vec<BondingSphere>,
-    circles: Vec<BondingCircle>,
-    cut_points: Vec<CoordinationPoint>,
-    multi_cn_points: Vec<CoordinationPoint>,
+    pub(crate) sphere_sites: Vec<BondingSphere>,
+    pub(crate) circles: Vec<BondingCircle>,
+    pub(crate) cut_points: Vec<CoordinationPoint>,
+    pub(crate) multi_cn_points: Vec<CoordinationPoint>,
 }
 
 impl PointStage {
@@ -77,6 +77,66 @@ impl PointStage {
             cut_points,
             multi_cn_points,
         }
+    }
+
+    pub fn sphere_sites(&self) -> &[BondingSphere] {
+        &self.sphere_sites
+    }
+
+    pub fn circles(&self) -> &[BondingCircle] {
+        self.circles.as_ref()
+    }
+
+    pub fn cut_points(&self) -> &[CoordinationPoint] {
+        self.cut_points.as_ref()
+    }
+
+    pub fn multi_cn_points(&self) -> &[CoordinationPoint] {
+        self.multi_cn_points.as_ref()
+    }
+
+    pub fn multi_cn_points_mut(&mut self) -> &mut Vec<CoordinationPoint> {
+        &mut self.multi_cn_points
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct FinalReport {
+    pub(crate) sphere_sites: Vec<BondingSphere>,
+    pub(crate) circles: Vec<BondingCircle>,
+    pub(crate) cut_points: Vec<CoordinationPoint>,
+    pub(crate) multi_cn_points: Vec<CoordinationPoint>,
+}
+
+impl FinalReport {
+    pub fn new(
+        sphere_sites: Vec<BondingSphere>,
+        circles: Vec<BondingCircle>,
+        cut_points: Vec<CoordinationPoint>,
+        multi_cn_points: Vec<CoordinationPoint>,
+    ) -> Self {
+        Self {
+            sphere_sites,
+            circles,
+            cut_points,
+            multi_cn_points,
+        }
+    }
+
+    pub fn sphere_sites(&self) -> &[BondingSphere] {
+        &self.sphere_sites
+    }
+
+    pub fn circles(&self) -> &[BondingCircle] {
+        self.circles.as_ref()
+    }
+
+    pub fn cut_points(&self) -> &[CoordinationPoint] {
+        self.cut_points.as_ref()
+    }
+
+    pub fn multi_cn_points(&self) -> &[CoordinationPoint] {
+        self.multi_cn_points.as_ref()
     }
 
     pub fn report_spheres(&self) -> String {
@@ -95,21 +155,6 @@ impl PointStage {
         texts.join("\n")
     }
 
-    pub fn sphere_sites(&self) -> &[BondingSphere] {
-        &self.sphere_sites
-    }
-
-    pub fn circles(&self) -> &[BondingCircle] {
-        self.circles.as_ref()
-    }
-
-    pub fn cut_points(&self) -> &[CoordinationPoint] {
-        self.cut_points.as_ref()
-    }
-
-    pub fn multi_cn_points(&self) -> &[CoordinationPoint] {
-        self.multi_cn_points.as_ref()
-    }
     pub fn generate_sphere_models(
         &self,
         lattice_model: &BasicLatticeModel,
@@ -137,6 +182,7 @@ impl PointStage {
             None
         }
     }
+
     pub fn generate_circle_models(
         &self,
         lattice_model: &BasicLatticeModel,
@@ -160,6 +206,7 @@ impl PointStage {
             None
         }
     }
+
     pub fn generate_cut_point_models(
         &self,
         lattice_model: &BasicLatticeModel,
@@ -192,6 +239,7 @@ impl PointStage {
             None
         }
     }
+
     pub fn generate_multi_point_models(
         &self,
         lattice_model: &BasicLatticeModel,
@@ -224,6 +272,7 @@ impl PointStage {
             None
         }
     }
+
     pub fn visualize_atoms(&self) -> Vec<Atom> {
         let spheres: Vec<Atom> = self.visualize_specific_sites(self.sphere_sites());
         let circles: Vec<Atom> = self.visualize_specific_sites(self.circles());
@@ -231,6 +280,7 @@ impl PointStage {
         let all_points: Vec<Atom> = self.visualize_specific_sites(&points);
         [spheres, circles, all_points].concat()
     }
+
     /// Export all possible sites of one kind at once.
     /// E.g., all `BondingSphere`, all `CoordinationPoint`
     pub fn visualize_specific_sites<T>(&self, coordination_sites: &[T]) -> Vec<Atom>
@@ -251,4 +301,4 @@ macro_rules! impl_check_stage {
     };
 }
 
-impl_check_stage!(Ready, SphereStage, CircleStage, PointStage);
+impl_check_stage!(Ready, SphereStage, CircleStage, PointStage, FinalReport);

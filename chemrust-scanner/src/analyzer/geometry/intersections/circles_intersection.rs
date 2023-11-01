@@ -70,7 +70,7 @@ impl CircleIntersectChecker {
             let radius_sum = self.c1.radius + self.c2.radius;
             let radius_difference = self.c1.radius - self.c2.radius;
             let d = d1d2.norm();
-            if d > radius_sum
+            if d - radius_sum > 1e-6
                 || d < 1e-6 && radius_difference > 1e-6
                 || (d - radius_difference) < 1e-6
             {
@@ -78,26 +78,22 @@ impl CircleIntersectChecker {
                 CircleIntersectResult::CoplanarZero
             } else if (d - radius_sum).abs() < 1e-6 {
                 let p = self.c1.center + d1d2.scale(self.c1.radius);
-                println!("coplanar single two circle touch");
                 CircleIntersectResult::Single(p)
             } else if (d - radius_difference.abs()) < 1e-6 {
                 if radius_difference.abs() < 1e-6 {
                     // c1 overlaps with c2 with the same radius
-                    println!("coplanar overlap whole");
                     CircleIntersectResult::Whole(self.c1)
                 } else if radius_difference > 1e-6 {
                     // c1 contains c2
                     let n = Unit::new_normalize(d1d2);
                     let distance = n.scale(self.c2.radius);
                     let p = self.c2.center + distance;
-                    println!("coplanar c1 contains c2");
                     CircleIntersectResult::Single(p)
                 } else {
                     // c2 contains c1
                     let n = Unit::new_normalize(d1d2).scale(-1.0);
                     let distance = n.scale(self.c1.radius);
                     let p = self.c1.center + distance;
-                    println!("coplanar c2 contains c1");
                     CircleIntersectResult::Single(p)
                 }
             } else {

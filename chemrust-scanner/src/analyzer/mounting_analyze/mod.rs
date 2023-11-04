@@ -11,7 +11,7 @@ use crate::{
     IntersectChecker,
 };
 
-use super::algorithm::{FinalReport, PointStage, Ready};
+use super::algorithm::{FinalReport, Ready};
 
 pub const LOWER_FAC: f64 = 0.6;
 pub const UPPER_FAC: f64 = 1.15;

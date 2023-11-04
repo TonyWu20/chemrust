@@ -1,7 +1,7 @@
 use std::{error::Error, fs, path::Path};
 
 use castep_periodic_table::element::Element;
-use chemrust_core::data::{lattice::FractionalCoordRange, BasicLatticeModel};
+use chemrust_core::data::{custom_data_type::FractionalCoordRange, BasicLatticeModel};
 use chemrust_parser::CellParser;
 use chemrust_scanner::{FinalReport, MountingChecker};
 

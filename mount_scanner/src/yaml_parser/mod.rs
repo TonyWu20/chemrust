@@ -5,7 +5,7 @@ use castep_periodic_table::{
     data::ELEMENT_TABLE,
     element::{Element, LookupElement},
 };
-use chemrust_core::data::lattice::FractionalCoordRange;
+use chemrust_core::data::custom_data_type::FractionalCoordRange;
 use serde::{Deserialize, Serialize};
 
 use crate::interactive_ui::KPointQuality;

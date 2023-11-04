@@ -10,6 +10,7 @@
 //! mandatory; symmetry information is optional.
 
 pub mod atom;
+pub mod custom_data_type;
 pub mod lattice;
 
 // Re-export

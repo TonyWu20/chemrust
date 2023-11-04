@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use castep_periodic_table::element::Element;
-use chemrust_core::data::lattice::FractionalCoordRange;
+use chemrust_core::data::custom_data_type::FractionalCoordRange;
 use inquire::{required, validator::Validation, CustomType, InquireError, Text};
 
 use crate::yaml_parser::TaskTable;

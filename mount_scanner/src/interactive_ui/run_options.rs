@@ -46,13 +46,10 @@ impl RunOptions {
         CustomType::<f64>::new("What is the target bondlength (Å)?").with_error_message("Please type a valid number").with_help_message("Type the desired bondlength between the new element atom and the existing atoms in model").prompt()
     }
     fn ask_frac_range(axis: &str) -> Result<FractionalCoordRange, InquireError> {
-        let mut hint_message = format!(
+        let hint_message = format!(
             "Enter the fractional coordinate range to search in the direction of {}:",
             axis
         );
-        if axis == "z-axis" {
-            hint_message = format!("Caution: Please provide a range to only include the surface atoms or the program may break;\n{hint_message}");
-        }
         let min = CustomType::<f64>::new(&hint_message)
             .with_help_message("Enter the lower limit, greater or equal to 0.0; press enter for default value (0.0)")
             .with_default(0.0)

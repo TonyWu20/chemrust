@@ -4,7 +4,7 @@ use super::custom_data_type::FractionalCoordRange;
 use super::Atom;
 
 mod lattice_vectors;
-mod reciprocal_lattice;
+mod reciprocal_space;
 
 pub use lattice_vectors::LatticeVectors;
 

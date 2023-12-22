@@ -104,7 +104,7 @@ impl ExportManager {
         let new_text = [new_cell.write_lattice_vectors(), new_cell.write_atoms()].join("\n");
         let new_visualize_msi: StructureFile<Msi> = new_cell.into();
         let export_name = format!("{}_all_{site_name}_demo", self.lattice_name);
-        new_visualize_msi.write_to(&format!("{}.msi", &export_name))?;
+        new_visualize_msi.write_to(&format!("{}/{}.msi", self.export_loc_str, &export_name))?;
         fs::write(
             &format!("{}/{export_name}.cell", self.export_loc_str),
             new_text,

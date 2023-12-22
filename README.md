@@ -16,3 +16,12 @@
 ## Feature request
 
 - [x] Select a range on the z-direction to identify the mounting surface. (Case for Lulu's red phosphorus model) [Issue #1](https://github.com/TonyWu20/chemrust/issues/1)
+
+## Test
+
+- [ ] GTY
+- [x] MoS2 (TMDs)
+- [x] MnO2 (TMOs)
+- [x] Phosphorene
+- [ ] MXene
+- [ ] Silicene

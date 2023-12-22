@@ -79,6 +79,7 @@ mod test {
         let task_table = TaskTable::load_task_table(table_path).unwrap();
         println!("{}", task_table.model_path());
         println!("{}", task_table.kpoint_quality());
-        println!("{:#?}", task_table.x_range())
+        println!("{:#?}", task_table.x_range());
+        println!("{}", serde_yaml::to_string(&task_table).unwrap());
     }
 }

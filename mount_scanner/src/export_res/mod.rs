@@ -105,7 +105,10 @@ impl ExportManager {
         let new_visualize_msi: StructureFile<Msi> = new_cell.into();
         let export_name = format!("{}_all_{site_name}_demo", self.lattice_name);
         new_visualize_msi.write_to(&format!("{}.msi", &export_name))?;
-        fs::write(&format!("{export_name}.cell"), new_text)
+        fs::write(
+            &format!("{}/{export_name}.cell", self.export_loc_str),
+            new_text,
+        )
     }
     pub fn export_sphere_model(
         &self,

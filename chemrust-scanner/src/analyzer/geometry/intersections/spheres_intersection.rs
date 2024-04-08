@@ -24,13 +24,13 @@ impl Intersect<Sphere> for Sphere {
             x if radius_diff < x && x < radius_sum => {
                 SphereIntersectResult::Circle(two_spheres_between(self, rhs))
             }
-            x if x == radius_sum => {
+            x if (x - radius_sum).abs() < 1e-6 => {
                 let n = Unit::new_normalize(vector_rhs_to_self);
                 let p = rhs.point_at_surface(&n);
                 SphereIntersectResult::SinglePoint(p)
             }
-            x if x == 0.0 && radius_diff == 0.0 => SphereIntersectResult::Whole(*self),
-            x if x == radius_diff => {
+            x if x < 1e-6 && radius_diff < 1e-6 => SphereIntersectResult::Whole(*self),
+            x if (x - radius_diff).abs() < 1e-6 => {
                 // Self radius larger than rhs
                 let direction = if radius_diff > 0.0 { -1.0 } else { 1.0 };
                 let n = Unit::new_normalize(vector_rhs_to_self.scale(direction));

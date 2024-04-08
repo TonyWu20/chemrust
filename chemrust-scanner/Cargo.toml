@@ -1,7 +1,7 @@
 [package]
 name = "chemrust-scanner"
+version = "0.2.2"
 edition.workspace = true
-version.workspace = true
 authors.workspace = true
 description.workspace = true
 
@@ -12,5 +12,5 @@ kd-tree = {git="https://github.com/TonyWu20/kd-tree.git", features=["nalgebra", 
 nalgebra = "0.32.2"
 chemrust-core = {path = "../chemrust-core"}
 chemrust-parser = {path="../chemrust-parser"}
-itertools = "0.10.5"
+itertools = "0.11.0"
 castep-periodic-table = "0.2.0"

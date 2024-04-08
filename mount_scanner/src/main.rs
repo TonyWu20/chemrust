@@ -1,3 +1,4 @@
+use std::fs;
 use std::{error::Error, path::Path};
 
 use clap::Parser;
@@ -45,5 +46,12 @@ fn interactive_cli() -> Result<(), Box<dyn Error>> {
         &Path::new(yaml_table.model_path()),
         yaml_table.target_bondlength(),
     );
-    executor.run(&yaml_table)
+    executor.run(&yaml_table)?;
+    let export_table_filename = format!(
+        "{}/{}.yaml",
+        yaml_table.export_dir(),
+        yaml_table.export_dir()
+    );
+    fs::write(export_table_filename, serde_yaml::to_string(&yaml_table)?)?;
+    Ok(())
 }

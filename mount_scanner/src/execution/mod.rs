@@ -1,9 +1,9 @@
 use std::{error::Error, fs, path::Path};
 
 use castep_periodic_table::element::Element;
-use chemrust_core::data::{lattice::FractionalCoordRange, BasicLatticeModel};
+use chemrust_core::data::{custom_data_type::FractionalCoordRange, BasicLatticeModel};
 use chemrust_parser::CellParser;
-use chemrust_scanner::{MountingChecker, PointStage};
+use chemrust_scanner::{FinalReport, MountingChecker};
 
 use crate::{export_res::ExportManager, yaml_parser::TaskTable};
 
@@ -37,7 +37,7 @@ impl<'a> Executor<'a> {
         x_range: FractionalCoordRange,
         y_range: FractionalCoordRange,
         z_range: FractionalCoordRange,
-    ) -> Result<PointStage, Box<dyn Error>> {
+    ) -> Result<FinalReport, Box<dyn Error>> {
         let mount_checker = MountingChecker::new_builder()
             .with_element(self.new_element)
             .with_bondlength(self.radius)
@@ -60,7 +60,7 @@ impl<'a> Executor<'a> {
         export_loc: &str,
         potential_loc: &str,
         edft: bool,
-        final_stage: &PointStage,
+        final_stage: &FinalReport,
     ) -> Result<(), Box<dyn Error>> {
         let manager = self.export_manager(export_loc, potential_loc, edft);
         manager.export_points_model(final_stage, &self.cell_model)?;

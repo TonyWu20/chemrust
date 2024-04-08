@@ -5,7 +5,7 @@ mod geometry;
 mod mounting_analyze;
 
 pub use crate::analyzer::mounting_analyze::MountingChecker;
-pub use algorithm::{IntersectChecker, PointStage};
+pub use algorithm::{FinalReport, IntersectChecker};
 
 #[cfg(test)]
 mod test {
@@ -100,7 +100,7 @@ mod test {
             .iter()
             .enumerate()
             .for_each(|(j, res)| match res {
-                CircleIntersectResult::Zero => pure_circles.push(circle_sites[j]),
+                CircleIntersectResult::NonCoplanarZero => pure_circles.push(circle_sites[j]),
                 CircleIntersectResult::Single(p) => quad_coord_points.push(*p),
                 CircleIntersectResult::Double(points) => {
                     quad_coord_points.push(points.0);

@@ -22,7 +22,8 @@ pub enum CheckStage {
 
 #[derive(Debug)]
 pub enum CircleIntersectResult {
-    Zero,
+    CoplanarZero,
+    NonCoplanarZero,
     Single(Point3<f64>),
     Double((Point3<f64>, Point3<f64>)),
     Whole(Circle),
@@ -64,17 +65,17 @@ impl CircleIntersectChecker {
         // If the line between two circle is not orthogonal to the circle normal, not coplanar
         // !!!! The dot product must use absolute value to compare with the epsilon.
         if d1d2.dot(&self.c1.normal).abs() > 1e-6 {
-            CircleIntersectResult::Zero
+            CircleIntersectResult::NonCoplanarZero
         } else {
             let radius_sum = self.c1.radius + self.c2.radius;
             let radius_difference = self.c1.radius - self.c2.radius;
             let d = d1d2.norm();
-            if d > radius_sum
+            if d - radius_sum > 1e-6
                 || d < 1e-6 && radius_difference > 1e-6
                 || (d - radius_difference) < 1e-6
             {
                 // Two circles out of distance or concentric or one circle is inside but not touching the edge
-                CircleIntersectResult::Zero
+                CircleIntersectResult::CoplanarZero
             } else if (d - radius_sum).abs() < 1e-6 {
                 let p = self.c1.center + d1d2.scale(self.c1.radius);
                 CircleIntersectResult::Single(p)
@@ -116,7 +117,7 @@ impl CircleIntersectChecker {
                 if let Some(p) = check_identity_points(&p1, &p2) {
                     CircleIntersectResult::Single(p)
                 } else {
-                    CircleIntersectResult::Zero
+                    CircleIntersectResult::NonCoplanarZero
                 }
             }
             (CircleIntersectResult::Double(points_1), CircleIntersectResult::Double(points_2)) => {
@@ -127,10 +128,10 @@ impl CircleIntersectChecker {
                 {
                     CircleIntersectResult::Double(points_1)
                 } else {
-                    CircleIntersectResult::Zero
+                    CircleIntersectResult::NonCoplanarZero
                 }
             }
-            (_, _) => CircleIntersectResult::Zero,
+            (_, _) => CircleIntersectResult::NonCoplanarZero,
         }
     }
 }
@@ -158,9 +159,9 @@ fn circle_center_to_intersection_line_distance(c: &Circle, line: &Line) -> f64 {
 fn circle_intersection_line_intersect(c: &Circle, line: &Line) -> CircleIntersectResult {
     let distance_to_line = circle_center_to_intersection_line_distance(c, line);
     match distance_to_line.partial_cmp(&c.radius) {
-        None => CircleIntersectResult::Zero,
+        None => CircleIntersectResult::NonCoplanarZero,
         Some(ord) => match ord {
-            Greater => CircleIntersectResult::Zero,
+            Greater => CircleIntersectResult::NonCoplanarZero,
             Equal => {
                 let origin_to_center = c.center - line.origin;
                 let co_line_angle = origin_to_center.angle(&line.d);

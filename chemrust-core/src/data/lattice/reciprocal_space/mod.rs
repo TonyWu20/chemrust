@@ -6,6 +6,7 @@ use nalgebra::{Matrix3, Matrix4};
 
 use super::LatticeVectors;
 
+mod kpoint;
 mod mp_space;
 
 #[derive(Debug, Clone, Copy)]

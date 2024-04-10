@@ -40,6 +40,7 @@ mod test {
         let coords: Vec<Point3<f64>> = atom_collections.cartesian_coords().to_vec();
         let kdtree: KdIndexTree<Point3<f64>> = KdIndexTree::build_by_ordered_float(&coords);
         let mut buffer = String::new();
+        println!("Enter radius in float format");
         let stdin = io::stdin();
         let mut handle = stdin.lock();
         handle.read_line(&mut buffer).unwrap();

@@ -8,9 +8,10 @@ description.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kd-tree = {git="https://github.com/TonyWu20/kd-tree.git", features=["nalgebra", "nalgebra-serde"]}
+kd-tree = {version="0.5.3", features=["nalgebra", "nalgebra-serde"]}
 nalgebra = "0.32.2"
 chemrust-core = "0.2"
 chemrust-parser = "0.2"
 itertools = "0.12"
 castep-periodic-table = "0.2"
+src = "0.0.6"

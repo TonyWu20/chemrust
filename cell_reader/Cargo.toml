@@ -4,11 +4,12 @@ edition.workspace = true
 version.workspace = true
 authors.workspace = true
 description.workspace = true
+license.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chemrust-core = {path = "../chemrust-core"}
-chemrust-parser = {path = "../chemrust-parser"}
+chemrust-core = "0.2"
+chemrust-parser = "0.2"
 chemrust-formats = {path = "../chemrust-formats"}
 clap = {version = "4", features = ["derive"]}

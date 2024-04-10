@@ -19,7 +19,7 @@ mod builder;
 // mod local_mount_analyze;
 
 pub use bonding_scheme::{ideal_bondlength, is_bonded};
-pub use builder::LocalBondingEnvBuilder;
+
 
 #[derive(Debug, Clone)]
 /// The local bonding environment around each atom.

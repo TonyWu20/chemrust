@@ -11,5 +11,5 @@ license.workspace = true
 [dependencies]
 chemrust-core = "0.2"
 chemrust-parser = "0.2"
-chemrust-formats = {path = "../chemrust-formats"}
+chemrust-formats = "0.2"
 clap = {version = "4", features = ["derive"]}

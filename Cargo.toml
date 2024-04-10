@@ -11,6 +11,7 @@ members = [
     "chemrust-settings",
     "chemrust-misctools"
 ]
+resolver = "2"
 
 [workspace.package]
 name = "chemrust"
@@ -27,6 +28,6 @@ keywords = [
     "computational_chemistry",
     "linear_algebra",
 ]
-resolver = "2"
+
 
 

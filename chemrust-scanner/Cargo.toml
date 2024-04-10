@@ -10,7 +10,7 @@ description.workspace = true
 [dependencies]
 kd-tree = {git="https://github.com/TonyWu20/kd-tree.git", features=["nalgebra", "nalgebra-serde"]}
 nalgebra = "0.32.2"
-chemrust-core = {path = "../chemrust-core"}
-chemrust-parser = {path="../chemrust-parser"}
-itertools = "0.11.0"
-castep-periodic-table = "0.2.0"
+chemrust-core = "0.2"
+chemrust-parser = "0.2"
+itertools = "0.12"
+castep-periodic-table = "0.2"

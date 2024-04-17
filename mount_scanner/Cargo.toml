@@ -8,10 +8,10 @@ description.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chemrust-core = {path = "../chemrust-core"}
-chemrust-parser = {path = "../chemrust-parser"}
-chemrust-formats = {path = "../chemrust-formats"}
-chemrust-scanner = {path = "../chemrust-scanner"}
+chemrust-core = "0.2"
+chemrust-parser = "0.2"
+chemrust-formats = "0.2"
+chemrust-scanner = "0.2"
 castep-periodic-table = "0.2.2"
 clap = {version = "4", features = ["derive"]}
 glob = "0.3.1"

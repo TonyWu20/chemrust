@@ -1,6 +1,6 @@
 use castep_periodic_table::element::ElementSymbol;
 
-use crate::data::geom::coordinates::{Cartesian, Coordinate, CoordinateType, Fractional};
+use crate::data::geom::coordinates::CoordData;
 
 use self::error::AtomBuilderIncomplete;
 
@@ -8,15 +8,15 @@ use super::Atom;
 
 mod error;
 
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub struct AtomBuilder<T: CoordinateType> {
+#[derive(Debug, Clone)]
+pub struct AtomBuilder {
     symbol: Option<ElementSymbol>,
-    coord: Option<Coordinate<T>>,
+    coord: Option<CoordData>,
     index: Option<usize>,
     label: Option<String>,
 }
 
-impl<T: CoordinateType> AtomBuilder<T> {
+impl AtomBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -28,7 +28,11 @@ impl<T: CoordinateType> AtomBuilder<T> {
         self.symbol = Some(symbol);
         self
     }
-    pub fn build(&self) -> Result<Atom<T>, AtomBuilderIncomplete> {
+    pub fn with_coord(&mut self, coord: CoordData) -> &mut Self {
+        self.coord = Some(coord);
+        self
+    }
+    pub fn build(&self) -> Result<Atom, AtomBuilderIncomplete> {
         if self.symbol.is_some() && self.index.is_some() && self.coord.is_some() {
             Ok(Atom {
                 symbol: self.symbol.unwrap(),
@@ -42,22 +46,8 @@ impl<T: CoordinateType> AtomBuilder<T> {
     }
 }
 
-impl AtomBuilder<Fractional> {
-    pub fn with_frac_coord(&mut self, frac_coord: Coordinate<Fractional>) -> &mut Self {
-        self.coord = Some(frac_coord);
-        self
-    }
-}
-
-impl AtomBuilder<Cartesian> {
-    pub fn with_cart_coord(&mut self, cart_coord: Coordinate<Cartesian>) -> &mut Self {
-        self.coord = Some(cart_coord);
-        self
-    }
-}
-
-impl<T: CoordinateType> Default for AtomBuilder<T> {
-    fn default() -> AtomBuilder<T> {
+impl Default for AtomBuilder {
+    fn default() -> AtomBuilder {
         AtomBuilder {
             symbol: Some(ElementSymbol::H),
             coord: None,
@@ -72,18 +62,16 @@ mod test {
     use castep_periodic_table::element::ElementSymbol;
     use nalgebra::Point3;
 
-    use crate::data::{
-        atom::Atom,
-        geom::coordinates::{Coordinate, Fractional},
-    };
+    use crate::data::{atom::Atom, geom::coordinates::CoordData};
 
     #[test]
     fn test_atom_builder() {
-        let atom = Atom::<Fractional>::new_builder()
+        let atom = Atom::new_builder()
             .with_index(1)
-            .with_frac_coord(Coordinate::<Fractional>::new(Point3::new(0.0, 0.5, 0.5)))
+            .with_coord(CoordData::Fractional(Point3::new(0.0, 0.5, 0.5)))
             .with_symbol(ElementSymbol::H)
             .build();
-        assert!(atom.is_ok())
+        assert!(atom.is_ok());
+        println!("{}", atom.unwrap());
     }
 }

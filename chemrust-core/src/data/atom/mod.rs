@@ -4,7 +4,7 @@ use castep_periodic_table::element::ElementSymbol;
 
 use self::builder::AtomBuilder;
 
-use super::geom::coordinates::{Coordinate, CoordinateType};
+use super::geom::coordinates::CoordData;
 
 mod builder;
 
@@ -12,18 +12,18 @@ mod builder;
 /// Other complementary informations can be generated based on `symbol`
 /// or wrapped in a newtype.
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
-pub struct Atom<T: CoordinateType> {
+pub struct Atom {
     /// The element symbol of the atom
     symbol: ElementSymbol,
     /// Coordinate of the atom:
-    coord: Coordinate<T>,
+    coord: CoordData,
     index: usize,
     label: Option<String>,
 }
 
 /// Only methods for `getter`
-impl<T: CoordinateType> Atom<T> {
-    pub fn new_builder() -> AtomBuilder<T> {
+impl Atom {
+    pub fn new_builder() -> AtomBuilder {
         AtomBuilder::default()
     }
 
@@ -34,7 +34,7 @@ impl<T: CoordinateType> Atom<T> {
     pub fn index(&self) -> usize {
         self.index
     }
-    pub fn coord(&self) -> Coordinate<T> {
+    pub fn coord(&self) -> CoordData {
         self.coord
     }
     pub fn label(&self) -> &Option<String> {
@@ -42,16 +42,16 @@ impl<T: CoordinateType> Atom<T> {
     }
 }
 
-impl<T: CoordinateType> Display for Atom<T> {
+impl Display for Atom {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             r#"Atom {}:
   Element Symbol: {:?}
-  XYZ: {:#}"#,
+  XYZ: {:#?}"#,
             self.index + 1,
             self.symbol,
-            self.coord.xyz()
+            self.coord
         )
     }
 }

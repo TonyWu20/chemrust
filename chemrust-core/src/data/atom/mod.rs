@@ -1,74 +1,57 @@
 use std::fmt::Display;
 
-use nalgebra::Point3;
-
-use crate::builder_state::Pending;
+use castep_periodic_table::element::ElementSymbol;
 
 use self::builder::AtomBuilder;
 
+use super::geom::coordinates::{Coordinate, CoordinateType};
+
 mod builder;
-mod collection;
 
-pub use collection::AtomCollections;
-
+/// Essential data to record an atom.
+/// Other complementary informations can be generated based on `symbol`
+/// or wrapped in a newtype.
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
-pub struct Atom {
-    symbol: String,
-    atomic_number: u8,
-    cartesian_coord: Point3<f64>,
+pub struct Atom<T: CoordinateType> {
+    /// The element symbol of the atom
+    symbol: ElementSymbol,
+    /// Coordinate of the atom:
+    coord: Coordinate<T>,
     index: usize,
+    label: Option<String>,
 }
 
-impl Atom {
-    pub fn new_builder() -> AtomBuilder<Pending> {
+/// Only methods for `getter`
+impl<T: CoordinateType> Atom<T> {
+    pub fn new_builder() -> AtomBuilder<T> {
         AtomBuilder::default()
     }
 
-    pub fn symbol(&self) -> &str {
-        self.symbol.as_ref()
-    }
-
-    pub fn atomic_number(&self) -> u8 {
-        self.atomic_number
-    }
-
-    pub fn cartesian_coord(&self) -> Point3<f64> {
-        self.cartesian_coord
+    pub fn symbol(&self) -> &ElementSymbol {
+        &self.symbol
     }
 
     pub fn index(&self) -> usize {
         self.index
     }
-
-    pub fn set_index(&mut self, index: usize) {
-        self.index = index;
+    pub fn coord(&self) -> Coordinate<T> {
+        self.coord
     }
-
-    pub fn set_cartesian_coord(&mut self, cartesian_coord: Point3<f64>) {
-        self.cartesian_coord = cartesian_coord;
-    }
-
-    pub fn set_atomic_number(&mut self, atomic_number: u8) {
-        self.atomic_number = atomic_number;
-    }
-
-    pub fn set_symbol(&mut self, symbol: String) {
-        self.symbol = symbol;
+    pub fn label(&self) -> &Option<String> {
+        &self.label
     }
 }
 
-impl Display for Atom {
+impl<T: CoordinateType> Display for Atom<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             r#"Atom {}:
-  Atomic Number: {}
-  Element Symbol: {}
+  Element Symbol: {:?}
   XYZ: {:#}"#,
             self.index + 1,
-            self.atomic_number,
             self.symbol,
-            self.cartesian_coord
+            self.coord.xyz()
         )
     }
 }

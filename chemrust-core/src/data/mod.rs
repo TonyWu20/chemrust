@@ -11,8 +11,9 @@
 
 pub mod atom;
 pub mod custom_data_type;
-pub mod lattice;
+pub mod geom;
+// pub mod lattice;
 
 // Re-export
 pub use atom::Atom;
-pub use lattice::{BasicLatticeModel, LatticeVectors};
+// pub use lattice::{BasicLatticeModel, LatticeVectors};

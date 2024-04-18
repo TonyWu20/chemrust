@@ -5,6 +5,6 @@
 #![allow(dead_code)]
 
 /// This module provides the basic supports for builder patterns.
-pub mod builder_state;
+// pub mod builder_state;
 /// This module settles the abstraction of essential data in the chemical molecule and lattice models
 pub mod data;

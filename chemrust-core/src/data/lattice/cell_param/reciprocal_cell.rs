@@ -2,12 +2,12 @@ use super::unit_cell::Cell;
 
 #[derive(Debug, Clone, Copy)]
 pub struct ReciprocalCell {
-    pub(crate) recip_a: f32,
-    pub(crate) recip_b: f32,
-    pub(crate) recip_c: f32,
-    pub(crate) recip_alpha: f32,
-    pub(crate) recip_beta: f32,
-    pub(crate) recip_gamma: f32,
+    pub(crate) recip_a: f64,
+    pub(crate) recip_b: f64,
+    pub(crate) recip_c: f64,
+    pub(crate) recip_alpha: f64,
+    pub(crate) recip_beta: f64,
+    pub(crate) recip_gamma: f64,
 }
 
 impl From<Cell> for ReciprocalCell {
@@ -32,5 +32,11 @@ impl From<Cell> for ReciprocalCell {
             recip_beta: cos_recip_b.acos(),
             recip_gamma: cos_recip_y.acos(),
         }
+    }
+}
+
+impl Into<Cell> for ReciprocalCell {
+    fn into(self) -> Cell {
+        todo!()
     }
 }

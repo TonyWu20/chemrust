@@ -4,19 +4,19 @@ use crate::data::geom::coordinates::CoordData;
 
 use self::error::AtomBuilderIncomplete;
 
-use super::Atom;
+use super::AtomSite;
 
 mod error;
 
 #[derive(Debug, Clone)]
-pub struct AtomBuilder {
+pub struct AtomSiteBuilder {
     symbol: Option<ElementSymbol>,
     coord: Option<CoordData>,
     index: Option<usize>,
     label: Option<String>,
 }
 
-impl AtomBuilder {
+impl AtomSiteBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -32,9 +32,13 @@ impl AtomBuilder {
         self.coord = Some(coord);
         self
     }
-    pub fn build(&self) -> Result<Atom, AtomBuilderIncomplete> {
+    pub fn with_label(&mut self, label: &Option<String>) -> &mut Self {
+        self.label = label.clone();
+        self
+    }
+    pub fn build(&self) -> Result<AtomSite, AtomBuilderIncomplete> {
         if self.symbol.is_some() && self.index.is_some() && self.coord.is_some() {
-            Ok(Atom {
+            Ok(AtomSite {
                 symbol: self.symbol.unwrap(),
                 coord: self.coord.unwrap(),
                 index: self.index.unwrap(),
@@ -46,9 +50,9 @@ impl AtomBuilder {
     }
 }
 
-impl Default for AtomBuilder {
-    fn default() -> AtomBuilder {
-        AtomBuilder {
+impl Default for AtomSiteBuilder {
+    fn default() -> AtomSiteBuilder {
+        AtomSiteBuilder {
             symbol: Some(ElementSymbol::H),
             coord: None,
             index: None,
@@ -62,11 +66,11 @@ mod test {
     use castep_periodic_table::element::ElementSymbol;
     use nalgebra::Point3;
 
-    use crate::data::{atom::Atom, geom::coordinates::CoordData};
+    use crate::data::{atom::AtomSite, geom::coordinates::CoordData};
 
     #[test]
     fn test_atom_builder() {
-        let atom = Atom::new_builder()
+        let atom = AtomSite::new_builder()
             .with_index(1)
             .with_coord(CoordData::Fractional(Point3::new(0.0, 0.5, 0.5)))
             .with_symbol(ElementSymbol::H)

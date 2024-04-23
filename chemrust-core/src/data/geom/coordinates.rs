@@ -27,4 +27,16 @@ impl CoordData {
             CoordData::Cartesian(cart_p) => CoordData::Cartesian(*cart_p),
         }
     }
+    pub fn is_fractional(&self) -> bool {
+        match *self {
+            Self::Fractional(_) => true,
+            Self::Cartesian(_) => false,
+        }
+    }
+    pub fn xyz(&self) -> Point3<f64> {
+        match *self {
+            Self::Fractional(p) => p,
+            Self::Cartesian(p) => p,
+        }
+    }
 }

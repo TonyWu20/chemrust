@@ -9,11 +9,7 @@ use castep_periodic_table::element::ElementSymbol;
 
 use crate::data::geom::coordinates::CoordData;
 
-use super::{
-    atom_data::{self, AtomData},
-    builder::AtomSiteBuilder,
-    AtomDataArray,
-};
+use super::{atom_data::AtomData, builder::AtomSiteBuilder, AtomDataArray};
 
 #[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub struct AtomSite {

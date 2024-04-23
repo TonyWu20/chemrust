@@ -1,4 +1,4 @@
-use super::unit_cell::Cell;
+use super::unit_cell::{CellConstants, UnitCellParameters};
 
 #[derive(Debug, Clone, Copy)]
 pub struct ReciprocalCell {
@@ -10,9 +10,9 @@ pub struct ReciprocalCell {
     pub(crate) recip_gamma: f64,
 }
 
-impl From<Cell> for ReciprocalCell {
-    fn from(value: Cell) -> Self {
-        let Cell {
+impl From<CellConstants> for ReciprocalCell {
+    fn from(value: CellConstants) -> Self {
+        let CellConstants {
             a,
             b,
             c,
@@ -35,8 +35,8 @@ impl From<Cell> for ReciprocalCell {
     }
 }
 
-impl Into<Cell> for ReciprocalCell {
-    fn into(self) -> Cell {
+impl Into<CellConstants> for ReciprocalCell {
+    fn into(self) -> CellConstants {
         todo!()
     }
 }

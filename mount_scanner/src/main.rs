@@ -31,7 +31,7 @@ fn run_by_config(yaml_config_path: Option<String>) -> Result<(), Box<dyn Error>>
     let yaml_table = TaskTable::load_task_table(filepath)?;
     let executor: Executor = Executor::new(
         yaml_table.new_element(),
-        &Path::new(yaml_table.model_path()),
+        Path::new(yaml_table.model_path()),
         yaml_table.target_bondlength(),
     );
     executor.run(&yaml_table)
@@ -43,7 +43,7 @@ fn interactive_cli() -> Result<(), Box<dyn Error>> {
     let yaml_table = run_options.export_config()?;
     let executor: Executor = Executor::new(
         yaml_table.new_element(),
-        &Path::new(yaml_table.model_path()),
+        Path::new(yaml_table.model_path()),
         yaml_table.target_bondlength(),
     );
     executor.run(&yaml_table)?;

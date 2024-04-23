@@ -70,15 +70,15 @@ impl ExportManager {
         let points = final_report.visualize_specific_sites(
             &[final_report.cut_points(), final_report.multi_cn_points()].concat(),
         );
-        if spheres.len() > 0 {
+        if !spheres.is_empty() {
             self.export_per_sites(&spheres, original_lattice_model, "single_spheres")?;
             println!("Export all single sites")
         }
-        if circles.len() > 0 {
+        if !circles.is_empty() {
             self.export_per_sites(&circles, original_lattice_model, "double_circles")?;
             println!("Export all double circles")
         }
-        if points.len() > 0 {
+        if !points.is_empty() {
             self.export_per_sites(&points, original_lattice_model, "multi_points")?;
             println!("Export all multi points")
         }
@@ -106,7 +106,7 @@ impl ExportManager {
         let export_name = format!("{}_all_{site_name}_demo", self.lattice_name);
         new_visualize_msi.write_to(&format!("{}/{}.msi", self.export_loc_str, &export_name))?;
         fs::write(
-            &format!("{}/{export_name}.cell", self.export_loc_str),
+            format!("{}/{export_name}.cell", self.export_loc_str),
             new_text,
         )
     }
@@ -173,10 +173,10 @@ impl ExportManager {
 fn copy_smcastep_extension(writer: &SeedWriter<GeomOptParam>) -> Result<(), io::Error> {
     let dest_dir = writer.create_export_dir()?;
     let with_seed_name = format!("SMCastep_Extension_{}.xms", writer.seed_name());
-    let dest_path = dest_dir.join(&with_seed_name);
+    let dest_path = dest_dir.join(with_seed_name);
     if !dest_path.exists() {
         fs::copy(
-            &format!("{}/../resources/SMCastep_Extension.xms", CWD),
+            format!("{}/../resources/SMCastep_Extension.xms", CWD),
             dest_path,
         )?;
     }
@@ -189,7 +189,6 @@ pub fn post_copy_potentials(
     let msi_pattern = format!("{target_directory}/**/*.msi");
     glob(&msi_pattern)
         .unwrap()
-        .into_iter()
         .par_bridge()
         .try_for_each(|entry| -> Result<(), io::Error> {
             let cell_entry = entry.as_ref().unwrap().with_extension("cell");
@@ -206,8 +205,7 @@ pub fn post_copy_potentials(
                 .parent()
                 .unwrap()
                 .to_str()
-                .unwrap()
-                .clone();
+                .unwrap();
             let cell_name = filepath.file_stem().unwrap().to_str().unwrap().to_owned();
             let writer: SeedWriter<GeomOptParam> = SeedWriter::build(cell_output)
                 .with_seed_name(&cell_name)

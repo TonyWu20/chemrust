@@ -43,10 +43,21 @@ impl<'a> Executor<'a> {
             .with_bondlength(self.radius)
             .build();
         let filtered_atoms = self.cell_model.xyz_range_filter(x_range, y_range, z_range);
-        Ok(mount_checker.mount_search(&filtered_atoms))
+        if !filtered_atoms.is_empty() {
+            Ok(mount_checker.mount_search(&filtered_atoms))
+        } else {
+            panic!("No atoms found in this range")
+        }
     }
     fn export_manager(&self, export_loc: &str, potential_loc: &str, edft: bool) -> ExportManager {
         let lattice_name = self.cell_filepath.file_stem().unwrap().to_str().unwrap();
+        let p = Path::new(export_loc);
+        if !p.exists() {
+            println!("{:?}", p);
+            fs::create_dir(p).unwrap()
+        } else {
+            println!("Has {:?}", p);
+        }
         ExportManager::new(
             self.new_element.symbol(),
             export_loc,

@@ -51,8 +51,9 @@ impl MountingChecker {
             .collect::<HashSet<String>>()
     }
     pub fn mount_search<'a>(&self, atoms: &'a [Atom]) -> FinalReport {
-        let available_atoms: Vec<Atom> = self.available_atoms(atoms);
-        let collections: AtomCollections = available_atoms.into();
+        // let available_atoms: Vec<Atom> = self.available_atoms(atoms);
+        // println!("available_atoms number: {}", available_atoms.len());
+        let collections: AtomCollections = atoms.into();
         let coords = collections.cartesian_coords().to_vec();
         IntersectChecker::<Ready>::new(&coords)
             .start_with_radius(self.mount_distance)

@@ -10,6 +10,6 @@ license.workspace = true
 
 [dependencies]
 castep-periodic-table = "0.2.2"
-chemrust-core = "0.2"
+chemrust-core = {path = "../chemrust-core"}
 nalgebra = "0.32"
 nom = "7.1.3"

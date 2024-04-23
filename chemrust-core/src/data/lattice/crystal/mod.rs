@@ -1,13 +1,13 @@
 use crate::data::atom::CoreAtomData;
 
-use super::UnitCellParameters;
+use crate::data::lattice::cell_param::UnitCellParameters;
 
-pub struct CrystalEntity<T: UnitCellParameters, U: CoreAtomData> {
+pub struct CrystalModel<T: UnitCellParameters, U: CoreAtomData> {
     cell_param: T,
     atom_sites: U,
 }
 
-impl<T, U> CrystalEntity<T, U>
+impl<T, U> CrystalModel<T, U>
 where
     T: UnitCellParameters,
     U: CoreAtomData,

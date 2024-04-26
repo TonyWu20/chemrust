@@ -8,9 +8,9 @@ use crate::data::geom::coordinates::CoordData;
 pub trait CoreAtomData {
     fn indices(&self) -> &[usize];
 
-    fn symbol(&self) -> &[ElementSymbol];
+    fn symbols(&self) -> &[ElementSymbol];
 
-    fn coord(&self) -> &[CoordData];
+    fn coords(&self) -> &[CoordData];
 
-    fn label(&self) -> &[Option<String>];
+    fn labels(&self) -> &[Option<String>];
 }

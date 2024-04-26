@@ -1,7 +1,7 @@
 [package]
 name = "chemrust-parser"
 edition.workspace = true
-version.workspace = true
+version = "0.3.0"
 authors.workspace = true
 description.workspace = true
 license.workspace = true
@@ -9,7 +9,7 @@ license.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-castep-periodic-table = "0.2.2"
-chemrust-core = "0.2"
+castep-periodic-table = "0.3"
+chemrust-core = {path = "../chemrust-core"}
 nalgebra = "0.32"
 nom = "7.1.3"

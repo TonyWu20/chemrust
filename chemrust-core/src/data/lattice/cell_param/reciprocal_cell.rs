@@ -34,9 +34,3 @@ impl From<CellConstants> for ReciprocalCell {
         }
     }
 }
-
-impl Into<CellConstants> for ReciprocalCell {
-    fn into(self) -> CellConstants {
-        todo!()
-    }
-}

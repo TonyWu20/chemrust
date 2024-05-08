@@ -9,8 +9,8 @@ license.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rayon = "1.*"
-glob = "0"
-castep-periodic-table = "0.2.2"
-chemrust-core = "0.2"
+castep-periodic-table = "0.3"
+chemrust-core = {path = "../chemrust-core"}
 nalgebra = "0.32.5"
+winnow = "0.6"
+serde = "1.0"

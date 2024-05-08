@@ -1,9 +1,7 @@
 #![allow(dead_code)]
-extern crate castep_periodic_table as cpt;
 
-mod param_writer;
-mod structure_files;
-pub use param_writer::{castep_param, cell_settings, seed_writer};
-pub use structure_files::*;
+mod accelrys_msi;
+mod castep_cell;
+mod cif;
 
-pub trait ModelFormat {}
+mod error;

@@ -18,11 +18,7 @@ impl FractionalCoordRange {
         Self(lower.clamp(0.0, 1.0), higher.clamp(0.0, 1.0))
     }
     pub fn is_in_range(&self, value: f64) -> bool {
-        if self.0 <= value && self.1 >= value {
-            true
-        } else {
-            false
-        }
+        self.0 <= value && self.1 >= value
     }
     pub fn min(&self) -> f64 {
         self.0

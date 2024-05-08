@@ -160,7 +160,7 @@ impl FinalReport {
         lattice_model: &BasicLatticeModel,
         new_element_symbol: &str,
     ) -> Option<Vec<(String, BasicLatticeModel)>> {
-        if self.sphere_sites.len() > 0 {
+        if !self.sphere_sites.is_empty() {
             Some(
                 self.sphere_sites()
                     .iter()
@@ -188,7 +188,7 @@ impl FinalReport {
         lattice_model: &BasicLatticeModel,
         new_element_symbol: &str,
     ) -> Option<Vec<(String, BasicLatticeModel)>> {
-        if self.circles.len() > 0 {
+        if !self.circles.is_empty() {
             Some(
                 self.circles()
                     .iter()
@@ -212,7 +212,7 @@ impl FinalReport {
         lattice_model: &BasicLatticeModel,
         new_element_symbol: &str,
     ) -> Option<Vec<(String, BasicLatticeModel)>> {
-        if self.cut_points.len() > 0 {
+        if !self.cut_points.is_empty() {
             Some(
                 self.cut_points()
                     .iter()
@@ -245,7 +245,7 @@ impl FinalReport {
         lattice_model: &BasicLatticeModel,
         new_element_symbol: &str,
     ) -> Option<Vec<(String, BasicLatticeModel)>> {
-        if self.multi_cn_points.len() > 0 {
+        if !self.multi_cn_points.is_empty() {
             Some(
                 self.multi_cn_points()
                     .iter()

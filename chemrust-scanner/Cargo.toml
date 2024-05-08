@@ -12,6 +12,6 @@ license.workspace = true
 kd-tree = {version="0.5.3", features=["nalgebra", "nalgebra-serde"]}
 nalgebra = "0.32.2"
 chemrust-core = {path = "../chemrust-core"}
-chemrust-parser = "0.2"
+chemrust-parser = {path = "../chemrust-parser"}
 itertools = "0.12"
-castep-periodic-table = "0.2"
+castep-periodic-table = "0.3"

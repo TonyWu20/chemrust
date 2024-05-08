@@ -55,8 +55,7 @@ mod test {
                 let found_id = found.get(1).unwrap().item;
                 let found_sphere = spheres[*found_id];
                 let this_sphere = spheres[i];
-                let intersects = this_sphere.intersects(&found_sphere);
-                intersects
+                this_sphere.intersects(&found_sphere)
             })
             .collect();
         let mut single_coordination_sites: Vec<Sphere> = Vec::new();
@@ -130,7 +129,7 @@ mod test {
             .with_element(mount_element)
             .with_bondlength(mount_distance)
             .build();
-        let final_report = mount_checker.mount_search(lattice.atoms());
+        let final_report = mount_checker.mount_search(lattice.atoms(), lattice.atoms());
         println!(
             "New element: {}, bonding_distance: {}",
             mount_element.symbol(),

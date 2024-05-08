@@ -87,7 +87,7 @@ impl CoordinationPoint {
 
     pub fn merge_with(self, rhs: Self) -> Option<CoordinationPoint> {
         if self.coord == rhs.coord {
-            let new_connecting_atom_ids = vec![self.connecting_atom_ids, rhs.connecting_atom_ids];
+            let new_connecting_atom_ids = [self.connecting_atom_ids, rhs.connecting_atom_ids];
             let mut new_connecting_atom_ids = new_connecting_atom_ids.concat();
             new_connecting_atom_ids.sort();
             new_connecting_atom_ids.dedup();

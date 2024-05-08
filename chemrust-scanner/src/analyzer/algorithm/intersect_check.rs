@@ -26,7 +26,13 @@ impl<'a> IntersectChecker<'a, Ready> {
             coords,
             coords_kdtree,
             bondlength: 0.0,
-            state: Ready::default(),
+            state: Ready,
+        }
+    }
+    pub fn set_check_atoms(self, to_check_atoms: &'a [Point3<f64>]) -> Self {
+        IntersectChecker {
+            coords: to_check_atoms,
+            ..self
         }
     }
     pub fn start_with_radius(self, radius: f64) -> IntersectChecker<'a, SphereStage> {
@@ -117,7 +123,7 @@ impl<'a> IntersectChecker<'a, CircleStage> {
     ) -> CoordinationPoint {
         let atom_from_this = circle_a.connecting_atoms().to_vec();
         let atom_from_found = circle_b.connecting_atoms().to_vec();
-        let connecting_atoms = vec![atom_from_this, atom_from_found];
+        let connecting_atoms = [atom_from_this, atom_from_found];
         let mut connecting_atoms = connecting_atoms.concat();
         connecting_atoms.sort();
         connecting_atoms.dedup();
@@ -125,11 +131,7 @@ impl<'a> IntersectChecker<'a, CircleStage> {
             .into_iter()
             .filter(|&atom_id| {
                 let distance = distance(point, self.coords.get(atom_id).unwrap());
-                if (distance - self.bondlength).abs() > 1e-6 {
-                    false
-                } else {
-                    true
-                }
+                (distance - self.bondlength).abs() <= 1e-6
             })
             .collect();
         let coordination_number = real_connecting_atoms.len() as u32;
@@ -151,7 +153,7 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                     .iter()
                     .enumerate()
                     .filter(|&(id_sub, _)| match id_main == id_sub {
-                        true => return false,
+                        true => false,
                         false => {
                             let mut pair = [id_main, id_sub];
                             pair.sort();
@@ -243,7 +245,7 @@ impl<'a> IntersectChecker<'a, CircleStage> {
                 }
                 true
             })
-            .map(|bc| bc.clone())
+            .cloned()
             .collect()
     }
 }
@@ -325,11 +327,7 @@ impl<'a> IntersectChecker<'a, PointStage> {
                     .within_radius(&this_coord, self.bondlength + 0.0001);
                 // 0.0001 is the tolerance of floating point comparison.
                 // After adding this, no more cases of `found.len() < cp.cn()` is reported
-                if found.len() != cp.cn() as usize {
-                    false
-                } else {
-                    true
-                }
+                found.len() == cp.cn() as usize
             })
             .collect();
         res

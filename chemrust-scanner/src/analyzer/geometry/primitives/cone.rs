@@ -35,11 +35,7 @@ impl Cone {
         }
         let cone_radius = (cone_dist / self.h()) * self.r();
         let orth_distance = (point_to_tip - self.normal().scale(cone_dist)).norm();
-        if orth_distance - cone_radius < -1e-6 {
-            true
-        } else {
-            false
-        }
+        orth_distance - cone_radius < -1e-6
     }
 
     pub fn tip(&self) -> Point3<f64> {

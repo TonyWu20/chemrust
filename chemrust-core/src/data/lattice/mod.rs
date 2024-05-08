@@ -81,14 +81,9 @@ impl BasicLatticeModel {
             .filter(|&atom| {
                 let frac_coord = self.lattice_vectors.as_ref().unwrap().mat_cart_to_frac()
                     * atom.cartesian_coord();
-                if x_range.is_in_range(frac_coord.x)
+                x_range.is_in_range(frac_coord.x)
                     && y_range.is_in_range(frac_coord.y)
                     && z_range.is_in_range(frac_coord.z)
-                {
-                    true
-                } else {
-                    false
-                }
             })
             .cloned()
             .collect::<Vec<Atom>>()

@@ -26,7 +26,7 @@ impl MountingChecker {
     pub fn new_builder() -> MountingCheckerBuilder {
         MountingCheckerBuilder::new()
     }
-    fn available_atoms<'a>(&self, atoms: &'a [Atom]) -> Vec<Atom> {
+    fn available_atoms(&self, atoms: &[Atom]) -> Vec<Atom> {
         atoms
             .iter()
             .filter(|atom| {
@@ -34,7 +34,7 @@ impl MountingChecker {
                     ideal_bondlength(atom.atomic_number(), self.mount_element.atomic_number());
                 is_bonded(self.mount_distance, ideal_bondlength, LOWER_FAC, UPPER_FAC)
             })
-            .map(|atom| atom.clone())
+            .cloned()
             .collect()
     }
     pub fn available_elements(&self, atoms: &[Atom]) -> HashSet<String> {
@@ -50,12 +50,15 @@ impl MountingChecker {
             .drain(..)
             .collect::<HashSet<String>>()
     }
-    pub fn mount_search<'a>(&self, atoms: &'a [Atom]) -> FinalReport {
+    pub fn mount_search(&self, model_atoms: &[Atom], to_check_atoms: &[Atom]) -> FinalReport {
         // let available_atoms: Vec<Atom> = self.available_atoms(atoms);
         // println!("available_atoms number: {}", available_atoms.len());
-        let collections: AtomCollections = atoms.into();
+        let collections: AtomCollections = model_atoms.into();
+        let to_check_atom_collections: AtomCollections = to_check_atoms.into();
         let coords = collections.cartesian_coords().to_vec();
+        let to_check_coords = to_check_atom_collections.cartesian_coords().to_vec();
         IntersectChecker::<Ready>::new(&coords)
+            .set_check_atoms(&to_check_coords)
             .start_with_radius(self.mount_distance)
             .check_spheres()
             .analyze_circle_intersects()
@@ -98,5 +101,11 @@ impl MountingCheckerBuilder {
             mount_element,
             mount_distance: self.mount_distance,
         }
+    }
+}
+
+impl Default for MountingCheckerBuilder {
+    fn default() -> Self {
+        Self::new()
     }
 }

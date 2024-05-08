@@ -24,11 +24,7 @@ pub(crate) trait MPMeshing: MPGrid3D {
     const NUM: i32;
     fn mesh(num_points: u32) -> Vec<i32> {
         let q = num_points as i32;
-        (1..=q)
-            .into_iter()
-            .rev()
-            .map(|r| 2 * r - q - Self::NUM)
-            .collect()
+        (1..=q).rev().map(|r| 2 * r - q - Self::NUM).collect()
     }
     fn generate<B: Basis>(&self) -> MPMesh<B> {
         let meshes: [Vec<i32>; 3] = self

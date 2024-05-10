@@ -14,6 +14,7 @@ use super::{
 
 pub struct IntersectChecker<'a, T: CheckStage> {
     coords: &'a [Point3<f64>],
+    selected_coords: &'a [Point3<f64>],
     coords_kdtree: KdIndexTree<'a, Point3<f64>>,
     bondlength: f64,
     state: T,
@@ -27,11 +28,12 @@ impl<'a> IntersectChecker<'a, Ready> {
             coords_kdtree,
             bondlength: 0.0,
             state: Ready,
+            selected_coords: coords,
         }
     }
     pub fn set_check_atoms(self, to_check_atoms: &'a [Point3<f64>]) -> Self {
         IntersectChecker {
-            coords: to_check_atoms,
+            selected_coords: to_check_atoms,
             ..self
         }
     }
@@ -39,6 +41,7 @@ impl<'a> IntersectChecker<'a, Ready> {
         IntersectChecker {
             coords: self.coords,
             coords_kdtree: self.coords_kdtree,
+            selected_coords: self.selected_coords,
             bondlength: radius,
             state: SphereStage::new(self.coords, radius),
         }
@@ -58,15 +61,17 @@ impl<'a> IntersectChecker<'a, SphereStage> {
         let mut points_only_sites: Vec<CoordinationPoint> = Vec::new();
         let radius = self.state.radius();
         let mut checked_pairs: HashSet<[usize; 2]> = HashSet::new();
-        self.coords.iter().enumerate().for_each(|(i, p)| {
+        self.selected_coords.iter().enumerate().for_each(|(_, p)| {
             let found = self.coords_kdtree.within_radius(p, 2.0 * radius);
+            let original_id = self.coords.iter().position(|&op| *p == op).unwrap();
+            let this_sphere = self.state.get_sphere(original_id).unwrap();
             found
                 .iter()
                 .filter(|found_id| -> bool {
-                    if i == ***found_id {
+                    if original_id == ***found_id {
                         return false;
                     }
-                    let mut pair: [usize; 2] = [i, ***found_id];
+                    let mut pair: [usize; 2] = [original_id, ***found_id];
                     pair.sort();
                     checked_pairs.insert(pair)
                 })
@@ -74,17 +79,15 @@ impl<'a> IntersectChecker<'a, SphereStage> {
                 .for_each(|new_id| {
                     // the remain ids are new
                     let found_sphere = self.state.get_sphere(**new_id).unwrap();
-                    let this_sphere = self.state.get_sphere(i).unwrap();
                     let intersect_result = this_sphere.intersects(found_sphere);
                     match intersect_result {
                         SphereIntersectResult::Zero => {
-                            spheres.push(BondingSphere::new(*this_sphere, i))
+                            spheres.push(BondingSphere::new(*this_sphere, original_id))
                         }
-                        SphereIntersectResult::SinglePoint(p) => {
-                            points_only_sites.push(CoordinationPoint::new(p, vec![i, **new_id], 2))
-                        }
+                        SphereIntersectResult::SinglePoint(p) => points_only_sites
+                            .push(CoordinationPoint::new(p, vec![original_id, **new_id], 2)),
                         SphereIntersectResult::Circle(c) => {
-                            circles.push(BondingCircle::new(c, [i, **new_id]))
+                            circles.push(BondingCircle::new(c, [original_id, **new_id]))
                         }
                         _ => (),
                     }
@@ -99,6 +102,7 @@ impl<'a> IntersectChecker<'a, SphereStage> {
         let circle_stage = self.analyze_sphere_intersects();
         let Self {
             coords,
+            selected_coords,
             coords_kdtree,
             bondlength,
             state: _,
@@ -106,6 +110,7 @@ impl<'a> IntersectChecker<'a, SphereStage> {
         IntersectChecker {
             coords,
             coords_kdtree,
+            selected_coords,
             bondlength,
             state: circle_stage,
         }
@@ -215,6 +220,7 @@ impl<'a> IntersectChecker<'a, CircleStage> {
         IntersectChecker {
             coords: self.coords,
             coords_kdtree: self.coords_kdtree,
+            selected_coords: self.selected_coords,
             bondlength: self.bondlength,
             state: point_stage,
         }
@@ -267,6 +273,7 @@ impl<'a> IntersectChecker<'a, PointStage> {
         IntersectChecker {
             coords: self.coords,
             coords_kdtree: self.coords_kdtree,
+            selected_coords: self.selected_coords,
             bondlength: self.bondlength,
             state: final_stage,
         }
@@ -291,9 +298,9 @@ impl<'a> IntersectChecker<'a, PointStage> {
         let dedup_points: Vec<(usize, &CoordinationPoint)> = points
             .iter()
             .dedup_by_with_count(|a, b| {
-                (a.coord().x - b.coord().x).abs() < 1e-3
-                    && (a.coord().y - b.coord().y).abs() < 1e-3
-                    && (a.coord().z - b.coord().z).abs() < 1e-3
+                (a.coord().x - b.coord().x).abs() < 1e-5
+                    && (a.coord().y - b.coord().y).abs() < 1e-5
+                    && (a.coord().z - b.coord().z).abs() < 1e-5
             })
             .collect();
         let point_kdtree = KdIndexTree::build_by_ordered_float(&point_xyzs);
@@ -324,10 +331,18 @@ impl<'a> IntersectChecker<'a, PointStage> {
                 let this_coord = cp.coord();
                 let found = self
                     .coords_kdtree
-                    .within_radius(&this_coord, self.bondlength + 0.0001);
+                    .within_radius(&this_coord, self.bondlength + 0.00000001);
+                let mut found_cn: Vec<usize> = found.iter().map(|id| **id).collect();
+                found_cn.sort();
+                let mut cn: Vec<usize> = cp.connecting_atom_ids().to_vec();
+                cn.sort();
+                if found_cn == cn {
+                    println!("found {:?}", found_cn);
+                    println!("cn {:?}", cn);
+                }
                 // 0.0001 is the tolerance of floating point comparison.
                 // After adding this, no more cases of `found.len() < cp.cn()` is reported
-                found.len() == cp.cn() as usize
+                found.len() == cp.cn() as usize && found_cn == cn
             })
             .collect();
         res

@@ -19,7 +19,7 @@ impl ExportOptions {
         bondlength: f64,
         model_name: &str,
     ) -> Result<ExportOptions, InquireError> {
-        let export_dir = Self::ask_export_dir(new_element.symbol(), bondlength, model_name)?;
+        let export_dir = Self::ask_export_dir(&new_element.symbol(), bondlength, model_name)?;
         let potential_dir = Self::ask_potential_dir()?;
         let kpoint_quality = Self::ask_kpoint_quality()?;
         let edft = Self::ask_edft(new_element)?;

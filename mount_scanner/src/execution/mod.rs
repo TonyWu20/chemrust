@@ -44,7 +44,7 @@ impl<'a> Executor<'a> {
             .build();
         let filtered_atoms = self.cell_model.xyz_range_filter(x_range, y_range, z_range);
         if !filtered_atoms.is_empty() {
-            Ok(mount_checker.mount_search(&filtered_atoms))
+            Ok(mount_checker.mount_search(self.cell_model.atoms(), &filtered_atoms))
         } else {
             panic!("No atoms found in this range")
         }
@@ -59,7 +59,7 @@ impl<'a> Executor<'a> {
             println!("Has {:?}", p);
         }
         ExportManager::new(
-            self.new_element.symbol(),
+            &self.new_element.symbol(),
             export_loc,
             potential_loc,
             lattice_name,

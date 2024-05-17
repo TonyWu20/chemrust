@@ -82,6 +82,15 @@ pub struct LatticeCell {
     atoms: Atoms,
 }
 
+impl LatticeCell {
+    pub fn new(lattice_param: LatticeVectors, atoms: Atoms) -> Self {
+        Self {
+            lattice_param,
+            atoms,
+        }
+    }
+}
+
 impl CrystalModel for LatticeCell {
     fn get_cell_parameters(&self) -> &impl UnitCellParameters {
         &self.lattice_param

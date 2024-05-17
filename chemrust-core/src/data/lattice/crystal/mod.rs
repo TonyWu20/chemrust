@@ -1,6 +1,8 @@
-use crate::data::atom::CoreAtomData;
+use crate::data::atom::{Atoms, CoreAtomData};
 
 use crate::data::lattice::cell_param::UnitCellParameters;
+
+use super::cell_param::LatticeVectors;
 
 /// The struct to represent a crystal model structure should implement this trait.
 /// # Examples
@@ -71,4 +73,21 @@ use crate::data::lattice::cell_param::UnitCellParameters;
 pub trait CrystalModel {
     fn get_cell_parameters(&self) -> &impl UnitCellParameters;
     fn get_atom_data(&self) -> &impl CoreAtomData;
+}
+
+/// Basic example of a crystal model
+#[derive(Debug, Clone)]
+pub struct LatticeCell {
+    lattice_param: LatticeVectors,
+    atoms: Atoms,
+}
+
+impl CrystalModel for LatticeCell {
+    fn get_cell_parameters(&self) -> &impl UnitCellParameters {
+        &self.lattice_param
+    }
+
+    fn get_atom_data(&self) -> &impl CoreAtomData {
+        &self.atoms
+    }
 }

@@ -14,3 +14,30 @@ pub trait CoreAtomData {
 
     fn labels(&self) -> &[Option<String>];
 }
+
+/// Basic example struct
+#[derive(Debug, Clone)]
+pub struct Atoms {
+    indices: Vec<usize>,
+    symbols: Vec<ElementSymbol>,
+    coordinates: Vec<CoordData>,
+    labels: Vec<Option<String>>,
+}
+
+impl CoreAtomData for Atoms {
+    fn indices(&self) -> &[usize] {
+        &self.indices
+    }
+
+    fn symbols(&self) -> &[ElementSymbol] {
+        &self.symbols
+    }
+
+    fn coords(&self) -> &[CoordData] {
+        &self.coordinates
+    }
+
+    fn labels(&self) -> &[Option<String>] {
+        &self.labels
+    }
+}

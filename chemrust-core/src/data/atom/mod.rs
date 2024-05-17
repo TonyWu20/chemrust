@@ -1,4 +1,4 @@
 mod atom_data;
 mod extra_keywords;
 
-pub use atom_data::CoreAtomData;
+pub use atom_data::{Atoms, CoreAtomData};

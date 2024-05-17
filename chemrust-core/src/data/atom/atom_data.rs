@@ -24,6 +24,22 @@ pub struct Atoms {
     labels: Vec<Option<String>>,
 }
 
+impl Atoms {
+    pub fn new(
+        indices: Vec<usize>,
+        symbols: Vec<ElementSymbol>,
+        coordinates: Vec<CoordData>,
+        labels: Vec<Option<String>>,
+    ) -> Self {
+        Self {
+            indices,
+            symbols,
+            coordinates,
+            labels,
+        }
+    }
+}
+
 impl CoreAtomData for Atoms {
     fn indices(&self) -> &[usize] {
         &self.indices

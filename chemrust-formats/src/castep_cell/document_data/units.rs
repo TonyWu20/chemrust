@@ -1,10 +1,8 @@
 use std::str::FromStr;
 
-use serde::Deserialize;
-
 use crate::error::MatchError;
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Clone, Copy)]
 pub enum LengthUnit {
     Bohr,
     Meter,

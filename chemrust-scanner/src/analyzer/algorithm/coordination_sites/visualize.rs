@@ -67,9 +67,16 @@ impl Visualize for BondingCircle {
 impl Visualize for CoordinationPoint {
     type Output = Vec<Atom>;
     fn draw_with_atoms(&self) -> Self::Output {
+        let symbol = match self.connecting_atom_ids().len() {
+            3 => "Cu",
+            4 => "Fe",
+            5 => "W",
+            6 => "Pt",
+            _ => "Na",
+        };
         vec![Atom::new_builder()
             .with_index(0)
-            .with_symbol("Ar")
+            .with_symbol(symbol)
             .with_coord(&self.coord)
             .ready()
             .build()]

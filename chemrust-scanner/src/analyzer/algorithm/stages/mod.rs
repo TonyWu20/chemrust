@@ -289,7 +289,7 @@ impl FinalReport {
     {
         coordination_sites
             .iter()
-            .map(|site| site.draw_with_element("He"))
+            .map(|site| site.draw_with_atoms())
             .collect::<Vec<Vec<Atom>>>()
             .concat()
     }

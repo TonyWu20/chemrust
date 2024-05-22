@@ -22,7 +22,7 @@ impl Intersect<Plane> for Plane {
         let solve = m_coeff_z0.lu().solve(&m_b);
         if let Some(solution) = solve {
             let d = Unit::new_normalize(n3);
-            return Some(Line::new(d, Point3::new(solution.x, solution.y, 0.0)));
+            Some(Line::new(d, Point3::new(solution.x, solution.y, 0.0)))
         } else {
             let solve = m_coeff_z0.full_piv_lu().solve(&m_b);
             if let Some(solution) = solve {
@@ -34,18 +34,16 @@ impl Intersect<Plane> for Plane {
             let solve = m_coeff_x0.lu().solve(&m_b);
             if let Some(solution) = solve {
                 let d = Unit::new_normalize(n3);
-                return Some(Line::new(d, Point3::new(0.0, solution.x, solution.y)));
+                Some(Line::new(d, Point3::new(0.0, solution.x, solution.y)))
             } else {
                 let m_coeff_y0 = Matrix2::new(self.n.x, self.n.z, rhs.n.x, rhs.n.z);
                 let m_b = Vector2::new(self.d, rhs.d);
                 let solve = m_coeff_y0.lu().solve(&m_b);
                 if let Some(solution) = solve {
                     let d = Unit::new_normalize(n3);
-                    return Some(Line::new(d, Point3::new(solution.x, 0.0, solution.y)));
+                    Some(Line::new(d, Point3::new(solution.x, 0.0, solution.y)))
                 } else {
-                    println!("{}, {}", m_coeff_y0.rank(1e-6), m_b.rank(1e-6));
-                    println!("y0, directional vector {:?}", n3);
-                    return None;
+                    None
                 }
             }
         }

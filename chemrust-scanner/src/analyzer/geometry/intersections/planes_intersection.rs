@@ -27,7 +27,7 @@ impl Intersect<Plane> for Plane {
             let solve = m_coeff_z0.full_piv_lu().solve(&m_b);
             if let Some(solution) = solve {
                 let d = Unit::new_normalize(n3);
-                Some(Line::new(d, Point3::new(solution.x, solution.y, 0.0)))
+                return Some(Line::new(d, Point3::new(solution.x, solution.y, 0.0)));
             }
             let m_coeff_x0 = Matrix2::new(self.n.y, self.n.z, rhs.n.y, rhs.n.z);
             let m_b = Vector2::new(self.d, rhs.d);

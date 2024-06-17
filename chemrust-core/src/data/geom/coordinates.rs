@@ -21,7 +21,7 @@ impl CoordData {
     }
     /// Accepts `CoordData::Fractional(p)` and returns `CoordData::Cartesian(p)`
     /// If the passed in `frac_coord` is `CoordData::Cartesian(p)`, return itself directly.
-    pub fn frac_to_coord(frac_coord: &CoordData, cell_vectors: &Matrix3<f64>) -> CoordData {
+    pub fn frac_to_cart(frac_coord: &CoordData, cell_vectors: &Matrix3<f64>) -> CoordData {
         match frac_coord {
             CoordData::Fractional(point) => CoordData::Cartesian(cell_vectors * point),
             CoordData::Cartesian(cart_p) => CoordData::Cartesian(*cart_p),
@@ -33,10 +33,21 @@ impl CoordData {
             Self::Cartesian(_) => false,
         }
     }
-    pub fn xyz(&self) -> Point3<f64> {
+    pub fn raw_data(&self) -> Point3<f64> {
         match *self {
             Self::Fractional(p) => p,
             Self::Cartesian(p) => p,
+        }
+    }
+    pub fn cart_to_frac(&self, cell_vectors: &Matrix3<f64>) -> CoordData {
+        match self {
+            CoordData::Fractional(f) => CoordData::Fractional(*f),
+            CoordData::Cartesian(c) => CoordData::Fractional(
+                cell_vectors
+                    .try_inverse()
+                    .expect("The lattice vectors matrix failed to inverse!?")
+                    * c,
+            ),
         }
     }
 }

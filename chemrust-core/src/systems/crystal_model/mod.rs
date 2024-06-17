@@ -25,7 +25,7 @@ pub fn frac_to_cart_coords<T: UnitCellParameters, U: CoreAtomData>(
             atoms_data
                 .coords()
                 .iter()
-                .map(|coord| CoordData::Fractional(cell_tensor * coord.xyz()))
+                .map(|coord| CoordData::Fractional(cell_tensor * coord.raw_data()))
                 .collect(),
         )
     }
@@ -74,13 +74,13 @@ mod test {
             ),
         ]));
         let rotation = Rotation3::from_axis_angle(&Vector3::z_axis(), FRAC_PI_4);
-        let cart_p = lattice_vector.cell_tensor() * p.xyz();
+        let cart_p = lattice_vector.cell_tensor() * p.raw_data();
         let rot_cart_p = rotation.matrix() * cart_p;
         let back_to_frac_p = lattice_vector.cell_tensor().try_inverse().unwrap() * rot_cart_p;
         let rot = lattice_vector.cell_tensor().try_inverse().unwrap()
             * rotation.matrix()
             * lattice_vector.cell_tensor();
-        let rot_frac_p = rot * p.xyz();
+        let rot_frac_p = rot * p.raw_data();
         println!(
             "Direct rotate frac_p: {:.3}, cart rotate back to frac_p: {:.3}",
             rot_frac_p, back_to_frac_p

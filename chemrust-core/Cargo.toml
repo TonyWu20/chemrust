@@ -10,5 +10,6 @@ license.workspace = true
 
 [dependencies]
 nalgebra = {version="0.*", features=["debug", "compare"]}
-castep-periodic-table = "0.4"
+castep-periodic-table = "0.5"
+castep-cell-io = {git = "https://github.com/TonyWu20/castep-cell-io", branch = "dev"}
 

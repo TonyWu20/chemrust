@@ -11,5 +11,5 @@ license.workspace = true
 [dependencies]
 nalgebra = {version="0.*", features=["debug", "compare"]}
 castep-periodic-table = "0.5"
-castep-cell-io = "0.1.7"
+castep-cell-io = "0.1"
 

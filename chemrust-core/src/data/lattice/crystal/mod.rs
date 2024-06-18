@@ -71,8 +71,12 @@ use super::cell_param::LatticeVectors;
 /// let _atoms_coords = cell_struct.get_atom_data().coords();
 /// ```
 pub trait CrystalModel {
-    fn get_cell_parameters(&self) -> &impl UnitCellParameters;
-    fn get_atom_data(&self) -> &impl CoreAtomData;
+    type LatticeData: UnitCellParameters;
+    type AtomData: CoreAtomData;
+    fn get_cell_parameters(&self) -> &Self::LatticeData;
+    fn get_atom_data(&self) -> &Self::AtomData;
+    fn get_cell_parameters_mut(&mut self) -> &mut Self::LatticeData;
+    fn get_atom_data_mut(&mut self) -> &mut Self::AtomData;
 }
 
 /// Basic example of a crystal model
@@ -89,14 +93,41 @@ impl LatticeCell {
             atoms,
         }
     }
+
+    pub fn set_atoms(&mut self, atoms: Atoms) {
+        self.atoms = atoms;
+    }
+
+    pub fn atoms_mut(&mut self) -> &mut Atoms {
+        &mut self.atoms
+    }
+
+    pub fn lattice_param(&self) -> LatticeVectors {
+        self.lattice_param
+    }
+
+    pub fn set_lattice_param(&mut self, lattice_param: LatticeVectors) {
+        self.lattice_param = lattice_param;
+    }
 }
 
 impl CrystalModel for LatticeCell {
-    fn get_cell_parameters(&self) -> &impl UnitCellParameters {
+    type AtomData = Atoms;
+    type LatticeData = LatticeVectors;
+
+    fn get_cell_parameters(&self) -> &Self::LatticeData {
         &self.lattice_param
     }
 
-    fn get_atom_data(&self) -> &impl CoreAtomData {
+    fn get_atom_data(&self) -> &Self::AtomData {
         &self.atoms
+    }
+
+    fn get_cell_parameters_mut(&mut self) -> &mut Self::LatticeData {
+        &mut self.lattice_param
+    }
+
+    fn get_atom_data_mut(&mut self) -> &mut Self::AtomData {
+        &mut self.atoms
     }
 }

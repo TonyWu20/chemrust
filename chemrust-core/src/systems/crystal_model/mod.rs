@@ -13,7 +13,7 @@ pub fn frac_to_cart_coords<T: UnitCellParameters, U: CoreAtomData>(
 ) -> Option<Vec<CoordData>> {
     let cell_tensor = lattice_parameters.lattice_bases();
     let all_is_frac = atoms_data
-        .coords()
+        .coords_repr()
         .iter()
         .all(|coord| coord.is_fractional());
     if !all_is_frac {
@@ -21,7 +21,7 @@ pub fn frac_to_cart_coords<T: UnitCellParameters, U: CoreAtomData>(
     } else {
         Some(
             atoms_data
-                .coords()
+                .coords_repr()
                 .iter()
                 .map(|coord| CoordData::Fractional(cell_tensor * coord.raw_data()))
                 .collect(),

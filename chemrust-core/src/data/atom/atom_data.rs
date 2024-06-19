@@ -6,14 +6,10 @@ use crate::data::geom::coordinates::CoordData;
 /// Custom type to extend fields for `AtomData` can be fitted in `CrystalModel` by
 /// implementing this trait
 pub trait CoreAtomData {
-    fn indices(&self) -> &[usize];
-    fn indices_mut(&mut self) -> &mut Vec<usize>;
-    fn symbols(&self) -> &[ElementSymbol];
-    fn symbols_mut(&mut self) -> &mut Vec<ElementSymbol>;
-    fn coords(&self) -> &[CoordData];
-    fn coords_mut(&mut self) -> &mut Vec<CoordData>;
-    fn labels(&self) -> &[Option<String>];
-    fn labels_mut(&mut self) -> &mut Vec<Option<String>>;
+    fn indices_repr(&self) -> Vec<usize>;
+    fn symbols_repr(&self) -> Vec<ElementSymbol>;
+    fn coords_repr(&self) -> Vec<CoordData>;
+    fn labels_repr(&self) -> Vec<Option<String>>;
 }
 
 // /// Basic example struct

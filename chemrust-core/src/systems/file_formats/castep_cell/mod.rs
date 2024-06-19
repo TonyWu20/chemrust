@@ -1,6 +1,8 @@
+use std::{fs::read_to_string, path::Path};
+
 use castep_cell_io::{
-    CellDocument, IonicPosition, IonicPositionBlock, LatticeCart, LatticeParam, LatticeParamBlock,
-    LengthUnit, PositionsKeywords,
+    CellDocument, CellParseError, CellParser, IonicPosition, IonicPositionBlock, LatticeCart,
+    LatticeParam, LatticeParamBlock, LengthUnit, PositionsKeywords,
 };
 use nalgebra::{Matrix3, Point3};
 
@@ -12,6 +14,15 @@ use crate::data::{
         CrystalModel, LatticeCell,
     },
 };
+
+impl LatticeCell {
+    pub fn from_cell_file<P: AsRef<Path>>(cell_file_path: P) -> Result<Self, CellParseError> {
+        let file_content =
+            read_to_string(cell_file_path).expect("Failed to read from given cell file path");
+        let cell_doc = CellParser::from(&file_content).parse()?;
+        Ok(Self::from(cell_doc))
+    }
+}
 
 /// Integrations with `castep-cell-io`
 impl From<CellDocument> for LatticeCell {

@@ -18,9 +18,9 @@ pub struct LatticeVectors {
 
 pub trait UnitCellParameters {
     fn cell_volume(&self) -> f64;
-    fn cell_tensor(&self) -> Matrix3<f64>;
+    fn lattice_bases(&self) -> Matrix3<f64>;
     fn metric_tensor(&self) -> Matrix3<f64> {
-        let mat = self.cell_tensor();
+        let mat = self.lattice_bases();
         let mat_transpose = mat.transpose();
         mat_transpose * mat
     }
@@ -58,7 +58,7 @@ impl UnitCellParameters for CellConstants {
                 .sqrt()
     }
 
-    fn cell_tensor(&self) -> Matrix3<f64> {
+    fn lattice_bases(&self) -> Matrix3<f64> {
         let CellConstants {
             a,
             b,
@@ -129,14 +129,14 @@ impl UnitCellParameters for LatticeVectors {
         self.tensor().determinant()
     }
 
-    fn cell_tensor(&self) -> Matrix3<f64> {
+    fn lattice_bases(&self) -> Matrix3<f64> {
         self.tensor()
     }
 }
 
 impl From<CellConstants> for LatticeVectors {
     fn from(constants: CellConstants) -> Self {
-        Self::new(constants.cell_tensor())
+        Self::new(constants.lattice_bases())
     }
 }
 
@@ -169,10 +169,10 @@ mod test {
         );
         let cell = CellConstants::from(lattice_cart);
         println!("{}", cell);
-        println!("{:#>20.18}", cell.cell_tensor());
+        println!("{:#>20.18}", cell.lattice_bases());
         let p = Point3::new(0.07560343470042601, 0.0756034355668187, 0.5000000004346841);
         let o: Point3<f64> = Point3::origin();
-        let b = cell.cell_tensor().column(1).xyz();
+        let b = cell.lattice_bases().column(1).xyz();
         let j = Vector3::y_axis();
         let rot = Rotation3::rotation_between(&b, &j).unwrap();
         let mat = rotated_lattice_tensor(&cell, rot);
@@ -181,9 +181,9 @@ mod test {
         println!("{:?}", j);
         println!("{:#}", cart_p);
         let frac_p =
-            cell.cell_tensor().try_inverse().unwrap() * rot.matrix() * cell.cell_tensor() * p;
+            cell.lattice_bases().try_inverse().unwrap() * rot.matrix() * cell.lattice_bases() * p;
         println!("{:#}", frac_p);
-        println!("{:#}", cell.cell_tensor() * frac_p);
+        println!("{:#}", cell.lattice_bases() * frac_p);
         let po_cart = (cart_p - o).norm_squared();
         let metric_tensor = cell.metric_tensor();
         let po = frac_p - o;

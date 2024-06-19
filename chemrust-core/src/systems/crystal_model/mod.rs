@@ -13,7 +13,7 @@ pub fn frac_to_cart_coords<T: UnitCellParameters, U: CoreAtomData>(
     lattice_parameters: T,
     atoms_data: U,
 ) -> Option<Vec<CoordData>> {
-    let cell_tensor = lattice_parameters.cell_tensor();
+    let cell_tensor = lattice_parameters.lattice_bases();
     let all_is_frac = atoms_data
         .coords()
         .iter()
@@ -35,7 +35,7 @@ pub fn rotated_lattice_tensor<T: UnitCellParameters>(
     lattice_parameters: &T,
     rotation: Rotation3<f64>,
 ) -> Matrix3<f64> {
-    rotation.matrix() * lattice_parameters.cell_tensor()
+    rotation.matrix() * lattice_parameters.lattice_bases()
 }
 
 #[cfg(test)]
@@ -74,12 +74,12 @@ mod test {
             ),
         ]));
         let rotation = Rotation3::from_axis_angle(&Vector3::z_axis(), FRAC_PI_4);
-        let cart_p = lattice_vector.cell_tensor() * p.raw_data();
+        let cart_p = lattice_vector.lattice_bases() * p.raw_data();
         let rot_cart_p = rotation.matrix() * cart_p;
-        let back_to_frac_p = lattice_vector.cell_tensor().try_inverse().unwrap() * rot_cart_p;
-        let rot = lattice_vector.cell_tensor().try_inverse().unwrap()
+        let back_to_frac_p = lattice_vector.lattice_bases().try_inverse().unwrap() * rot_cart_p;
+        let rot = lattice_vector.lattice_bases().try_inverse().unwrap()
             * rotation.matrix()
-            * lattice_vector.cell_tensor();
+            * lattice_vector.lattice_bases();
         let rot_frac_p = rot * p.raw_data();
         println!(
             "Direct rotate frac_p: {:.3}, cart rotate back to frac_p: {:.3}",

@@ -1,8 +1,6 @@
 use nalgebra::{Matrix3, Rotation3};
 
-use crate::data::{
-    atom::CoreAtomData, geom::coordinates::CoordData, lattice::cell_param::UnitCellParameters,
-};
+use crate::data::{atom::CoreAtomData, geom::coordinates::CoordData, lattice::UnitCellParameters};
 
 /// Convert fractional coordinates to cartesian by reference to the unit cell
 /// parameters.
@@ -46,7 +44,7 @@ mod test {
 
     use crate::data::{
         geom::coordinates::CoordData,
-        lattice::cell_param::{LatticeVectors, UnitCellParameters},
+        lattice::{LatticeVectors, UnitCellParameters},
     };
 
     #[test]
@@ -56,21 +54,22 @@ mod test {
             0.0756034355668187,
             0.5000000004346841,
         ));
+        #[allow(clippy::excessive_precision)]
         let lattice_vector = LatticeVectors::new(Matrix3::from_columns(&[
             Vector3::new(
-                18.931530020488704480,
-                -0.000000000000003553,
-                0.000000000000000000,
+                18.931530020488704480_f64,
+                -0.000000000000003553_f64,
+                0.000000000000000000_f64,
             ),
             Vector3::new(
-                -9.465765010246645517,
-                16.395185930251127360,
-                0.000000000000000000,
+                -9.465765010246645517_f64,
+                16.395185930251127360_f64,
+                0.000000000000000000_f64,
             ),
             Vector3::new(
-                0.000000000000000000,
-                0.000000000000000000,
-                9.999213039981000861,
+                0.000000000000000000_f64,
+                0.000000000000000000_f64,
+                9.999213039981000861_f64,
             ),
         ]));
         let rotation = Rotation3::from_axis_angle(&Vector3::z_axis(), FRAC_PI_4);

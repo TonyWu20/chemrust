@@ -1,4 +1,4 @@
-use crate::data::atom::{Atoms, CoreAtomData};
+use crate::data::atom::CoreAtomData;
 
 use crate::data::lattice::cell_param::UnitCellParameters;
 

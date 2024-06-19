@@ -17,7 +17,9 @@ pub struct LatticeVectors {
 }
 
 pub trait UnitCellParameters {
-    fn cell_volume(&self) -> f64;
+    fn cell_volume(&self) -> f64 {
+        self.lattice_bases().determinant()
+    }
     fn lattice_bases(&self) -> Matrix3<f64>;
     fn metric_tensor(&self) -> Matrix3<f64> {
         let mat = self.lattice_bases();

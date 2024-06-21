@@ -10,7 +10,7 @@ members = [
     "chemrust-scanner",
     "chemrust-settings",
     "chemrust-misctools"
-]
+, "chemrust-cerius2-io"]
 resolver = "2"
 
 [workspace.package]

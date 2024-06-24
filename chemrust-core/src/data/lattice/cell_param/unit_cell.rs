@@ -133,7 +133,7 @@ impl UnitCellParameters for CellConstants {
 
 impl From<Matrix3<f64>> for CellConstants {
     fn from(mat: Matrix3<f64>) -> Self {
-        let (v_a, v_b, v_c) = (mat.row(0), mat.row(1), mat.row(2));
+        let (v_a, v_b, v_c) = (mat.column(0), mat.column(1), mat.column(2));
         let (a, b, c) = (v_a.norm(), v_b.norm(), v_c.norm());
         let (alpha, beta, gamma) = (v_b.angle(&v_c), v_a.angle(&v_c), v_a.angle(&v_b));
         Self {

@@ -26,6 +26,25 @@ pub trait UnitCellParameters {
         let mat_transpose = mat.transpose();
         mat_transpose * mat
     }
+    fn length_a(&self) -> f64 {
+        CellConstants::from(self.lattice_bases()).a
+    }
+    fn length_b(&self) -> f64 {
+        CellConstants::from(self.lattice_bases()).b
+    }
+    fn length_c(&self) -> f64 {
+        CellConstants::from(self.lattice_bases()).b
+    }
+    fn angle_alpha(&self) -> f64 {
+        CellConstants::from(self.lattice_bases()).alpha
+    }
+    fn angle_beta(&self) -> f64 {
+        CellConstants::from(self.lattice_bases()).beta
+    }
+
+    fn angle_gamma(&self) -> f64 {
+        CellConstants::from(self.lattice_bases()).gamma
+    }
 }
 
 impl CellConstants {
@@ -85,6 +104,30 @@ impl UnitCellParameters for CellConstants {
             0.0,
             volume / (a * b * gamma.sin()),
         )
+    }
+
+    fn length_a(&self) -> f64 {
+        self.a
+    }
+
+    fn length_b(&self) -> f64 {
+        self.b
+    }
+
+    fn length_c(&self) -> f64 {
+        self.c
+    }
+
+    fn angle_alpha(&self) -> f64 {
+        self.alpha
+    }
+
+    fn angle_beta(&self) -> f64 {
+        self.beta
+    }
+
+    fn angle_gamma(&self) -> f64 {
+        self.gamma
     }
 }
 

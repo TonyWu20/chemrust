@@ -33,7 +33,7 @@ pub trait UnitCellParameters {
         CellConstants::from(self.lattice_bases()).b
     }
     fn length_c(&self) -> f64 {
-        CellConstants::from(self.lattice_bases()).b
+        CellConstants::from(self.lattice_bases()).c
     }
     fn angle_alpha(&self) -> f64 {
         CellConstants::from(self.lattice_bases()).alpha

@@ -1,4 +1,5 @@
 [package]
+name = "chemrust-cerius2-io"
 # name.workspace = true
 description.workspace = true
 authors.workspace = true

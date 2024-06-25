@@ -13,7 +13,6 @@ pub trait CrystalModel {
 }
 
 pub trait SymmetryInfo {
-    fn get_space_group_it_num<T: Fn(&Self) -> u8>(&self, f: T) -> u8 {
-        f(self)
-    }
+    /// 1-230
+    fn get_space_group_it_num(&self) -> u8;
 }

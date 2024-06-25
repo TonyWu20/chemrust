@@ -13,3 +13,4 @@ pub mod atom;
 // pub mod custom_data_type;
 pub mod geom;
 pub mod lattice;
+pub mod symmetry;

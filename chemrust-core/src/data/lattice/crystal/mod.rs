@@ -11,8 +11,3 @@ pub trait CrystalModel {
     fn get_cell_parameters_mut(&mut self) -> &mut Self::LatticeData;
     fn get_atom_data_mut(&mut self) -> &mut Self::AtomData;
 }
-
-pub trait SymmetryInfo {
-    /// 1-230
-    fn get_space_group_it_num(&self) -> u8;
-}

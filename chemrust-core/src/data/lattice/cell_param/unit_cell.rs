@@ -48,6 +48,7 @@ pub trait UnitCellParameters {
 }
 
 impl CellConstants {
+    /// angles should be specified in degrees
     pub fn new(a: f64, b: f64, c: f64, alpha: f64, beta: f64, gamma: f64) -> Self {
         Self {
             a,
@@ -70,9 +71,9 @@ impl UnitCellParameters for CellConstants {
             beta,
             gamma,
         } = self;
-        let cos_a = alpha.cos();
-        let cos_b = beta.cos();
-        let cos_y = gamma.cos();
+        let cos_a = alpha.to_radians().cos();
+        let cos_b = beta.to_radians().cos();
+        let cos_y = gamma.to_radians().cos();
         a * b
             * c
             * (1.0 - cos_a * cos_a - cos_b * cos_b - cos_y * cos_y + 2.0 * cos_a * cos_b * cos_y)
@@ -89,20 +90,24 @@ impl UnitCellParameters for CellConstants {
             gamma,
         } = self;
         let volume = self.cell_volume();
+        let cos_a = alpha.to_radians().cos();
+        let cos_b = beta.to_radians().cos();
+        let cos_y = gamma.to_radians().cos();
+        let sin_y = gamma.to_radians().sin();
         //     [a         bcosy                     ccosB]
         // A = [0         bsiny   c(cosa - cosbcosy)/siny]
         //     [0             0                v/(absiny)]
         // The columns are `a`, `b` and `c` vectors;
         Matrix3::new(
             *a,
-            b * gamma.cos(),
-            c * beta.cos(),
+            b * cos_y,
+            c * cos_b,
             0.0,
-            b * gamma.sin(),
-            c * (alpha.cos() - beta.cos() * gamma.cos()) / gamma.sin(),
+            b * sin_y,
+            c * (cos_a - cos_b * cos_y) / sin_y,
             0.0,
             0.0,
-            volume / (a * b * gamma.sin()),
+            volume / (a * b * sin_y),
         )
     }
 
@@ -135,7 +140,11 @@ impl From<Matrix3<f64>> for CellConstants {
     fn from(mat: Matrix3<f64>) -> Self {
         let (v_a, v_b, v_c) = (mat.column(0), mat.column(1), mat.column(2));
         let (a, b, c) = (v_a.norm(), v_b.norm(), v_c.norm());
-        let (alpha, beta, gamma) = (v_b.angle(&v_c), v_a.angle(&v_c), v_a.angle(&v_b));
+        let (alpha, beta, gamma) = (
+            v_b.angle(&v_c).to_degrees(),
+            v_a.angle(&v_c).to_degrees(),
+            v_a.angle(&v_b).to_degrees(),
+        );
         Self {
             a,
             b,
@@ -155,7 +164,7 @@ impl From<&Matrix3<f64>> for CellConstants {
 
 impl Display for CellConstants {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "a_length: {:>20.18}; b_length: {:>20.18}; c_length: {:>20.18}; alpha: {} beta: {} gamma: {}", self.a, self.b, self.c, self.alpha.to_degrees(), self.beta.to_degrees(), self.gamma.to_degrees())
+        write!(f, "a_length: {:>20.18}; b_length: {:>20.18}; c_length: {:>20.18}; alpha: {} beta: {} gamma: {}", self.a, self.b, self.c, self.alpha, self.beta, self.gamma)
     }
 }
 

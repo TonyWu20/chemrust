@@ -11,3 +11,4 @@ license.workspace = true
 [dependencies]
 nalgebra = {version="0.*", features=["debug", "compare"]}
 castep-periodic-table = "0.5.1"
+crystallographic-group = "0.2.0"

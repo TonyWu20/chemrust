@@ -1,61 +1,37 @@
 use glob::glob;
-use std::{
-    error::Error,
-    fs::{self, read_to_string},
-    io,
-    path::Path,
-};
+use std::{error::Error, fs, path::Path};
 
-use chemrust_parser::CellParser;
+mod server_utils;
 
-pub fn write_lsf_script<P: AsRef<Path>>(cell_path: &P, num_nodes: u32) -> Result<(), io::Error> {
-    let target_dir = cell_path.as_ref().parent().unwrap();
-    let cell_name = cell_path.as_ref().file_stem().unwrap().to_str().unwrap();
-    let cmd = format!(
-        "/home-yw/Soft/msi/MS70/MaterialsStudio7.0/etc/CASTEP/bin/RunCASTEP.sh -np $NP {cell_name}"
-    );
-    let prefix = format!(
-        r#"APP_NAME=intelY_mid
-NP={}
-NP_PER_NODE=12
-OMP_NUM_THREADS=1
-RUN="RAW"
+pub use server_utils::{write_server_script, ServerScriptType};
 
-"#,
-        num_nodes,
-    );
-    let content = format!("{prefix}{cmd}");
-    let lsf_filepath = target_dir.join("MS70_YW_CASTEP.lsf");
-    fs::write(lsf_filepath, content)
-}
-pub fn copy_potentials<P: AsRef<Path>>(cell_path: &P, potential_loc: &P) -> Result<(), io::Error> {
-    let file = read_to_string(cell_path).unwrap();
-    let potentials = CellParser::new(&file)
-        .to_potentials()
-        .unwrap()
-        .report_potential_files();
-    let dest_dir = cell_path.as_ref().parent().unwrap();
-    potentials
-        .iter()
-        .try_for_each(|pot_file| -> Result<(), io::Error> {
-            let pot_src_path = potential_loc.as_ref().join(pot_file);
-            let pot_dest_path = dest_dir.join(pot_file);
-            if !pot_dest_path.exists() {
-                fs::copy(pot_src_path, pot_dest_path)?;
-                Ok(())
-            } else {
-                Ok(())
-            }
-        })
-}
+// pub fn copy_potentials<P: AsRef<Path>>(cell_path: &P, potential_loc: &P) -> Result<(), io::Error> {
+//     let file = read_to_string(cell_path).unwrap();
+//     let potentials = CellParser::new(&file)
+//         .to_potentials()
+//         .unwrap()
+//         .report_potential_files();
+//     let dest_dir = cell_path.as_ref().parent().unwrap();
+//     potentials
+//         .iter()
+//         .try_for_each(|pot_file| -> Result<(), io::Error> {
+//             let pot_src_path = potential_loc.as_ref().join(pot_file);
+//             let pot_dest_path = dest_dir.join(pot_file);
+//             if !pot_dest_path.exists() {
+//                 fs::copy(pot_src_path, pot_dest_path)?;
+//                 Ok(())
+//             } else {
+//                 Ok(())
+//             }
+//         })
+// }
 
-/// Scan the generated `msi` files, create a perl script to be run in `Materials Studio`
+/// Scan the generated `cif` files, create a perl script to be run in `Materials Studio`
 /// to save as `xsd` format.
 pub fn to_xsd_scripts(target_root_dir: &str) -> Result<(), Box<dyn Error>> {
-    let msi_pattern = format!("{target_root_dir}/**/*.msi");
-    let item_collection = glob(&msi_pattern)
+    let cif_pattern = format!("{target_root_dir}/**/*.cif");
+    let item_collection = glob(&cif_pattern)
         .expect("Failed to read glob pattern")
-        .into_iter()
         .map(|entry| -> Option<String> {
             match entry {
                 Ok(path) => {
@@ -85,13 +61,13 @@ use MaterialsScript qw(:all);
 "#;
     let array_text = format!("my @params = (\n{});\n", all_files_text);
     let actions = r#"foreach my $item (@params) {
-    my $doc = $Documents{"${item}.msi"};
+    my $doc = $Documents{"${item}.cif"};
     $doc->CalculateBonds;
     $doc->Export("${item}.xsd");
     $doc->Save;
     $doc->Close;
 }"#;
     let contents = format!("{headlines}{array_text}{actions}");
-    fs::write(Path::new("msi_to_xsd.pl"), contents)?;
+    fs::write(Path::new("cif_to_xsd.pl"), contents)?;
     Ok(())
 }

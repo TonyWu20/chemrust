@@ -30,8 +30,7 @@ pub use server_utils::{write_server_script, ServerScriptType};
 /// to save as `xsd` format.
 pub fn to_xsd_scripts<P: AsRef<Path>>(target_root_dir: P) -> Result<(), Box<dyn Error>> {
     let cif_pattern = format!("{}/**/*.cif", target_root_dir.as_ref().display());
-    let item_collection = glob(&cif_pattern)
-        .expect("Failed to read glob pattern")
+    let item_collection = glob(&cif_pattern)?
         .map(|entry| -> Option<String> {
             match entry {
                 Ok(path) => {

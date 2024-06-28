@@ -28,8 +28,8 @@ pub use server_utils::{write_server_script, ServerScriptType};
 
 /// Scan the generated `cif` files, create a perl script to be run in `Materials Studio`
 /// to save as `xsd` format.
-pub fn to_xsd_scripts(target_root_dir: &str) -> Result<(), Box<dyn Error>> {
-    let cif_pattern = format!("{target_root_dir}/**/*.cif");
+pub fn to_xsd_scripts<P: AsRef<Path>>(target_root_dir: P) -> Result<(), Box<dyn Error>> {
+    let cif_pattern = format!("{}/**/*.cif", target_root_dir.as_ref().display());
     let item_collection = glob(&cif_pattern)
         .expect("Failed to read glob pattern")
         .map(|entry| -> Option<String> {

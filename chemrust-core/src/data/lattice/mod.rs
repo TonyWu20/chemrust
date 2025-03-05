@@ -1,5 +1,5 @@
 mod cell_param;
 mod crystal;
 
-pub use cell_param::{CellConstants, LatticeVectors, ReciprocalCell, UnitCellParameters};
+pub use cell_param::{CellConstants, LatticeVectors, ReciprocalCellConstant, UnitCellParameters};
 pub use crystal::CrystalModel;

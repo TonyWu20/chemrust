@@ -2,6 +2,8 @@ use std::fmt::Display;
 
 use nalgebra::Matrix3;
 #[derive(Debug, Clone, Copy)]
+/// Lattice constants.
+/// Consider using newtype to wrap the angles f64 to ensure in radian form.
 pub struct CellConstants {
     pub(crate) a: f64,
     pub(crate) b: f64,
@@ -35,13 +37,16 @@ pub trait UnitCellParameters {
     fn length_c(&self) -> f64 {
         CellConstants::from(self.lattice_bases()).c
     }
+    /// Should return radians!
     fn angle_alpha(&self) -> f64 {
         CellConstants::from(self.lattice_bases()).alpha
     }
+    /// Should return radians!
     fn angle_beta(&self) -> f64 {
         CellConstants::from(self.lattice_bases()).beta
     }
 
+    /// Should return radians!
     fn angle_gamma(&self) -> f64 {
         CellConstants::from(self.lattice_bases()).gamma
     }
@@ -71,9 +76,9 @@ impl UnitCellParameters for CellConstants {
             beta,
             gamma,
         } = self;
-        let cos_a = alpha.to_radians().cos();
-        let cos_b = beta.to_radians().cos();
-        let cos_y = gamma.to_radians().cos();
+        let cos_a = alpha.cos();
+        let cos_b = beta.cos();
+        let cos_y = gamma.cos();
         a * b
             * c
             * (1.0 - cos_a * cos_a - cos_b * cos_b - cos_y * cos_y + 2.0 * cos_a * cos_b * cos_y)
@@ -90,10 +95,10 @@ impl UnitCellParameters for CellConstants {
             gamma,
         } = self;
         let volume = self.cell_volume();
-        let cos_a = alpha.to_radians().cos();
-        let cos_b = beta.to_radians().cos();
-        let cos_y = gamma.to_radians().cos();
-        let sin_y = gamma.to_radians().sin();
+        let cos_a = alpha.cos();
+        let cos_b = beta.cos();
+        let cos_y = gamma.cos();
+        let sin_y = gamma.sin();
         //     [a         bcosy                     ccosB]
         // A = [0         bsiny   c(cosa - cosbcosy)/siny]
         //     [0             0                v/(absiny)]
@@ -140,11 +145,7 @@ impl From<Matrix3<f64>> for CellConstants {
     fn from(mat: Matrix3<f64>) -> Self {
         let (v_a, v_b, v_c) = (mat.column(0), mat.column(1), mat.column(2));
         let (a, b, c) = (v_a.norm(), v_b.norm(), v_c.norm());
-        let (alpha, beta, gamma) = (
-            v_b.angle(&v_c).to_degrees(),
-            v_a.angle(&v_c).to_degrees(),
-            v_a.angle(&v_b).to_degrees(),
-        );
+        let (alpha, beta, gamma) = (v_b.angle(&v_c), v_a.angle(&v_c), v_a.angle(&v_b));
         Self {
             a,
             b,

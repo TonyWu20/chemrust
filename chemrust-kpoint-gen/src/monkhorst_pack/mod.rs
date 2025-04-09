@@ -1,7 +1,7 @@
 #![allow(unused)]
 use nalgebra::Vector3;
 
-use crate::kpoint::KPoint;
+use crate::kpoints::KPoint;
 
 mod mp_spacing;
 

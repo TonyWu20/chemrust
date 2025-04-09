@@ -1,12 +1,8 @@
-mod kpoint;
+mod kpoints;
 mod monkhorst_pack;
 mod symmetry_operations;
 
 mod functions;
-
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
 
 #[cfg(test)]
 mod tests {
@@ -49,11 +45,29 @@ mod tests {
         let mp_grid = MPGrid::new([1, 2, 3], [0.0; 3]);
         let reducible_kpts = mp_grid.generate_reducible_kpts();
         let irreducible_kpts = reduce_kpoints(&reducible_kpts, &core_ops);
+        let total_degeneracy = irreducible_kpts
+            .iter()
+            .fold(0, |acc, x| acc + x.degeneracy());
         println!("Grid : {:?}", mp_grid);
-        irreducible_kpts.iter().for_each(|k| println!("{}", k));
+        irreducible_kpts.iter().for_each(|k| {
+            println!(
+                "{} {}",
+                k.kpt(),
+                k.degeneracy() as f64 / (total_degeneracy as f64)
+            )
+        });
         let new_grid = MPGrid::new([2, 2, 2], [0.0; 3]);
         let irreducible_kpts = reduce_kpoints(&new_grid.generate_reducible_kpts(), &core_ops);
         println!("Grid : {:?}", new_grid);
-        irreducible_kpts.iter().for_each(|k| println!("{}", k));
+        let total_degeneracy = irreducible_kpts
+            .iter()
+            .fold(0, |acc, x| acc + x.degeneracy());
+        irreducible_kpts.iter().for_each(|k| {
+            println!(
+                "{} {}",
+                k.kpt(),
+                k.degeneracy() as f64 / (total_degeneracy as f64)
+            )
+        });
     }
 }

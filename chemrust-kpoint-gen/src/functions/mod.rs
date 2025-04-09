@@ -1,6 +1,9 @@
 use nalgebra::Matrix3;
 
-use crate::{kpoint::KPoint, symmetry_operations::SymmetryOperation};
+use crate::{
+    kpoints::{IrreducibleKpt, KPoint},
+    symmetry_operations::SymmetryOperation,
+};
 
 /// Apply rotation operation to a k-point, return a new instance of k-point
 pub fn apply_rotation_to_kpt(rotation_matrix: &Matrix3<f64>, kpoint: &KPoint) -> KPoint {
@@ -19,7 +22,7 @@ pub fn is_irreducible<T: SymmetryOperation>(k: &KPoint, group: &[T]) -> bool {
 /// # Note
 /// It follows `castep`'s convention to let fully inversed kpoints (-x, -y, -z) to be degenerate with (x, y, z).
 /// The output vec is sorted in the lex order of the vector coordinates and in reverse order (Greater to less).
-pub fn reduce_kpoints<T: SymmetryOperation>(kpts: &[KPoint], group: &[T]) -> Vec<KPoint> {
+pub fn reduce_kpoints<T: SymmetryOperation>(kpts: &[KPoint], group: &[T]) -> Vec<IrreducibleKpt> {
     let first_stage_results = kpts
         .iter()
         .filter(|&kpt| is_irreducible(kpt, group))
@@ -27,13 +30,16 @@ pub fn reduce_kpoints<T: SymmetryOperation>(kpts: &[KPoint], group: &[T]) -> Vec
         .collect::<Vec<KPoint>>();
     let mut irreducible_kpts = first_stage_results
         .iter()
-        .filter(|&kpt| {
+        .filter_map(|&kpt| {
             // Check full inverse degeneracy
-            !first_stage_results.contains(&kpt.inv()) // Do not have full inversed counterparts
-            || kpt >= &kpt.inv() // Or, it is greater than the counterpart, so the one to keep has more positive values in xyz
+            (
+                !first_stage_results.contains(&kpt.inv()) // Do not have full inversed counterparts
+            || kpt >= kpt.inv()
+                // Or, it is greater than the counterpart, so the one to keep has more positive values in xyz
+            )
+            .then_some(IrreducibleKpt::new(kpt, group.len() + 1))
         })
-        .cloned()
-        .collect::<Vec<KPoint>>();
-    irreducible_kpts.sort_by(|a, b| a.partial_cmp(b).expect("Have order").reverse());
+        .collect::<Vec<IrreducibleKpt>>();
+    irreducible_kpts.sort_by(|a, b| a.kpt().partial_cmp(&b.kpt()).expect("Have order").reverse());
     irreducible_kpts
 }

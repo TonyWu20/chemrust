@@ -5,7 +5,11 @@ use nalgebra::Matrix3;
 pub use recip_cell_constant::ReciprocalCellConstant;
 pub use recip_cell_vectors::ReciprocalCellVectors;
 
+/// Traits that a struct to represent
+/// reciprocal cell parameters.
 pub trait ReciprocalCellParams {
+    /// Return the reciprocal lattice vectors
+    /// in `nalgebra::Matrix3<f64>`
     fn lattice_bases(&self) -> Matrix3<f64>;
     fn length_a(&self) -> f64;
     fn length_b(&self) -> f64;

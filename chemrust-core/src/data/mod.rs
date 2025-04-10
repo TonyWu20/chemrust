@@ -14,3 +14,7 @@ pub mod atom;
 pub mod geom;
 pub mod lattice;
 pub mod symmetry;
+
+mod lattice_model;
+
+pub use lattice_model::LatticeModel;

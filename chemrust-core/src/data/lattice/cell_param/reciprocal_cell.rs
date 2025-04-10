@@ -1,56 +1,18 @@
+mod recip_cell_constant;
+mod recip_cell_vectors;
+
 use nalgebra::Matrix3;
+pub use recip_cell_constant::ReciprocalCellConstant;
+pub use recip_cell_vectors::ReciprocalCellVectors;
 
-use super::unit_cell::UnitCellParameters;
-
-#[derive(Debug, Clone, Copy)]
-/// The angles are expressed in radians.
-pub struct ReciprocalCellConstant {
-    pub(crate) recip_a: f64,
-    pub(crate) recip_b: f64,
-    pub(crate) recip_c: f64,
-    pub(crate) recip_alpha: f64,
-    pub(crate) recip_beta: f64,
-    pub(crate) recip_gamma: f64,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct ReciprocalCellVectors {
-    pub(crate) matrix: Matrix3<f64>,
-}
-
-impl<T: UnitCellParameters> From<T> for ReciprocalCellConstant {
-    fn from(value: T) -> Self {
-        let volume = value.cell_volume();
-        let alpha = value.angle_alpha();
-        let beta = value.angle_beta();
-        let gamma = value.angle_gamma();
-        let a = value.length_a();
-        let b = value.length_b();
-        let c = value.length_c();
-        let cos_recip_a = (beta.cos() * gamma.cos() - alpha.cos()) / (beta.sin() * gamma.sin());
-        let cos_recip_b = (gamma.cos() * alpha.cos() - beta.cos()) / (gamma.sin() * alpha.sin());
-        let cos_recip_y = (alpha.cos() * beta.cos() - gamma.cos()) / (alpha.sin() * beta.sin());
-        Self {
-            recip_a: b * c * alpha.sin() / volume,
-            recip_b: c * a * beta.sin() / volume,
-            recip_c: a * b * gamma.sin() / volume,
-            recip_alpha: cos_recip_a.acos(),
-            recip_beta: cos_recip_b.acos(),
-            recip_gamma: cos_recip_y.acos(),
-        }
-    }
-}
-
-impl<T: UnitCellParameters> From<T> for ReciprocalCellVectors {
-    fn from(value: T) -> Self {
-        Self {
-            matrix: value
-                .lattice_bases()
-                .try_inverse()
-                .expect("Lattice vector matrix should be invertible.")
-                .transpose(),
-        }
-    }
+pub trait ReciprocalCellParams {
+    fn lattice_bases(&self) -> Matrix3<f64>;
+    fn length_a(&self) -> f64;
+    fn length_b(&self) -> f64;
+    fn length_c(&self) -> f64;
+    fn angle_alpha(&self) -> f64;
+    fn angle_beta(&self) -> f64;
+    fn angle_gamma(&self) -> f64;
 }
 
 #[cfg(test)]

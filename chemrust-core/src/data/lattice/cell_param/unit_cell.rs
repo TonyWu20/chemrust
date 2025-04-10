@@ -1,5 +1,6 @@
-use std::fmt::Display;
+use std::{cmp::Ordering, fmt::Display};
 
+use crystallographic_group::database::CrystalSystem;
 use nalgebra::Matrix3;
 #[derive(Debug, Clone, Copy)]
 /// Lattice constants.
@@ -49,6 +50,63 @@ pub trait UnitCellParameters {
     /// Should return radians!
     fn angle_gamma(&self) -> f64 {
         CellConstants::from(self.lattice_bases()).gamma
+    }
+    fn get_crystal_system(&self) -> CrystalSystem {
+        let (length_a, length_b, length_c) = (self.length_a(), self.length_b(), self.length_c());
+        let (alpha, beta, gamma) = (self.angle_alpha(), self.angle_beta(), self.angle_gamma());
+        let axis_length_equal_count = [
+            compare_f64(length_a, length_b),
+            compare_f64(length_b, length_c),
+            compare_f64(length_a, length_c),
+        ]
+        .iter()
+        .filter(|ord| matches!(ord, Ordering::Equal))
+        .count();
+
+        let angle_eq_90_count = [
+            compare_f64(90.0, alpha),
+            compare_f64(90.0, beta),
+            compare_f64(90.0, gamma),
+        ]
+        .iter()
+        .filter(|ord| matches!(ord, Ordering::Equal))
+        .count();
+
+        let angle_eq_120_count = [
+            compare_f64(120.0, alpha),
+            compare_f64(120.0, beta),
+            compare_f64(120.0, gamma),
+        ]
+        .iter()
+        .filter(|ord| matches!(ord, Ordering::Equal))
+        .count();
+        match axis_length_equal_count {
+            3 => {
+                if angle_eq_90_count == 3 {
+                    CrystalSystem::Cubic
+                } else {
+                    CrystalSystem::Trigonal // Rhombohedral belongs to Trigonal
+                }
+            }
+            1 => {
+                if angle_eq_90_count == 3 {
+                    CrystalSystem::Tetragonal
+                } else if angle_eq_90_count == 2 && angle_eq_120_count == 1 {
+                    CrystalSystem::Hexagonal
+                } else {
+                    CrystalSystem::Triclinic
+                }
+            }
+            2 => {
+                // Floating point accuracy issue : a = b && b = c in tol but a != c
+                CrystalSystem::Triclinic
+            }
+            _ => match angle_eq_90_count {
+                3 => CrystalSystem::Orthorhombic,
+                2 => CrystalSystem::Monoclinic,
+                _ => CrystalSystem::Triclinic,
+            },
+        }
     }
 }
 
@@ -192,6 +250,16 @@ impl UnitCellParameters for LatticeVectors {
 impl From<CellConstants> for LatticeVectors {
     fn from(constants: CellConstants) -> Self {
         Self::new(constants.lattice_bases())
+    }
+}
+
+fn compare_f64(v1: f64, v2: f64) -> Ordering {
+    if (v1 - v2).abs() < 1e-6 {
+        Ordering::Equal
+    } else if v1 - v2 < -1e-6 {
+        Ordering::Less
+    } else {
+        Ordering::Greater
     }
 }
 

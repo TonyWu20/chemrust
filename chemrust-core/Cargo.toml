@@ -1,7 +1,7 @@
 [package]
 name = "chemrust-core"
 edition.workspace = true
-version = "0.5.0"
+version = "0.5.1"
 authors.workspace = true
 description.workspace = true
 license.workspace = true
@@ -11,4 +11,4 @@ license.workspace = true
 [dependencies]
 nalgebra = {version="0.33", features=["debug", "compare"]}
 castep-periodic-table = "0.5.2"
-crystallographic-group = "0.2.0"
+crystallographic-group = "0.3.1"

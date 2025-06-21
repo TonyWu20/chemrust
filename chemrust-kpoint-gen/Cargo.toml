@@ -11,6 +11,6 @@ license.workspace = true
 keywords.workspace = true
 
 [dependencies]
-chemrust-core = { version = "0.5.1", path = "../chemrust-core" }
-crystallographic-group = { version = "0.3.1", path = "../../crystallographic-group" }
+chemrust-core = { version = "0.6.0", path = "../chemrust-core" }
+crystallographic-group = { version = "0.3.1" }
 nalgebra = { version = "0.33.2", features = ["compare", "debug"] }

@@ -141,7 +141,7 @@ cat  >./hostfile"#
 -x OMP_NUM_THREADS=1 \
 -x BLIS_NUM_THREADS=1 \
 -x LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/data/software/aocl510/5.1.0/gcc/lib \
---np $NCPU --mca btl ^tcp --hostfile hostfile --map-by numa --bind-to numa /data/software/CASTEP-6.11_aocl/castep.mpi {job_name} >debug.log 2>&1"#),
+--mca btl ^tcp --hostfile hostfile --map-by numa --bind-to numa /data/software/CASTEP-6.11_aocl/castep.mpi {job_name} >debug.log 2>&1"#),
             "rm ./hostfile".to_string(),
         ]
         .join("\n")

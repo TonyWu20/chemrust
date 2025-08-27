@@ -111,36 +111,34 @@ impl Display for PbsScript {
             format!("#PBS -l nodes=1:ppn={nodes}"),
             r#"#PBS -V
 
-cd 
+cd $PBS_O_WORKDIR
 
-NCPU=`wc -l < `
-NNODES=`uniq  | wc -l`
+NCPU=`wc -l < $PBS_NODEFILE`
+NNODES=`uniq $PBS_NODEFILE | wc -l`
 
 echo ------------------------------------------------------
-echo ' This job is allocated on '' cpu(s)'
+echo ' This job is allocated on '${NCPU}' cpu(s)'
 echo 'Job is running on node(s): '
 cat 
 echo ------------------------------------------------------
-echo PBS: qsub is running on 
-echo PBS: originating queue is 
-echo PBS: executing queue is 
-echo PBS: working directory is 
-echo PBS: execution mode is 
-echo PBS: job identifier is 
-echo PBS: job name is 
-echo PBS: node file is 
-echo PBS: number of nodes is 
-echo PBS: current home directory is 
-echo PBS: PATH = 
+echo PBS: qsub is running on $PBS_O_HOST
+echo PBS: originating queue is $PBS_O_QUEUE
+echo PBS: executing queue is $PBS_QUEUE
+echo PBS: working directory is $PBS_O_WORKDIR
+echo PBS: execution mode is $PBS_ENVIRONMENT
+echo PBS: job identifier is $PBS_JOBID
+echo PBS: job name is $PBS_JOBNAME
+echo PBS: node file is $PBS_NODEFILE
+echo PBS: number of nodes is $NNODES
+echo PBS: current home directory is $PBS_O_HOME
+echo PBS: PATH = $PBS_O_PATH
 echo ------------------------------------------------------
 
-##For openmpi-intel
-##export LD_LIBRARY_PATH=/share/apps/openmpi-1.8.8-intel/lib:
-##export PATH=/share/apps/openmpi-1.8.8-intel/bin:
+source /data/software/intel/oneapi/setvars.sh
 
 cat  >./hostfile"#
                 .to_string(),
-            format!("mpirun --mca btl ^tcp --hostfile hostfile /home/bhuang/castep.mpi {job_name}"),
+            format!("mpirun --np $NCPU --mca btl ^tcp --hostfile hostfile /data/software/CASTEP-6.11_mkl/castep.mpi {job_name}"),
             "rm ./hostfile".to_string(),
         ]
         .join("\n");

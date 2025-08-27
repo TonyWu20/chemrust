@@ -98,12 +98,11 @@ impl PbsScript {
     pub fn new(nodes: u32, job_name: String) -> Self {
         Self { nodes, job_name }
     }
-}
 
-impl Display for PbsScript {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    /// for amd aocl
+    pub fn content(&self) -> String {
         let Self { nodes, job_name } = self;
-        let content = [
+        [
             r#"#PBS -N HPL_short_run
 #PBS -q simple_q
 #PBS -l walltime=168:00:00"#
@@ -134,15 +133,24 @@ echo PBS: current home directory is $PBS_O_HOME
 echo PBS: PATH = $PBS_O_PATH
 echo ------------------------------------------------------
 
-source /data/software/intel/oneapi/setvars.sh
 
 cat  >./hostfile"#
                 .to_string(),
-            format!("mpirun --np $NCPU --mca btl ^tcp --hostfile hostfile /data/software/CASTEP-6.11_mkl/castep.mpi {job_name}"),
+            format!(
+            r#"mpirun \
+-x OMP_NUM_THREADS=1 \
+-x BLIS_NUM_THREADS=1 \
+-x LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/data/software/aocl510/5.1.0/gcc/lib \
+--np $NCPU --mca btl ^tcp --hostfile hostfile --map-by numa --bind-to numa /data/software/CASTEP-6.11_aocl/castep.mpi {job_name} >debug.log 2>&1"#),
             "rm ./hostfile".to_string(),
         ]
-        .join("\n");
-        write!(f, "{content}")
+        .join("\n")
+    }
+}
+
+impl Display for PbsScript {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.content())
     }
 }
 

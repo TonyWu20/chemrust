@@ -134,7 +134,7 @@ echo PBS: PATH = $PBS_O_PATH
 echo ------------------------------------------------------
 
 
-cat  >./hostfile"#
+cat $PBS_NODEFILE >./hostfile"#
                 .to_string(),
             format!(
             r#"mpirun \

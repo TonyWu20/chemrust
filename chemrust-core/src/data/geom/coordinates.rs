@@ -1,4 +1,6 @@
-use nalgebra::{Matrix3, Point3};
+use nalgebra::Point3;
+
+use crate::data::lattice::UnitCellParameters;
 /// The fractional coordinates are favored when dealing with atoms in lattice.
 /// The support of cartesian coordinates is equally important, but not prioritized.
 /// # Notes:
@@ -21,9 +23,14 @@ impl CoordData {
     }
     /// Accepts `CoordData::Fractional(p)` and returns `CoordData::Cartesian(p)`
     /// If the passed in `frac_coord` is `CoordData::Cartesian(p)`, return itself directly.
-    pub fn frac_to_cart(frac_coord: &CoordData, cell_vectors: &Matrix3<f64>) -> CoordData {
+    pub fn frac_to_cart<T: UnitCellParameters>(
+        frac_coord: &CoordData,
+        cell_params: &T,
+    ) -> CoordData {
         match frac_coord {
-            CoordData::Fractional(point) => CoordData::Cartesian(cell_vectors * point),
+            CoordData::Fractional(point) => {
+                CoordData::Cartesian(cell_params.lattice_bases() * point)
+            }
             CoordData::Cartesian(cart_p) => CoordData::Cartesian(*cart_p),
         }
     }
@@ -39,11 +46,12 @@ impl CoordData {
             Self::Cartesian(p) => p,
         }
     }
-    pub fn cart_to_frac(&self, cell_vectors: &Matrix3<f64>) -> CoordData {
+    pub fn cart_to_frac<T: UnitCellParameters>(&self, cell_params: &T) -> CoordData {
         match self {
             CoordData::Fractional(f) => CoordData::Fractional(*f),
             CoordData::Cartesian(c) => CoordData::Fractional(
-                cell_vectors
+                cell_params
+                    .lattice_bases()
                     .try_inverse()
                     .expect("The lattice vectors matrix failed to inverse!?")
                     * c,

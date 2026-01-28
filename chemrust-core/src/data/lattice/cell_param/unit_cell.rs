@@ -221,9 +221,19 @@ impl From<&Matrix3<f64>> for CellConstants {
     }
 }
 
+impl From<[[f64; 3]; 3]> for CellConstants {
+    fn from(value: [[f64; 3]; 3]) -> Self {
+        Self::from(Matrix3::from(value))
+    }
+}
+
 impl Display for CellConstants {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "a_length: {:>20.18}; b_length: {:>20.18}; c_length: {:>20.18}; alpha: {} beta: {} gamma: {}", self.a, self.b, self.c, self.alpha, self.beta, self.gamma)
+        write!(
+            f,
+            "a_length: {:>20.18}; b_length: {:>20.18}; c_length: {:>20.18}; alpha: {} beta: {} gamma: {}",
+            self.a, self.b, self.c, self.alpha, self.beta, self.gamma
+        )
     }
 }
 
@@ -253,6 +263,12 @@ impl From<CellConstants> for LatticeVectors {
     }
 }
 
+impl From<[[f64; 3]; 3]> for LatticeVectors {
+    fn from(value: [[f64; 3]; 3]) -> Self {
+        Self::new(Matrix3::from(value))
+    }
+}
+
 fn compare_f64(v1: f64, v2: f64) -> Ordering {
     if (v1 - v2).abs() < 1e-6 {
         Ordering::Equal
@@ -265,7 +281,7 @@ fn compare_f64(v1: f64, v2: f64) -> Ordering {
 
 #[cfg(test)]
 mod test {
-    use nalgebra::{Matrix3, Point3, Rotation3, Vector3};
+    use nalgebra::{Point3, Rotation3, Vector3};
 
     use crate::{
         data::lattice::cell_param::unit_cell::UnitCellParameters,
@@ -276,20 +292,26 @@ mod test {
 
     #[test]
     fn cell_repr() {
-        let lattice_cart = Matrix3::new(
+        let lattice_cart = [
             // a
-            18.931530020488704480,
-            -0.000000000000003553,
-            0.000000000000000000,
+            [
+                18.931530020488704480,
+                -0.000000000000003553,
+                0.000000000000000000,
+            ],
             // b
-            -9.465765010246645517,
-            16.395185930251127360,
-            0.000000000000000000,
+            [
+                -9.465765010246645517,
+                16.395185930251127360,
+                0.000000000000000000,
+            ],
             // c
-            0.000000000000000000,
-            0.000000000000000000,
-            9.999213039981000861,
-        );
+            [
+                0.000000000000000000,
+                0.000000000000000000,
+                9.999213039981000861,
+            ],
+        ];
         let cell = CellConstants::from(lattice_cart);
         println!("{}", cell);
         println!("{:#>20.18}", cell.lattice_bases());

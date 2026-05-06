@@ -30,7 +30,7 @@ use castep_cell_io::{
         },
         exchange_correlation::{SpinPolarized, XcFunctional},
         general::{
-            Iprint, OptStrategy, PageWvfns, Task, WriteFormattedDensity, WriteFormattedPotential,
+            OptStrategy, PageWvfns, Task, WriteFormattedDensity, WriteFormattedPotential,
         },
         BandStructureParams, BasisSetParams, DensityMixingParams, ElectricFieldParams,
         ElectronicExcitationsParams, ElectronicMinimisationParams, ElectronicParams,

@@ -1,4 +1,4 @@
-//! chemrust-core — Crystal geometry toolkit.
+//! chemrust-geometry — Crystal geometry toolkit.
 //!
 //! Core types for representing and manipulating crystal structures,
 //! molecules, and surfaces. No format-specific I/O — that's handled
@@ -10,7 +10,7 @@
 //!
 //! # Transform pipeline
 //! ```rust,ignore
-//! use chemrust_core::{slab::fcc_bulk, transform::{SurfaceRotation, Supercell}, Structure};
+//! use chemrust_geometry::{slab::fcc_bulk, transform::{SurfaceRotation, Supercell}, Structure};
 //!
 //! let slab = fcc_bulk(3.615, ElementSymbol::Cu)
 //!     .transform(SurfaceRotation::new(1, 1, 1))

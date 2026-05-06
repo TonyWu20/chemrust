@@ -1,7 +1,7 @@
 [package]
-name = "chemrust-core"
+name = "chemrust-geometry"
 edition.workspace = true
-version = "0.6.0"
+version = "0.1.0"
 authors.workspace = true
 description = "Crystal geometry toolkit for computational materials science — Structure, lattice vectors, transforms, and slab generation."
 license.workspace = true

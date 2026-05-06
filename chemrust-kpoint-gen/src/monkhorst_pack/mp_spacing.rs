@@ -1,4 +1,4 @@
-use chemrust_core::ReciprocalCellParams;
+use chemrust_geometry::ReciprocalCellParams;
 
 use super::MPGrid;
 

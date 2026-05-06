@@ -42,8 +42,8 @@ use castep_cell_io::{
 };
 use castep_periodic_table::data::ELEMENT_TABLE;
 use castep_periodic_table::element::LookupElement;
-use chemrust_core::slab::cu111_co_system;
-use chemrust_core::ElementSymbol;
+use chemrust_geometry::slab::cu111_co_system;
+use chemrust_geometry::ElementSymbol;
 
 fn main() -> anyhow::Result<()> {
     // ── Build the structure ──────────────────────────────────────

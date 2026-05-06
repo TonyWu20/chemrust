@@ -2,7 +2,7 @@
 
 [workspace]
 members = [
-    "chemrust-core",
+    "chemrust-geometry",
     "chemrust-kpoint-gen",
 ]
 resolver = "2"

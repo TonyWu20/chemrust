@@ -1,4 +1,4 @@
-/// Error types for chemrust-core operations.
+/// Error types for chemrust-geometry operations.
 #[derive(Debug, Clone)]
 pub enum Error {
     /// The structure has no cell (cell=None) but the operation requires one.

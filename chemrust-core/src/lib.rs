@@ -1,11 +1,36 @@
-//! The core module of `chemrust` is responsible for the abstraction of the data input/output for
-//! the chemical models, regardless of the detailed file formats. The designs and implementations
-//! of the structs, traits and patterns serve the internal running logics of the library. Only
-//! essential data structures and data manipulations are presented here.
+//! chemrust-core — Crystal geometry toolkit.
+//!
+//! Core types for representing and manipulating crystal structures,
+//! molecules, and surfaces. No format-specific I/O — that's handled
+//! by downstream crates (e.g., `castep-cell-io` for CASTEP).
+//!
+//! # Main types
+//! - [`Structure`] — Struct-of-arrays for any chemical system
+//! - [`LatticeVectors`], [`CellConstants`] — Cell representation
+//!
+//! # Transform pipeline
+//! ```rust,ignore
+//! use chemrust_core::{slab::fcc_bulk, transform::{SurfaceRotation, Supercell}, Structure};
+//!
+//! let slab = fcc_bulk(3.615, ElementSymbol::Cu)
+//!     .transform(SurfaceRotation::new(1, 1, 1))
+//!     .transform(Supercell::new(2, 2, 1))
+//!     .apply()
+//!     .replicate_along_c(4)
+//!     .add_vacuum_gap(12.0);
+//! ```
+
 #![allow(dead_code)]
 
-/// This module provides the basic supports for builder patterns.
-// pub mod builder_state;
-/// This module settles the abstraction of essential data in the chemical molecule and lattice models
-pub mod data;
-pub mod systems;
+pub mod coords;
+pub mod error;
+pub mod lattice;
+pub mod slab;
+pub mod structure;
+pub mod transform;
+
+pub use castep_periodic_table::element::ElementSymbol;
+pub use coords::FracCoord;
+pub use error::Error;
+pub use lattice::{CellConstants, LatticeVectors, ReciprocalCellParams, ReciprocalCellVectors};
+pub use structure::Structure;

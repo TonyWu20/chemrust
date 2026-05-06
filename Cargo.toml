@@ -2,14 +2,7 @@
 
 [workspace]
 members = [
-    "mount_scanner",
-    "cell_reader",
     "chemrust-core",
-    "chemrust-parser",
-    "chemrust-formats",
-    "chemrust-scanner",
-    "chemrust-misctools",
-    "chemrust-cerius2-io",
     "chemrust-kpoint-gen",
 ]
 resolver = "2"

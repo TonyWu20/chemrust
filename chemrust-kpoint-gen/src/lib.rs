@@ -6,7 +6,7 @@ mod functions;
 
 #[cfg(test)]
 mod tests {
-    use chemrust_core::data::lattice::{LatticeVectors, ReciprocalCellVectors};
+    use chemrust_core::{LatticeVectors, ReciprocalCellVectors};
     use crystallographic_group::{
         database::{LookUpSpaceGroup, DEFAULT_SPACE_GROUP_SYMBOLS},
         *,

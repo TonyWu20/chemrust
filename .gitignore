@@ -23,6 +23,7 @@ chemrust-core/*.msi
 SAC_GDY_V*
 *.msi
 *.cell
+*.param
 **/*.icloud
 .DS_Store
 Bi2Te3_001_Fe_2.2.yaml

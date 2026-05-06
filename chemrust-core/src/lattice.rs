@@ -63,7 +63,7 @@ impl LatticeVectors {
 
     /// Reciprocal lattice vectors: 2π * (C⁻¹)^T
     pub fn reciprocal(&self) -> Matrix3<f64> {
-        2.0 * PI * self.0.try_inverse().unwrap().transpose()
+        2.0 * PI * self.0.try_inverse().expect("lattice tensor is singular: zero-volume cell").transpose()
     }
 
     pub fn lengths(&self) -> (f64, f64, f64) {

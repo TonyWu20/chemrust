@@ -1,0 +1,25 @@
+## Fix Document for Author
+
+### Issue 1: Unused `bon = "3"` dependency
+
+**Classification:** Defect
+**File:** `chemrust-core/Cargo.toml`
+**Severity:** Minor
+**Problem:** `bon = "3"` is listed in `[dependencies]` but never imported or used anywhere in `chemrust-core/src/`. It compiles but adds unnecessary build weight and dependency resolution overhead.
+**Fix:** Remove the line `bon = "3"` from `[dependencies]`. Re-add when the builder pattern is actually adopted.
+
+### Issue 2: `FracCoord` newtype not wired into `Structure`
+
+**Classification:** Defect
+**File:** `chemrust-core/src/structure.rs`
+**Severity:** Major
+**Problem:** `FracCoord` is defined in `coords.rs` and re-exported from `lib.rs`, but `Structure` stores coordinates as `Vec<[f64; 3]>` (raw arrays). The newtype is dead code — masked by `#![allow(dead_code)]` at the crate level. Additionally, `wrap_frac_coords()` re-implements wrapping logic inline (identical to `FracCoord::wrap()`) rather than delegating.
+**Fix:** Either (a) change `frac_coords: Vec<[f64; 3]>` to `frac_coords: Vec<FracCoord>` and update all internal methods, or (b) add `FracCoord`-typed accessor methods and restrict the raw field with `#[doc(hidden)]`. Option (a) is preferred — it eliminates the dead code, removes the redundant `FracCoord::wrap()` → `wrap_frac_coords()` duplication, and satisfies the CLAUDE.md directive for semantic newtypes.
+
+### Issue 3: Bare `.unwrap()` on reciprocal inverse
+
+**Classification:** Correctness
+**File:** `chemrust-core/src/lattice.rs`
+**Severity:** Minor
+**Problem:** `self.0.try_inverse().unwrap()` at line 66 of `lattice.rs` panics with a generic message on singular lattice tensors (zero-volume cells), giving no diagnostic context.
+**Fix:** Replace with `.expect("lattice tensor is singular: zero-volume cell")`, consistent with the existing pattern used in `structure.rs` and `transform.rs`.

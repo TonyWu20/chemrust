@@ -7,56 +7,73 @@
 //!
 //! Output: Cu111_CO.cell, Cu111_CO.param
 
-use castep_cell_fmt::{ToCellFile, format::to_string_many_spaced};
-use castep_periodic_table::data::ELEMENT_TABLE;
-use castep_periodic_table::element::LookupElement;
+use castep_cell_fmt::{format::to_string_many_spaced, ToCellFile};
 use castep_cell_io::{
-    CellDocument, ParamDocument, Positions,
     cell::{
-        lattice_param::LatticeCart,
-        positions::{PositionsFrac, PositionFracEntry},
-        species::Species,
-        species::{SpeciesMass, SpeciesMassEntry, SpeciesPot, SpeciesPotEntry, SpeciesLcaoStates, SpeciesLcaoState},
         bz_sampling_kpoints::KpointsMpSpacing,
+        lattice_param::LatticeCart,
+        positions::{PositionFracEntry, PositionsFrac},
+        species::{
+            Species, SpeciesLcaoState, SpeciesLcaoStates, SpeciesMass, SpeciesMassEntry,
+            SpeciesPot, SpeciesPotEntry,
+        },
         symmetry::SymmetryGenerate,
     },
     param::{
-        GeneralParams, BasisSetParams, ExchangeCorrelationParams,
-        ElectronicParams, ElectronicMinimisationParams, DensityMixingParams,
-        GeometryOptimizationParams, PhononParams, BandStructureParams,
-        MolecularDynamicsParams, ElectricFieldParams, PseudopotentialParams,
-        PopulationAnalysisParams, OpticsParams, NmrParams, SolvationParams,
-        ElectronicExcitationsParams, TransitionStateParams,
+        basis_set::{CutOffEnergy, FineGridScale, FiniteBasisCorr, FixedNpw, GridScale},
+        density_mixing::{
+            MixChargeAmp, MixChargeGmax, MixHistoryLength, MixSpinAmp, MixSpinGmax, MixingScheme,
+        },
+        electronic::PercExtraBands,
+        electronic_minimisation::{
+            ElecEnergyTol, FixOccupancy, MaxScfCycles, NumDumpCycles, SmearingWidth,
+        },
+        exchange_correlation::{SpinPolarized, XcFunctional},
+        general::{
+            Iprint, OptStrategy, PageWvfns, Task, WriteFormattedDensity, WriteFormattedPotential,
+        },
+        BandStructureParams, BasisSetParams, DensityMixingParams, ElectricFieldParams,
+        ElectronicExcitationsParams, ElectronicMinimisationParams, ElectronicParams,
+        ExchangeCorrelationParams, GeneralParams, GeometryOptimizationParams,
+        MolecularDynamicsParams, NmrParams, OpticsParams, PhononParams, PopulationAnalysisParams,
+        PseudopotentialParams, SolvationParams, TransitionStateParams,
     },
-    param::general::{Task, Iprint, OptStrategy, PageWvfns, WriteFormattedPotential},
-    param::exchange_correlation::{XcFunctional, SpinPolarized},
-    param::basis_set::{CutOffEnergy, GridScale, FineGridScale, FiniteBasisCorr, FixedNpw},
-    param::electronic::PercExtraBands,
-    param::electronic_minimisation::{
-        MaxScfCycles, FixOccupancy, ElecEnergyTol, SmearingWidth, NumDumpCycles,
-    },
-    param::density_mixing::{
-        MixChargeAmp, MixSpinAmp, MixChargeGmax, MixSpinGmax, MixHistoryLength, MixingScheme,
-    },
+    CellDocument, ParamDocument, Positions,
 };
+use castep_periodic_table::data::ELEMENT_TABLE;
+use castep_periodic_table::element::LookupElement;
 use chemrust_core::slab::cu111_co_system;
 use chemrust_core::ElementSymbol;
 
 fn main() -> anyhow::Result<()> {
     // ── Build the structure ──────────────────────────────────────
-    let cu111_co = cu111_co_system(3.615);  // Cu lattice constant in Angstrom
+    let cu111_co = cu111_co_system(3.615); // Cu lattice constant in Angstrom
 
     // ── Species data from periodic table ────────────────────────
-    let unique_species: std::collections::BTreeSet<ElementSymbol> = cu111_co.species.iter().copied().collect();
+    let unique_species: std::collections::BTreeSet<ElementSymbol> =
+        cu111_co.species.iter().copied().collect();
     let mut sp_mass_entries = Vec::new();
     let mut sp_pot_entries = Vec::new();
     let mut sp_lcao_entries = Vec::new();
     for sp in &unique_species {
         let elem = ELEMENT_TABLE.get_by_symbol(*sp);
         let sym = Species::Symbol(sp.to_string());
-        sp_mass_entries.push(SpeciesMassEntry::builder().species(sym.clone()).mass(elem.mass()).build());
-        sp_pot_entries.push(SpeciesPotEntry { species: sym.clone(), filename: elem.potential().to_string() });
-        sp_lcao_entries.push(SpeciesLcaoState::builder().species(sym).num_states(elem.lcao() as u32).build());
+        sp_mass_entries.push(
+            SpeciesMassEntry::builder()
+                .species(sym.clone())
+                .mass(elem.mass())
+                .build(),
+        );
+        sp_pot_entries.push(SpeciesPotEntry {
+            species: sym.clone(),
+            filename: elem.potential().to_string(),
+        });
+        sp_lcao_entries.push(
+            SpeciesLcaoState::builder()
+                .species(sym)
+                .num_states(elem.lcao() as u32)
+                .build(),
+        );
     }
 
     // ── CellDocument ────────────────────────────────────────────
@@ -64,11 +81,13 @@ fn main() -> anyhow::Result<()> {
     let tensor = cell.tensor();
 
     let positions = Positions::Frac(PositionsFrac {
-        positions: cu111_co.species.iter()
+        positions: cu111_co
+            .species
+            .iter()
             .zip(cu111_co.frac_coords.iter())
-            .map(|(sp, &coord)| PositionFracEntry {
+            .map(|(sp, coord)| PositionFracEntry {
                 species: Species::Symbol(sp.to_string()),
-                coord,
+                coord: [coord.x, coord.y, coord.z],
                 spin: None,
                 mixture: None,
             })
@@ -84,11 +103,15 @@ fn main() -> anyhow::Result<()> {
         })
         .positions(positions)
         .maybe_species_mass(Some(SpeciesMass::builder().masses(sp_mass_entries).build()))
-        .maybe_species_pot(Some(SpeciesPot::builder().potentials(sp_pot_entries).build()))
-        .maybe_species_lcao_states(Some(SpeciesLcaoStates::builder().states(sp_lcao_entries).build()))
+        .maybe_species_pot(Some(
+            SpeciesPot::builder().potentials(sp_pot_entries).build(),
+        ))
+        .maybe_species_lcao_states(Some(
+            SpeciesLcaoStates::builder().states(sp_lcao_entries).build(),
+        ))
         .kpoints_mp_spacing(KpointsMpSpacing {
             value: 0.07,
-            unit: None,  // default 1/ang
+            unit: None, // default 1/ang
         })
         .symmetry_generate(SymmetryGenerate)
         .build()?;
@@ -97,10 +120,10 @@ fn main() -> anyhow::Result<()> {
     let param_doc = ParamDocument::builder()
         .general(GeneralParams {
             task: Some(Task::SinglePoint),
-            iprint: Some(Iprint::Level3),
             opt_strategy: Some(OptStrategy::Speed),
             page_wvfns: Some(PageWvfns(0)),
             write_formatted_potential: Some(WriteFormattedPotential(true)),
+            write_formatted_density: Some(WriteFormattedDensity(true)),
             ..Default::default()
         })
         .electronic(ElectronicParams {
@@ -110,7 +133,7 @@ fn main() -> anyhow::Result<()> {
         .basis_set(BasisSetParams {
             cutoff_energy: Some(CutOffEnergy {
                 value: 400.0,
-                unit: None,  // default eV
+                unit: None, // default eV
             }),
             grid_scale: Some(GridScale(1.5)),
             fine_grid_scale: Some(FineGridScale(1.5)),
@@ -126,15 +149,15 @@ fn main() -> anyhow::Result<()> {
         .electronic_minimisation(ElectronicMinimisationParams {
             elec_energy_tol: Some(ElecEnergyTol {
                 value: 1e-5,
-                unit: None,  // default eV
+                unit: None, // default eV
             }),
             max_scf_cycles: Some(MaxScfCycles(6000)),
-            fix_occupancy: Some(FixOccupancy(true)),
+            fix_occupancy: Some(FixOccupancy(false)),
             smearing_width: Some(SmearingWidth {
                 value: 0.1,
-                unit: None,  // default eV
+                unit: None, // default eV
             }),
-            num_dump_cycles: Some(NumDumpCycles(0)),
+            num_dump_cycles: Some(NumDumpCycles(1)),
             ..Default::default()
         })
         .density_mixing(DensityMixingParams {
@@ -143,7 +166,7 @@ fn main() -> anyhow::Result<()> {
             mix_spin_amp: Some(MixSpinAmp(2.0)),
             mix_charge_gmax: Some(MixChargeGmax {
                 value: 1.5,
-                unit: None,  // default 1/ang
+                unit: None, // default 1/ang
             }),
             mix_spin_gmax: Some(MixSpinGmax {
                 value: 1.5,
@@ -175,18 +198,41 @@ fn main() -> anyhow::Result<()> {
     std::fs::write("Cu111_CO.param", &param_text)?;
 
     // ── Summary ──────────────────────────────────────────────────
-    let n_cu = cu111_co.species.iter().filter(|&sp| *sp == ElementSymbol::Cu).count();
-    let n_c = cu111_co.species.iter().filter(|&sp| *sp == ElementSymbol::C).count();
-    let n_o = cu111_co.species.iter().filter(|&sp| *sp == ElementSymbol::O).count();
+    let n_cu = cu111_co
+        .species
+        .iter()
+        .filter(|&sp| *sp == ElementSymbol::Cu)
+        .count();
+    let n_c = cu111_co
+        .species
+        .iter()
+        .filter(|&sp| *sp == ElementSymbol::C)
+        .count();
+    let n_o = cu111_co
+        .species
+        .iter()
+        .filter(|&sp| *sp == ElementSymbol::O)
+        .count();
 
-    println!("Wrote Cu111_CO.cell ({:.1} KiB) and Cu111_CO.param ({:.1} KiB)",
+    println!(
+        "Wrote Cu111_CO.cell ({:.1} KiB) and Cu111_CO.param ({:.1} KiB)",
         cell_text.len() as f64 / 1024.0,
         param_text.len() as f64 / 1024.0,
     );
-    println!("Structure: {} Cu + {} C + {} O = {} atoms",
-        n_cu, n_c, n_o, cu111_co.num_atoms());
-    println!("Cell: {:.3} x {:.3} x {:.3} A, PBC: {:?}",
-        cell.lengths().0, cell.lengths().1, cell.lengths().2, cu111_co.pbc);
+    println!(
+        "Structure: {} Cu + {} C + {} O = {} atoms",
+        n_cu,
+        n_c,
+        n_o,
+        cu111_co.num_atoms()
+    );
+    println!(
+        "Cell: {:.3} x {:.3} x {:.3} A, PBC: {:?}",
+        cell.lengths().0,
+        cell.lengths().1,
+        cell.lengths().2,
+        cu111_co.pbc
+    );
     println!("KPOINT_MP_SPACING: 0.07, XC: PBE, Cutoff: 400 eV");
 
     Ok(())

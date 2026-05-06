@@ -1,8 +1,10 @@
 use castep_periodic_table::element::ElementSymbol;
 use nalgebra::Matrix3;
 
+use crate::coords::FracCoord;
 use crate::lattice::LatticeVectors;
 use crate::structure::Structure;
+use crate::transform::TransformMatrix;
 
 /// Build FCC bulk conventional cell.
 ///
@@ -11,10 +13,10 @@ use crate::structure::Structure;
 pub fn fcc_bulk(a: f64, species: ElementSymbol) -> Structure {
     let cell = LatticeVectors::new(Matrix3::identity() * a);
     let frac_coords = vec![
-        [0.0, 0.0, 0.0],
-        [0.0, 0.5, 0.5],
-        [0.5, 0.0, 0.5],
-        [0.5, 0.5, 0.0],
+        FracCoord::new(0.0, 0.0, 0.0),
+        FracCoord::new(0.0, 0.5, 0.5),
+        FracCoord::new(0.5, 0.0, 0.5),
+        FracCoord::new(0.5, 0.5, 0.0),
     ];
     let n = frac_coords.len();
     Structure::new(
@@ -28,17 +30,16 @@ pub fn fcc_bulk(a: f64, species: ElementSymbol) -> Structure {
     )
 }
 
-/// Compute the 4x4 augmented matrix for adding vacuum along c.
-pub fn vacuum_gap_matrix(cell: &LatticeVectors, gap_ang: f64) -> nalgebra::Matrix4<f64> {
+/// Compute the transform for adding vacuum along c.
+pub fn vacuum_gap_matrix(cell: &LatticeVectors, gap_ang: f64) -> TransformMatrix {
     let c_old = cell.lengths().2;
     let c_new = c_old + gap_ang;
     let scale = c_old / c_new;
-    nalgebra::Matrix4::new(
-        1.0, 0.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        0.0, 0.0, scale, 0.0,
-        0.0, 0.0, 0.0, 1.0,
-    )
+    TransformMatrix::from_linear(Matrix3::new(
+        1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0,
+        0.0, 0.0, scale,
+    ))
 }
 
 /// Build a Cu(111) slab with N layers and a 2x2 surface cell.
@@ -57,8 +58,7 @@ pub fn cu111_4layer(a: f64) -> Structure {
         .transform(SurfaceRotation::new(1, 1, 1))
         .transform(Supercell::new(2, 2, 1))
         .apply()
-        .replicate_along_c(3)
-        .apply();
+        .replicate_along_c(3);
 
     // Add 4th A' layer: duplicate atoms at integer z, shift z -> z+1
     let mut add_sp = Vec::new();
@@ -71,13 +71,14 @@ pub fn cu111_4layer(a: f64) -> Structure {
         // Check if z is near an integer (0, 1, 2, ...)
         if (z - z.round()).abs() < 1e-6 {
             add_sp.push(surf.species[i]);
-            add_coords.push([surf.frac_coords[i][0], surf.frac_coords[i][1], z.round() + 1.0]);
+            add_coords.push(FracCoord::new(surf.frac_coords[i][0], surf.frac_coords[i][1], z.round() + 1.0));
             add_tags.push(3_i32); // layer 4
             add_labels.push(None);
         }
     }
 
     surf = surf.with_atoms(add_sp, add_coords, add_tags, add_labels);
+    surf = surf.align_axes();
     surf.add_vacuum_gap(12.0)
 }
 
@@ -111,7 +112,7 @@ pub fn cu111_co_system(a: f64) -> Structure {
 
     sys = sys.with_atoms(
         vec![ElementSymbol::C, ElementSymbol::O],
-        vec![[0.5, 0.5, z_c], [0.5, 0.5, z_o]],
+        vec![FracCoord::new(0.5, 0.5, z_c), FracCoord::new(0.5, 0.5, z_o)],
         vec![-1, -1],
         vec![Some("C_atop".into()), Some("O_atop".into())],
     );

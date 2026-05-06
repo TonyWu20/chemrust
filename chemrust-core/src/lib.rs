@@ -20,8 +20,6 @@
 //!     .add_vacuum_gap(12.0);
 //! ```
 
-#![allow(dead_code)]
-
 pub mod coords;
 pub mod error;
 pub mod lattice;

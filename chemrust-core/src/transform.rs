@@ -1,16 +1,57 @@
-use nalgebra::{Matrix3, Matrix4, Vector3};
+use nalgebra::{Matrix3, Vector3};
 
-/// A geometric operation expressed as a 4×4 augmented matrix
-/// operating on fractional coordinates: x' = M * x.
+/// A 3×3 linear transformation + translation, operating on fractional coordinates.
 ///
-/// The matrix has the structure: [R  t] where R is 3×3 (linear part)
-///                              [0  1]  and t is the translation column.
+/// This is the decomposed form of a 4×4 augmented matrix:
 ///
-/// This operates on the fractional coordinates directly, NOT on the
-/// Cartesian cell. The cell update is derived from the linear part:
-/// C' = C * (R_3x3)⁻¹ (since coords transform inversely to basis).
+/// ```text
+/// [L  t]    x' = L * x + t
+/// [0  1]
+/// ```
+///
+/// where L is the 3×3 linear part and t is the translation column.
+/// For crystal-geometry transforms (SurfaceRotation, Supercell), the
+/// translation is typically zero — the struct exists for generality
+/// and to enable unified lazy composition.
+///
+/// Why not nalgebra's `Affine3`? These transforms operate in
+/// **fractional-coordinate space**, not Cartesian space. The 3×3
+/// linear part can include non-uniform scaling (Supercell, VacuumGap)
+/// or arbitrary basis changes (SurfaceRotation P⁻¹), which excludes
+/// `Isometry3` and `Similarity3`. While `Affine3` has the same
+/// capabilities, a custom struct keeps field access direct and avoids
+/// version-dependent nalgebra API coupling.
+#[derive(Debug, Clone, Copy)]
+pub struct TransformMatrix {
+    pub linear: Matrix3<f64>,
+    pub translation: Vector3<f64>,
+}
+
+impl TransformMatrix {
+    /// Construct from a linear part only, with zero translation.
+    pub fn from_linear(linear: Matrix3<f64>) -> Self {
+        Self { linear, translation: Vector3::zeros() }
+    }
+
+    /// Compose `self` after `other`: `result = self ∘ other`.
+    ///
+    /// x → self.linear * (other.linear * x + other.translation) + self.translation
+    ///   = (self.linear * other.linear) * x + (self.linear * other.translation + self.translation)
+    pub fn compose(self, other: Self) -> Self {
+        Self {
+            linear: self.linear * other.linear,
+            translation: self.linear * other.translation + self.translation,
+        }
+    }
+}
+
+/// A geometric operation expressed as a 3×3 linear transform + translation,
+/// operating on fractional coordinates: x' = L * x + t.
+///
+/// The cell update is derived from the linear part: C' = C * L⁻¹
+/// (coordinates transform inversely to the basis).
 pub trait Transform {
-    fn matrix(&self) -> Matrix4<f64>;
+    fn matrix(&self) -> TransformMatrix;
 }
 
 /// Rotate the conventional cell so the (hkl) plane normal aligns with c.
@@ -59,14 +100,8 @@ impl SurfaceRotation {
 }
 
 impl Transform for SurfaceRotation {
-    fn matrix(&self) -> Matrix4<f64> {
-        let m33 = Self::cubic_surface_matrix(self.h, self.k, self.l);
-        Matrix4::new(
-            m33[(0, 0)], m33[(0, 1)], m33[(0, 2)], 0.0,
-            m33[(1, 0)], m33[(1, 1)], m33[(1, 2)], 0.0,
-            m33[(2, 0)], m33[(2, 1)], m33[(2, 2)], 0.0,
-            0.0, 0.0, 0.0, 1.0,
-        )
+    fn matrix(&self) -> TransformMatrix {
+        TransformMatrix::from_linear(Self::cubic_surface_matrix(self.h, self.k, self.l))
     }
 }
 
@@ -87,13 +122,12 @@ impl Supercell {
 }
 
 impl Transform for Supercell {
-    fn matrix(&self) -> Matrix4<f64> {
-        Matrix4::new(
-            1.0 / self.nx as f64, 0.0, 0.0, 0.0,
-            0.0, 1.0 / self.ny as f64, 0.0, 0.0,
-            0.0, 0.0, 1.0 / self.nz as f64, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-        )
+    fn matrix(&self) -> TransformMatrix {
+        TransformMatrix::from_linear(Matrix3::new(
+            1.0 / self.nx as f64, 0.0, 0.0,
+            0.0, 1.0 / self.ny as f64, 0.0,
+            0.0, 0.0, 1.0 / self.nz as f64,
+        ))
     }
 }
 
@@ -108,29 +142,30 @@ mod tests {
     #[test]
     fn supercell_matrix_2x2x1() {
         let sc = Supercell::new(2, 2, 1);
-        let m = sc.matrix();
+        let tm = sc.matrix();
         // x, y scaled by 1/2, z unchanged
-        assert!((m[(0, 0)] - 0.5).abs() < 1e-10);
-        assert!((m[(1, 1)] - 0.5).abs() < 1e-10);
-        assert!((m[(2, 2)] - 1.0).abs() < 1e-10);
+        assert!((tm.linear[(0, 0)] - 0.5).abs() < 1e-10);
+        assert!((tm.linear[(1, 1)] - 0.5).abs() < 1e-10);
+        assert!((tm.linear[(2, 2)] - 1.0).abs() < 1e-10);
+        // no translation
+        assert_eq!(tm.translation, Vector3::zeros());
     }
 
     #[test]
     fn surface_rotation_111_is_invertible() {
         let sr = SurfaceRotation::new(1, 1, 1);
-        let m = sr.matrix();
-        let det_3x3 = m.fixed_view::<3, 3>(0, 0).determinant();
-        assert!(det_3x3.abs() > 1e-10, "Surface rotation matrix is singular");
+        let tm = sr.matrix();
+        let det = tm.linear.determinant();
+        assert!(det.abs() > 1e-10, "Surface rotation matrix is singular");
     }
 
     #[test]
     fn surface_rotation_111_layers() {
         // FCC conventional cell atoms after (111) rotation should give
         // z-coordinates that correspond to A and B layers.
-        use nalgebra::Vector4;
 
         let sr = SurfaceRotation::new(1, 1, 1);
-        let m = sr.matrix();
+        let tm = sr.matrix();
 
         // FCC conventional cell in conventional frac
         let fcc_atoms = [
@@ -142,15 +177,15 @@ mod tests {
 
         // Transform and check z-coordinates
         for (i, atom) in fcc_atoms.iter().enumerate() {
-            let v = Vector4::new(atom[0], atom[1], atom[2], 1.0);
-            let v_new = m * v;
+            let pt = nalgebra::Point3::new(atom[0], atom[1], atom[2]);
+            let new = tm.linear * pt;
             if i == 0 {
                 // Corner atom at z = 0
-                assert!((v_new.z).abs() < 1e-10, "corner atom z should be 0, got {}", v_new.z);
+                assert!((new.z).abs() < 1e-10, "corner atom z should be 0, got {}", new.z);
             } else {
                 // Face-centered atoms should be at z = 1/3
-                assert!((v_new.z - 1.0/3.0).abs() < 1e-10,
-                    "face atom {} z should be 1/3, got {}", i, v_new.z);
+                assert!((new.z - 1.0/3.0).abs() < 1e-10,
+                    "face atom {} z should be 1/3, got {}", i, new.z);
             }
         }
     }

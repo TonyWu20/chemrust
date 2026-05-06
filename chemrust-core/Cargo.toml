@@ -12,7 +12,6 @@ license.workspace = true
 nalgebra = {version="0.33", features=["debug", "compare"]}
 castep-periodic-table = "0.5.2"
 crystallographic-group = "0.3.1"
-bon = "3"
 
 [dev-dependencies]
 castep-cell-io = { path = "../../castep-cell-io/castep_cell_io" }

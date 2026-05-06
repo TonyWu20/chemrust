@@ -1,10 +1,11 @@
 use castep_periodic_table::element::ElementSymbol;
 use crystallographic_group::database::SpaceGroupHallSymbol;
-use nalgebra::{Matrix4, Point3, Vector3};
+use nalgebra::Matrix3;
 
+use crate::coords::FracCoord;
 use crate::error::Error;
 use crate::lattice::LatticeVectors;
-use crate::transform::Transform;
+use crate::transform::{Transform, TransformMatrix};
 
 /// Struct-of-arrays. One struct for molecules, crystals, and slabs.
 ///
@@ -20,7 +21,7 @@ use crate::transform::Transform;
 pub struct Structure {
     pub species: Vec<ElementSymbol>,
     /// Always fractional. Each entry is [x, y, z] in the current cell basis.
-    pub frac_coords: Vec<[f64; 3]>,
+    pub frac_coords: Vec<FracCoord>,
     /// Periodic cell. `None` for isolated molecules.
     pub cell: Option<LatticeVectors>,
     /// Periodic boundary condition flags.
@@ -32,14 +33,14 @@ pub struct Structure {
     /// Known space group.
     pub space_group: Option<SpaceGroupHallSymbol>,
 
-    /// Pending 4×4 augmented matrix for lazy composition.
-    pending: Option<Matrix4<f64>>,
+    /// Pending transform (linear + translation) for lazy composition.
+    pending: Option<TransformMatrix>,
 }
 
 impl Structure {
     pub fn new(
         species: Vec<ElementSymbol>,
-        frac_coords: Vec<[f64; 3]>,
+        frac_coords: Vec<FracCoord>,
         cell: Option<LatticeVectors>,
         pbc: [bool; 3],
         tags: Vec<i32>,
@@ -69,7 +70,7 @@ impl Structure {
             self.frac_coords
                 .iter()
                 .map(|&f| {
-                    let p = cell.tensor() * Point3::new(f[0], f[1], f[2]);
+                    let p = cell.tensor() * f.0;
                     [p.x, p.y, p.z]
                 })
                 .collect(),
@@ -80,10 +81,10 @@ impl Structure {
     ///
     /// Does NOT touch coordinates or cell yet. Call `.apply()` when ready.
     pub fn transform(mut self, t: impl Transform) -> Self {
-        let m = t.matrix();
-        self.pending = match self.pending {
-            None => Some(m),
-            Some(existing) => Some(m * existing), // compose: newest acts first
+        let tm = t.matrix();
+        self.pending = match self.pending.take() {
+            None => Some(tm),
+            Some(existing) => Some(tm.compose(existing)),
         };
         self
     }
@@ -92,31 +93,23 @@ impl Structure {
     ///
     /// This is a no-op if no transform is pending.
     pub fn apply(mut self) -> Self {
-        let m = match self.pending.take() {
+        let tm = match self.pending.take() {
             None => return self,
-            Some(m) => m,
+            Some(tm) => tm,
         };
 
-        // Extract the 3×3 linear part. The matrix operates on fractional
-        // coords: x' = M * x. The cell transforms inversely: C' = C * M₃₃⁻¹.
-        let m33 = m.fixed_view::<3, 3>(0, 0).into_owned();
-        let m33_inv = m33
+        let linear_inv = tm.linear
             .try_inverse()
             .expect("Transform matrix is singular");
 
-        // Update cell: C' = C * M₃₃⁻¹
+        // Update cell: C' = C * L⁻¹
         if let Some(cell) = &mut self.cell {
-            let new_tensor = cell.tensor() * m33_inv;
-            *cell = LatticeVectors::new(new_tensor);
+            *cell = LatticeVectors::new(cell.tensor() * linear_inv);
         }
 
-        // For the translation part, apply to coords: x' = R*x + t
-        let t_vec = Vector3::new(m[(0, 3)], m[(1, 3)], m[(2, 3)]);
-
+        // Apply to coords: x' = L * x + t
         for coord in &mut self.frac_coords {
-            let old = Point3::new(coord[0], coord[1], coord[2]);
-            let new = m33 * old + t_vec;
-            *coord = [new.x, new.y, new.z];
+            *coord = FracCoord(tm.linear * coord.0 + tm.translation);
         }
 
         self
@@ -127,9 +120,7 @@ impl Structure {
     pub fn wrap_frac_coords(mut self) -> Self {
         self = self.apply();
         for coord in &mut self.frac_coords {
-            coord[0] = coord[0] - coord[0].floor();
-            coord[1] = coord[1] - coord[1].floor();
-            coord[2] = coord[2] - coord[2].floor();
+            coord.wrap();
         }
         self
     }
@@ -157,7 +148,7 @@ impl Structure {
             new_labels.extend_from_slice(&self.labels);
             new_tags.extend(std::iter::repeat(k as i32).take(n_atoms));
             new_coords.extend(self.frac_coords.iter().map(|c| {
-                [c[0], c[1], c[2] + dz]
+                FracCoord::new(c.x, c.y, c.z + dz)
             }));
         }
 
@@ -174,7 +165,7 @@ impl Structure {
     pub fn with_atoms(
         mut self,
         species: Vec<ElementSymbol>,
-        frac_coords: Vec<[f64; 3]>,
+        frac_coords: Vec<FracCoord>,
         tags: Vec<i32>,
         labels: Vec<Option<String>>,
     ) -> Self {
@@ -197,16 +188,51 @@ impl Structure {
     pub fn add_vacuum_gap(mut self, gap_ang: f64) -> Self {
         self = self.apply();
         if let Some(cell) = &self.cell {
-            let m = crate::slab::vacuum_gap_matrix(cell, gap_ang);
-            let m33 = m.fixed_view::<3, 3>(0, 0).into_owned();
-            let m33_inv = m33.try_inverse().expect("Vacuum matrix is singular");
-            let new_tensor = cell.tensor() * m33_inv;
+            let tm = crate::slab::vacuum_gap_matrix(cell, gap_ang);
+            let linear_inv = tm.linear.try_inverse().expect("Vacuum matrix is singular");
+            let new_tensor = cell.tensor() * linear_inv;
             self.cell = Some(LatticeVectors::new(new_tensor));
             for coord in &mut self.frac_coords {
-                let old = nalgebra::Point3::new(coord[0], coord[1], coord[2]);
-                let new = m33 * old;
-                *coord = [new.x, new.y, new.z];
+                *coord = FracCoord(tm.linear * coord.0);
             }
+        }
+        self
+    }
+
+    /// Align lattice vectors to Cartesian axes.
+    ///
+    /// After transforms like SurfaceRotation, lattice vectors may not be
+    /// axis-aligned. This rotates the entire system so that:
+    /// - c points along the z-axis (surface normal)
+    /// - a lies in the xy-plane
+    /// - b lies in the xy-plane, perpendicular to a
+    ///
+    /// This is a pure rotation in Cartesian space — fractional coordinates
+    /// and interatomic distances are preserved.
+    pub fn align_axes(mut self) -> Self {
+        self = self.apply();
+        if let Some(cell) = &mut self.cell {
+            let tensor = cell.tensor();
+            let a = tensor.column(0);
+            let _b = tensor.column(1);
+            let c = tensor.column(2);
+
+            // Gram-Schmidt orthonormalization of the lattice vectors
+            let c_hat = c.normalize();
+            let a_perp = a - a.dot(&c_hat) * c_hat;
+            let a_len = a_perp.norm();
+            if a_len < 1e-14 {
+                return self; // already axis-aligned or 1D degenerate
+            }
+            let a_hat = a_perp.normalize();
+            let b_hat = c_hat.cross(&a_hat);
+
+            // Rotation matrix: rows are the new axis-aligned basis.
+            // Applying R rotates cell vectors to align with Cartesian axes.
+            let r = Matrix3::from_rows(&[a_hat.transpose(), b_hat.transpose(), c_hat.transpose()]);
+            *cell = LatticeVectors::new(r * tensor);
+            // Fractional coords unchanged: rotation applies uniformly to
+            // cell and atom positions, so f' = (R*C)⁻¹ * R*C * f = f.
         }
         self
     }
@@ -227,7 +253,7 @@ mod tests {
         use castep_periodic_table::element::ElementSymbol;
         Structure::new(
             vec![ElementSymbol::H],
-            vec![[0.0, 0.0, 0.0]],
+            vec![FracCoord::new(0.0, 0.0, 0.0)],
             Some(LatticeVectors::new(nalgebra::Matrix3::identity() * 10.0)),
             [true, true, true],
             vec![0],
@@ -248,7 +274,7 @@ mod tests {
             .transform(Supercell::new(2, 2, 1))
             .apply();
         // Coord should halve: [0,0,0] / 2 = [0,0,0] in frac
-        assert_eq!(s.frac_coords[0], [0.0, 0.0, 0.0]);
+        assert_eq!(s.frac_coords[0], FracCoord::new(0.0, 0.0, 0.0));
         // Cell should double in a and b
         let (a, b, _) = s.cell.unwrap().lengths();
         assert!((a - 20.0).abs() < 1e-10);
@@ -269,7 +295,7 @@ mod tests {
         let s = simple_structure()
             .with_atoms(
                 vec![ElementSymbol::O],
-                vec![[0.5, 0.5, 0.5]],
+                vec![FracCoord::new(0.5, 0.5, 0.5)],
                 vec![-1],
                 vec![Some("ads".into())],
             );
@@ -280,7 +306,7 @@ mod tests {
     fn wrap_frac_coords() {
         let s = Structure::new(
             vec![ElementSymbol::H],
-            vec![[-0.1, 1.2, 2.5]],
+            vec![FracCoord::new(-0.1, 1.2, 2.5)],
             Some(LatticeVectors::new(nalgebra::Matrix3::identity() * 10.0)),
             [true, true, true],
             vec![0],

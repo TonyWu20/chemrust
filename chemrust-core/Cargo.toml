@@ -3,10 +3,8 @@ name = "chemrust-core"
 edition.workspace = true
 version = "0.6.0"
 authors.workspace = true
-description.workspace = true
+description = "Crystal geometry toolkit for computational materials science — Structure, lattice vectors, transforms, and slab generation."
 license.workspace = true
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 nalgebra = {version="0.33", features=["debug", "compare"]}

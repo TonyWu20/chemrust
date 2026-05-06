@@ -10,9 +10,11 @@
 //! mandatory; symmetry information is optional.
 
 pub mod atom;
-pub mod custom_data_type;
+// pub mod custom_data_type;
+pub mod geom;
 pub mod lattice;
+pub mod symmetry;
 
-// Re-export
-pub use atom::Atom;
-pub use lattice::{BasicLatticeModel, LatticeVectors};
+mod lattice_model;
+
+pub use lattice_model::LatticeModel;

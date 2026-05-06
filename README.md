@@ -1,27 +1,7 @@
 # chemrust
 
-## Todo
+A crate to handle basic file I/O and parsing for frequently used formats of chemical structure files in computational chemistry.
 
-- [x] Prepare a fancy introduction video, reference: nvidia introducing AI
+## Member
 
-## Plan
-
-- [x] Add a cell or msi output to visualize all possible site results.
-- [x] Try to view the models in VESTA
-  - [ ] Find a better demonstration elements color schemes
-    - C, H, Nd: not good
-    - He, Ne, Ar: colors too ugly
-- [ ] Try to view the models in Materials Studio
-
-## Feature request
-
-- [x] Select a range on the z-direction to identify the mounting surface. (Case for Lulu's red phosphorus model) [Issue #1](https://github.com/TonyWu20/chemrust/issues/1)
-
-## Test
-
-- [ ] GTY
-- [x] MoS2 (TMDs)
-- [x] MnO2 (TMOs)
-- [x] Phosphorene
-- [ ] MXene
-- [ ] Silicene
+- `chemrust-core`: Core data structs and methods to represent atoms, molecules, crystals and the lattices.

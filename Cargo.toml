@@ -8,8 +8,9 @@ members = [
     "chemrust-parser",
     "chemrust-formats",
     "chemrust-scanner",
-    "chemrust-settings",
-    "chemrust-misctools"
+    "chemrust-misctools",
+    "chemrust-cerius2-io",
+    "chemrust-kpoint-gen",
 ]
 resolver = "2"
 
@@ -20,14 +21,7 @@ authors = ["TonyWu20"]
 readme = "README.md"
 homepage = "https://github.com/TonyWu20/chemrust"
 repository = "https://github.com/TonyWu20/chemrust"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "MIT"
-keywords = [
-    "chemistry",
-    "computational_chemistry",
-    "linear_algebra",
-]
-
-
-
+keywords = ["chemistry", "computational_chemistry", "linear_algebra"]

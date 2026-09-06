@@ -12,7 +12,7 @@ members = [
     "chemrust-cerius2-io",
     "chemrust-kpoint-gen",
 ]
-resolver = "2"
+resolver = "3"
 
 [workspace.package]
 name = "chemrust"
@@ -22,6 +22,6 @@ readme = "README.md"
 homepage = "https://github.com/TonyWu20/chemrust"
 repository = "https://github.com/TonyWu20/chemrust"
 version = "0.3.0"
-edition = "2021"
+edition = "2024"
 license = "MIT"
 keywords = ["chemistry", "computational_chemistry", "linear_algebra"]

@@ -76,22 +76,34 @@ impl SurfaceRotation {
     ///
     /// P = [a_surf | b_surf | c_surf] in conventional fractional coordinates.
     ///   a_surf = (-k, h, 0)                    (shortest in-plane vector)
-    ///   b_surf = (h, k, l) × (-k, h, 0)       (second in-plane vector)
+    ///   b_surf = chosen in-plane vector (hexagonal for (h,h,h), else c × a)
     ///   c_surf = (h, k, l)                     (surface normal)
+    ///
+    /// For (h,h,h) surfaces (e.g. 111), b = (0, h, -h) is used so the in-plane
+    /// cell is a 60° hexagonal rhombus instead of the elongated 90° parallelogram
+    /// that c × a produces. For all other (hkl), b = c × a is used.
     ///
     /// M = P⁻¹ maps conventional fractional to surface fractional: x_surf = M * x_conv.
     /// Cell updates as C_surf = C_conv * M⁻¹ = C_conv * P.
     fn cubic_surface_matrix(h: i32, k: i32, l: i32) -> Matrix3<f64> {
         let (h, k, l) = (h as f64, k as f64, l as f64);
-        let a = Vector3::new(-k, h, 0.0);
         let c = Vector3::new(h, k, l);
+        let a = Vector3::new(-k, h, 0.0);
 
         // Handle degenerate case where (h,k,l) is along z
         if a.norm() < 1e-10 {
             return Matrix3::identity();
         }
 
-        let b = c.cross(&a);  // second in-plane surface vector
+        // For (h,h,h) type surfaces, use a hexagonal in-plane pair so the
+        // top view shows a proper 60° rhombus rather than an elongated 90° cell.
+        let b = if (h - k).abs() < 1e-10 && (k - l).abs() < 1e-10 {
+            // a = (-h, h, 0), b = (0, h, -h): both length h√2, 60° angle.
+            Vector3::new(0.0, h, -h)
+        } else {
+            c.cross(&a)
+        };
+
         // P = [a | b | c] as columns
         let p = Matrix3::from_columns(&[a, b, c]);
         // Return P⁻¹
@@ -188,5 +200,40 @@ mod tests {
                     "face atom {} z should be 1/3, got {}", i, new.z);
             }
         }
+    }
+
+    #[test]
+    fn surface_rotation_111_hexagonal_cell() {
+        // The (111) surface cell should have equal a and b in the in-plane
+        // directions with a 60° or 120° angle (hexagonal), not 90°.
+        let sr = SurfaceRotation::new(1, 1, 1);
+        let tm = sr.matrix();
+        let p = tm.linear.try_inverse().unwrap(); // P = (P⁻¹)⁻¹
+
+        let a_cart = p.column(0); // in conventional frac: (-1, 1, 0)
+        let b_cart = p.column(1); // should be (0, 1, -1) for hexagonal
+
+        // Both in-plane vectors should have the same length
+        let a_norm = a_cart.norm();
+        let b_norm = b_cart.norm();
+        assert!((a_norm - b_norm).abs() < 1e-10,
+            "in-plane vectors should have equal length: |a|={} |b|={}", a_norm, b_norm);
+
+        // The in-plane angle should be 60° or 120°, not 90°
+        let cos_theta = (a_cart.dot(&b_cart)) / (a_norm * b_norm);
+        let theta = cos_theta.acos();
+        let is_hex = (theta - std::f64::consts::FRAC_PI_3).abs() < 1e-10
+            || (theta - 2.0 * std::f64::consts::FRAC_PI_3).abs() < 1e-10;
+        assert!(is_hex, "in-plane angle should be 60° or 120°, got {} rad", theta);
+    }
+
+    #[test]
+    fn surface_rotation_110_keeps_general_formula() {
+        // For (110), h≠k or k≠l is false (k=1, l=0), so the general
+        // b = c × a path is used. Verify the cell is still valid.
+        let sr = SurfaceRotation::new(1, 1, 0);
+        let tm = sr.matrix();
+        let det = tm.linear.determinant();
+        assert!(det.abs() > 1e-10, "(110) matrix is singular");
     }
 }

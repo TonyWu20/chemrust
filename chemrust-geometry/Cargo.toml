@@ -13,5 +13,5 @@ crystallographic-group = "0.3.1"
 
 [dev-dependencies]
 castep-cell-io = { path = "../../castep-cell-io/castep_cell_io" }
-castep-cell-fmt = { path = "../../castep-cell-io/castep_cell_fmt" }
+castep-cell-fmt = "0.2.1"
 anyhow = "1"

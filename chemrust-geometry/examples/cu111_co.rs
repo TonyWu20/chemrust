@@ -11,13 +11,16 @@ use castep_cell_fmt::{format::to_string_many_spaced, ToCellFile};
 use castep_cell_io::{
     cell::{
         bz_sampling_kpoints::KpointsMpSpacing,
+        kpoints_params::KpointsParams,
         lattice_param::LatticeCart,
         positions::{PositionFracEntry, PositionsFrac},
         species::{
             Species, SpeciesLcaoState, SpeciesLcaoStates, SpeciesMass, SpeciesMassEntry,
             SpeciesPot, SpeciesPotEntry,
         },
+        species_params::SpeciesParams,
         symmetry::SymmetryGenerate,
+        symmetry_params::SymmetryParams,
     },
     param::{
         basis_set::{CutOffEnergy, FineGridScale, FiniteBasisCorr, FixedNpw, GridScale},
@@ -42,8 +45,48 @@ use castep_cell_io::{
 };
 use castep_periodic_table::data::ELEMENT_TABLE;
 use castep_periodic_table::element::LookupElement;
-use chemrust_geometry::slab::cu111_co_system;
-use chemrust_geometry::ElementSymbol;
+use chemrust_geometry::slab::cu111_4layer;
+use chemrust_geometry::{ElementSymbol, FracCoord, Structure};
+
+/// Build the full Cu(111)+CO system.
+///
+/// - Cu(111) 4-layer slab, 2x2 surface cell, ~12 A vacuum
+/// - CO adsorbate at the atop position above the center of the top Cu layer
+/// - 64 Cu + 1 C + 1 O = 66 atoms
+fn cu111_co_system(a: f64) -> Structure {
+    let mut sys = cu111_4layer(a).apply();
+
+    // Find the top-layer Cu nearest the cell center (x,y = 0.5, 0.5)
+    let top_cu = sys.species
+        .iter()
+        .zip(sys.frac_coords.iter())
+        .zip(sys.tags.iter())
+        .enumerate()
+        .filter(|(_, ((sp, _), &tag))| **sp == ElementSymbol::Cu && tag == 3)
+        .min_by(|(_, ((_, a), _)), (_, ((_, b), _))| {
+            let da = (a[0] - 0.5).powi(2) + (a[1] - 0.5).powi(2);
+            let db = (b[0] - 0.5).powi(2) + (b[1] - 0.5).powi(2);
+            da.total_cmp(&db)
+        })
+        .map(|(i, _)| i)
+        .expect("No top-layer Cu found");
+
+    // CO vertical atop: convert bond lengths to fractional using c-length
+    let c_len = sys.require_cell().expect("slab has no cell").lengths().2;
+    let z_cu = sys.frac_coords[top_cu][2];
+    let z_c = z_cu + 1.9 / c_len;
+    let z_o = z_cu + (1.9 + 1.15) / c_len;
+
+    sys = sys.with_atoms(
+        vec![ElementSymbol::C, ElementSymbol::O],
+        vec![FracCoord::new(0.5, 0.5, z_c), FracCoord::new(0.5, 0.5, z_o)],
+        vec![-1, -1],
+        vec![Some("C_atop".into()), Some("O_atop".into())],
+    );
+
+    sys.pbc = [true, true, false];
+    sys.wrap_frac_coords()
+}
 
 fn main() -> anyhow::Result<()> {
     // ── Build the structure ──────────────────────────────────────
@@ -102,18 +145,32 @@ fn main() -> anyhow::Result<()> {
             c: tensor.column(2).into(),
         })
         .positions(positions)
-        .maybe_species_mass(Some(SpeciesMass::builder().masses(sp_mass_entries).build()))
-        .maybe_species_pot(Some(
-            SpeciesPot::builder().potentials(sp_pot_entries).build(),
-        ))
-        .maybe_species_lcao_states(Some(
-            SpeciesLcaoStates::builder().states(sp_lcao_entries).build(),
-        ))
-        .kpoints_mp_spacing(KpointsMpSpacing {
-            value: 0.07,
-            unit: None, // default 1/ang
-        })
-        .symmetry_generate(SymmetryGenerate)
+        .kpoints(
+            KpointsParams::builder()
+                .maybe_kpoints_mp_spacing(Some(KpointsMpSpacing {
+                    value: 0.07,
+                    unit: None, // default 1/ang
+                }))
+                .build(),
+        )
+        .symmetry(
+            SymmetryParams::builder()
+                .maybe_symmetry_generate(Some(SymmetryGenerate))
+                .build(),
+        )
+        .species(
+            SpeciesParams::builder()
+                .maybe_species_mass(Some(
+                    SpeciesMass::builder().masses(sp_mass_entries).build(),
+                ))
+                .maybe_species_pot(Some(
+                    SpeciesPot::builder().potentials(sp_pot_entries).build(),
+                ))
+                .maybe_species_lcao_states(Some(
+                    SpeciesLcaoStates::builder().states(sp_lcao_entries).build(),
+                ))
+                .build(),
+        )
         .build()?;
 
     // ── ParamDocument ───────────────────────────────────────────

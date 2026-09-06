@@ -125,6 +125,75 @@ impl Structure {
         self
     }
 
+    /// Create an (nx, ny, nz) supercell: scale the cell and replicate all atoms.
+    ///
+    /// Unlike the [`Supercell`](crate::transform::Supercell) transform (which only
+    /// rescales the cell and fractional coordinates), this method actually creates
+    /// nx×ny×nz copies of every atom at the appropriate fractional offsets, so the
+    /// in-plane atom density is preserved.
+    ///
+    /// Coordinates are wrapped to [0, 1) after replication.
+    pub fn supercell(mut self, nx: usize, ny: usize, nz: usize) -> Self {
+        assert!(nx >= 1 && ny >= 1 && nz >= 1, "supercell factors must be ≥ 1");
+        self = self.apply();
+
+        // Scale cell
+        if let Some(cell) = &mut self.cell {
+            let t = cell.tensor().clone();
+            let scaled = nalgebra::Matrix3::from_columns(&[
+                t.column(0) * nx as f64,
+                t.column(1) * ny as f64,
+                t.column(2) * nz as f64,
+            ]);
+            *cell = LatticeVectors::new(scaled);
+        }
+
+        let n = self.num_atoms();
+        let total = n * nx * ny * nz;
+        let mut new_species = Vec::with_capacity(total);
+        let mut new_coords = Vec::with_capacity(total);
+        let mut new_tags = Vec::with_capacity(total);
+        let mut new_labels = Vec::with_capacity(total);
+
+        // Rescale the base coordinates into the enlarged cell, then add the
+        // translated copies. The base copy lands at f/n + 0; copy (i,j,k)
+        // lands at f/n + i/nx + j/ny + k/nz. This matches the old
+        // Supercell transform (which rescaled coords and the cell) plus the
+        // missing atom replication.
+        for i in 0..n {
+            let f = self.frac_coords[i];
+            let rx = f.x / nx as f64;
+            let ry = f.y / ny as f64;
+            let rz = f.z / nz as f64;
+            for ix in 0..nx {
+                for iy in 0..ny {
+                    for iz in 0..nz {
+                        let dx = ix as f64 / nx as f64;
+                        let dy = iy as f64 / ny as f64;
+                        let dz = iz as f64 / nz as f64;
+                        new_species.push(self.species[i]);
+                        new_coords.push(FracCoord::new(
+                            rx + dx, ry + dy, rz + dz,
+                        ));
+                        new_tags.push(self.tags[i]);
+                        new_labels.push(self.labels[i].clone());
+                    }
+                }
+            }
+        }
+
+        self.species = new_species;
+        self.frac_coords = new_coords;
+        self.tags = new_tags;
+        self.labels = new_labels;
+
+        // Wrap to [0, 1)
+        for c in &mut self.frac_coords {
+            c.wrap();
+        }
+        self
+    }
+
     /// Replicate all atoms along c-axis into N layers.
     ///
     /// This forces any pending transform first. Each layer k gets tag=k.
@@ -279,6 +348,58 @@ mod tests {
         let (a, b, _) = s.cell.unwrap().lengths();
         assert!((a - 20.0).abs() < 1e-10);
         assert!((b - 20.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn supercell_method_replicates_atoms() {
+        let s = simple_structure()
+            .clone()
+            .supercell(2, 2, 1);
+        // One atom becomes four: (0,0), (0.5,0), (0,0.5), (0.5,0.5).
+        assert_eq!(s.num_atoms(), 4);
+        let (a, b, c) = s.cell.unwrap().lengths();
+        assert!((a - 20.0).abs() < 1e-10);
+        assert!((b - 20.0).abs() < 1e-10);
+        assert!((c - 10.0).abs() < 1e-10, "nz=1 keeps c");
+        let mut xs: Vec<(f64, f64)> = s
+            .frac_coords
+            .iter()
+            .map(|f| (f.x, f.y))
+            .collect();
+        xs.sort_by(|p, q| p.0.total_cmp(&q.0).then(p.1.total_cmp(&q.1)));
+        let expect: Vec<(f64, f64)> =
+            vec![(0.0, 0.0), (0.0, 0.5), (0.5, 0.0), (0.5, 0.5)]
+                .into_iter()
+                .map(|(x, y)| (x, y))
+                .collect();
+        assert_eq!(xs, expect);
+    }
+
+    #[test]
+    fn supercell_method_preserves_physical_positions() {
+        // An atom at frac 0.25 in a 10 A cell must stay at 2.5 A from the
+        // corner after a 2x2x1 supercell: base copy at 0.25/2 = 0.125 of the
+        // 20 A cell, copy at 0.125 + 0.5.
+        let s = Structure::new(
+            vec![ElementSymbol::H],
+            vec![FracCoord::new(0.25, 0.25, 0.5)],
+            Some(LatticeVectors::new(nalgebra::Matrix3::identity() * 10.0)),
+            [true, true, true],
+            vec![0],
+            vec![None],
+            None,
+        )
+        .supercell(2, 2, 1);
+        assert_eq!(s.num_atoms(), 4);
+        let c = s.cell.unwrap();
+        let mut xs: Vec<f64> = s
+            .frac_coords
+            .iter()
+            .map(|f| f.x * c.lengths().0)
+            .collect();
+        xs.sort_by(|a, b| a.total_cmp(b));
+        // 2.5, 12.5, 2.5, 12.5
+        assert_eq!(xs, vec![2.5, 2.5, 12.5, 12.5]);
     }
 
     #[test]

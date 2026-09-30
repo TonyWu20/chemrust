@@ -43,3 +43,4 @@ demo/
 resources/
 scanner_test_models/
 test_examples/
+**/sessions

@@ -64,8 +64,8 @@ fn cu111_co_system(a: f64) -> Structure {
         .enumerate()
         .filter(|(_, ((sp, _), &tag))| **sp == ElementSymbol::Cu && tag == 3)
         .min_by(|(_, ((_, a), _)), (_, ((_, b), _))| {
-            let da = (a[0] - 0.5).powi(2) + (a[1] - 0.5).powi(2);
-            let db = (b[0] - 0.5).powi(2) + (b[1] - 0.5).powi(2);
+            let da = (a.x - 0.5).powi(2) + (a.y - 0.5).powi(2);
+            let db = (b.x - 0.5).powi(2) + (b.y - 0.5).powi(2);
             da.total_cmp(&db)
         })
         .map(|(i, _)| i)
@@ -73,7 +73,7 @@ fn cu111_co_system(a: f64) -> Structure {
 
     // CO vertical atop: convert bond lengths to fractional using c-length
     let c_len = sys.require_cell().expect("slab has no cell").lengths().2;
-    let z_cu = sys.frac_coords[top_cu][2];
+    let z_cu = sys.frac_coords[top_cu].z;
     let z_c = z_cu + 1.9 / c_len;
     let z_o = z_cu + (1.9 + 1.15) / c_len;
 

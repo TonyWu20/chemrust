@@ -1,4 +1,4 @@
-use std::ops::{Deref, DerefMut};
+use std::ops::Deref;
 
 use nalgebra::Point3;
 
@@ -7,7 +7,10 @@ use nalgebra::Point3;
 /// Distinguishes fractional from Cartesian coordinates at the type level,
 /// while enabling direct matrix-point multiplication (`m33 * coord.0`).
 ///
-/// Access components via `.x`, `.y`, `.z` or via `[0]`, `[1]`, `[2]` (through Point3's Index impl).
+/// The read-only `Deref` to `Point3` is deliberate: it exposes `Point3`'s
+/// `.x`/`.y`/`.z` fields and its `Index`/`IndexMut` accessors, so call
+/// sites can use semantic accessors or `[0]`, `[1]`, `[2]`. Writes go
+/// through the `pub` tuple field (`.0`) or the `wrap()` method.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct FracCoord(pub Point3<f64>);
 
@@ -37,12 +40,6 @@ impl Deref for FracCoord {
 
     fn deref(&self) -> &Point3<f64> {
         &self.0
-    }
-}
-
-impl DerefMut for FracCoord {
-    fn deref_mut(&mut self) -> &mut Point3<f64> {
-        &mut self.0
     }
 }
 

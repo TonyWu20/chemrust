@@ -2,7 +2,7 @@
 
 ## Context
 
-The `chemrust-core` rewrite is working (all 17 tests pass, clean `align_axes` output), but two ergonomic improvements align it better with nalgebra:
+The `chemrust-geometry` rewrite is working (all 17 tests pass, clean `align_axes` output), but two ergonomic improvements align it better with nalgebra:
 
 1. **`FracCoord` currently wraps `[f64;3]`** — every matrix operation manually constructs a `Point3` via `Point3::new(coord[0], coord[1], coord[2])`, and results are unwrapped via `FracCoord::new(new.x, new.y, new.z)`. Wrapping `Point3<f64>` directly enables `m33 * coord.0` and eliminates these manual conversions.
 
@@ -12,11 +12,11 @@ The `chemrust-core` rewrite is working (all 17 tests pass, clean `align_axes` ou
 
 | File | Nature of change |
 |------|-----------------|
-| `chemrust-core/src/coords.rs` | `FracCoord([f64;3])` → `FracCoord(Point3<f64>)`, update all methods |
-| `chemrust-core/src/transform.rs` | New `TransformMatrix` struct; `Transform` trait returns it instead of `Matrix4`; update `SurfaceRotation`, `Supercell` impls |
-| `chemrust-core/src/structure.rs` | `pending: Option<Matrix4<f64>>` → `Option<TransformMatrix>`; simplify `transform()`, `apply()`, `add_vacuum_gap()`; update tests |
-| `chemrust-core/src/slab.rs` | `vacuum_gap_matrix()` returns `TransformMatrix`; update `cu111_4layer()`, `cu111_co_system()` call sites |
-| `chemrust-core/examples/cu111_co.rs` | `coord.0` becomes `Point3<f64>`, need `[coord.x, coord.y, coord.z]` for `PositionFracEntry` |
+| `chemrust-geometry/src/coords.rs` | `FracCoord([f64;3])` → `FracCoord(Point3<f64>)`, update all methods |
+| `chemrust-geometry/src/transform.rs` | New `TransformMatrix` struct; `Transform` trait returns it instead of `Matrix4`; update `SurfaceRotation`, `Supercell` impls |
+| `chemrust-geometry/src/structure.rs` | `pending: Option<Matrix4<f64>>` → `Option<TransformMatrix>`; simplify `transform()`, `apply()`, `add_vacuum_gap()`; update tests |
+| `chemrust-geometry/src/slab.rs` | `vacuum_gap_matrix()` returns `TransformMatrix`; update `cu111_4layer()`, `cu111_co_system()` call sites |
+| `chemrust-geometry/examples/cu111_co.rs` | `coord.0` becomes `Point3<f64>`, need `[coord.x, coord.y, coord.z]` for `PositionFracEntry` |
 
 ## Step 1: `TransformMatrix` struct (transform.rs)
 
@@ -154,8 +154,8 @@ let tm = crate::slab::vacuum_gap_matrix(cell, gap_ang);
 
 ## Verification
 
-1. `cargo check -p chemrust-core` — compiles
-2. `cargo test -p chemrust-core` — all 13 pass
-3. `cargo check -p chemrust-core --example cu111_co` — example compiles
+1. `cargo check -p chemrust-geometry` — compiles
+2. `cargo test -p chemrust-geometry` — all 13 pass
+3. `cargo check -p chemrust-geometry --example cu111_co` — example compiles
 4. `cargo run --example cu111_co` — produces valid, axis-aligned `Cu111_CO.cell`/`.param`
 5. `cargo test --workspace` — all 17 pass, no regressions

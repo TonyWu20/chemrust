@@ -1,4 +1,4 @@
-# Plan: chemrust-core Rewrite + Cu(111)+CO CASTEP Input Generator
+# Plan: chemrust-geometry Rewrite + Cu(111)+CO CASTEP Input Generator
 
 ## Context
 
@@ -13,19 +13,19 @@ The chemrust `refactor` branch has good type designs but is incomplete. The `mai
 
 ## Design Principles (from discussion)
 
-1. **chemrust-core = crystal geometry toolkit, not a universal IR.** Format-specific data lives in format-specific types. Core provides geometry operations + a convenience `Structure` data bag.
+1. **chemrust-geometry = crystal geometry toolkit, not a universal IR.** Format-specific data lives in format-specific types. Core provides geometry operations + a convenience `Structure` data bag.
 2. **Concrete types, no traits unless they earn their keep.** The `Transform` trait is the one exception — it unifies geometric operations (rotation, supercell, vacuum) under one composable abstraction, enabling lazy matrix composition.
 3. **Always fractional coordinates internally.** Natural for periodic systems, independent of cell parameters.
 4. **Single `Structure` struct.** Molecules (cell=None + pbc=[F,F,F]), crystals (cell + pbc=[T,T,T]), slabs (cell + pbc=[T,T,F]).
 5. **Struct-of-arrays layout.** Separate `Vec`s for species, coords, tags, labels. Coordinate transforms operate on one array in one pass.
 6. **Lazy matrix composition.** `transform()` queues a 4x4 augmented matrix internally. `apply()` forces composition into a single matrix and applies it to cell + coords. Multiple transforms compose via matrix multiplication without touching coordinates.
 7. **Chainable API.** All methods consume `self` and return `Self`.
-8. **Format conversion is downstream code, not in core.** chemrust-core has zero format dependencies.
+8. **Format conversion is downstream code, not in core.** chemrust-geometry has zero format dependencies.
 9. **crystallographic-group for symmetry.** `Structure.space_group: Option<SpaceGroupHallSymbol>`.
 
 ## Step 1: Clean Slate
 
-Delete everything in `chemrust-core/src/` and rebuild from scratch.
+Delete everything in `chemrust-geometry/src/` and rebuild from scratch.
 
 **Keep as-is (other crates in workspace):**
 - `chemrust-kpoint-gen` (refactor branch) — MP grid + symmetry reduction
@@ -36,10 +36,10 @@ Delete everything in `chemrust-core/src/` and rebuild from scratch.
 - `chemrust-formats` — superseded by castep-cell-io
 - `chemrust-settings` — duplicate k-point code
 
-## Step 2: New chemrust-core Module Structure
+## Step 2: New chemrust-geometry Module Structure
 
 ```
-chemrust-core/src/
+chemrust-geometry/src/
   lib.rs              # crate docs, re-exports
   structure.rs        # Structure struct (SoA layout, chainable API)
   lattice.rs          # LatticeVectors, CellConstants
@@ -155,7 +155,7 @@ No `cleave_slab` free function — the pipeline is `fcc_bulk().transform(Surface
 ### Draft: End-to-End Cu(111)+CO Pipeline
 
 ```rust
-use chemrust_core::{
+use chemrust_geometry::{
     Structure, LatticeVectors,
     transform::{SurfaceRotation, Supercell, VacuumGap, Transform},
     slab::fcc_bulk,
@@ -261,14 +261,14 @@ fn main() -> anyhow::Result<()> {
 
 ## Step 3: Cu(111)+CO Example
 
-Example binary: `chemrust-core/examples/cu111_co.rs`
+Example binary: `chemrust-geometry/examples/cu111_co.rs`
 
 Runnable via `cargo run --example cu111_co`. Produces `Cu111_CO.cell` and `Cu111_CO.param`.
 
 ## Step 4: Workspace Cleanup
 
 1. Merge `origin/refactor` into main (preserves chemrust-kpoint-gen, chemrust-cerius2-io)
-2. Rewrite `chemrust-core/` per Step 2
+2. Rewrite `chemrust-geometry/` per Step 2
 3. Keep `chemrust-kpoint-gen`, `chemrust-cerius2-io`
 4. Keep `chemrust-parser`, `chemrust-scanner`, `mount_scanner`, `cell_reader`
 5. Remove `chemrust-formats`, `chemrust-settings` from workspace
@@ -276,7 +276,7 @@ Runnable via `cargo run --example cu111_co`. Produces `Cu111_CO.cell` and `Cu111
 
 ## Step 5: Dependencies
 
-**chemrust-core/Cargo.toml** (zero format deps):
+**chemrust-geometry/Cargo.toml** (zero format deps):
 ```toml
 [dependencies]
 nalgebra = "0.33"

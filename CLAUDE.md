@@ -1,11 +1,11 @@
 # chemrust — Design Principles & Coding Style
 
-> These conventions apply when working with `chemrust-core` and related crates.
+> These conventions apply when working with `chemrust-geometry` and related crates.
 > They were established during the 2026-05-06 rewrite discussion.
 
 ## Crate Identity
 
-`chemrust-core` is a **crystal geometry toolkit**, not a universal intermediate representation (IR).
+`chemrust-geometry` is a **crystal geometry toolkit**, not a universal intermediate representation (IR).
 - Format-specific data (spin, species_pot, k-points) lives in format-specific types (e.g., `castep-cell-io`'s `CellDocument`).
 - Core provides geometry operations + a convenience `Structure` data bag.
 - Format conversion is **downstream code**: the application/example wires core types to output formats inline.
@@ -31,7 +31,7 @@
 
 ## Architectural Boundaries
 
-- `chemrust-core` has **zero format dependencies** — no `castep-cell-io`, no CIF, no XYZ.
+- `chemrust-geometry` has **zero format dependencies** — no `castep-cell-io`, no CIF, no XYZ.
 - I/O crates (`castep-cell-io`, `chemrust-kpoint-gen`, etc.) live alongside core in the workspace.
 - Format conversion examples live in `examples/` as `[dev-dependencies]`.
 

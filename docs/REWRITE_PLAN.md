@@ -6,7 +6,7 @@ The user wants to build CASTEP `.cell`/`.param` input files programmatically fro
 
 Three existing Rust projects form the toolchain:
 - **castep-cell-io** (v0.5.0, production-ready): Complete CASTEP file I/O (`CellDocument`, `ParamDocument`, builders, serialization)
-- **crystallographic-group** (v0.3.1, stable): Space group symmetry operators from Hall symbols
+- **crystallographic-group** (v0.4.0, stable): Space group symmetry operators from Hall symbols
 - **chemrust** (incomplete): Intended central computational chemistry toolchain
 
 The chemrust `refactor` branch has good type designs but is incomplete. The `main` branch has dead code and duplicate implementations.
@@ -281,7 +281,7 @@ Runnable via `cargo run --example cu111_co`. Produces `Cu111_CO.cell` and `Cu111
 [dependencies]
 nalgebra = "0.33"
 castep-periodic-table = "0.5"
-crystallographic-group = "0.3"
+crystallographic-group = "0.4"
 ```
 
 **Example binary** (`[dev-dependencies]`):

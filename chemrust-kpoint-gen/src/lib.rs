@@ -8,7 +8,7 @@ mod functions;
 mod tests {
     use chemrust_geometry::{LatticeVectors, ReciprocalCellVectors};
     use crystallographic_group::{
-        database::{LookUpSpaceGroup, DEFAULT_SPACE_GROUP_SYMBOLS},
+        database::SpaceGroupTable,
         *,
     };
     use nalgebra::Matrix3;
@@ -24,8 +24,8 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let symmetry_group_hm_symbol = DEFAULT_SPACE_GROUP_SYMBOLS
-            .get_hall_symbol(20)
+        let symmetry_group_hm_symbol = SpaceGroupTable::per_number()
+            .hall_symbol(20)
             .expect("Space group number 20 is within 230");
         dbg!(symmetry_group_hm_symbol);
         let symmetry_group = HallSymbolNotation::try_from_str(symmetry_group_hm_symbol).unwrap();

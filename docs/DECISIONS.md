@@ -2,6 +2,17 @@
 
 Session decisions affecting the repo. One entry per decision, newest first.
 
+## 2026-10-05: `crystallographic-group` 0.3.1 to 0.4.0
+
+- `chemrust-geometry` and `chemrust-kpoint-gen` now use `crystallographic-group = "0.4.0"`.
+- Geometry needed no code change. `database::SpaceGroupHallSymbol` and `database::CrystalSystem` keep their 0.3.1 paths.
+- Kpoint-gen needed one test fix. `LookUpSpaceGroup` and `DEFAULT_SPACE_GROUP_SYMBOLS` are gone. The lookup is now `SpaceGroupTable::per_number().hall_symbol(20)`.
+- `SeitzMatrix::rotation_part()` still returns `Matrix3<i32>`. The `SymmetryOperation` impl compiles unchanged.
+- The lockfile now holds a single 0.4.0.
+- Rationale: 0.4.0 is the current release. It adds `SpaceGroupNumber`, `SpaceGroupTable`, and the `SpaceGroup` type.
+- Affected: `chemrust-geometry/Cargo.toml`, `chemrust-kpoint-gen/Cargo.toml`, `chemrust-kpoint-gen/src/lib.rs`, `docs/REWRITE_PLAN.md`, `Cargo.lock`.
+- Verified: `cargo test --workspace` (16 geometry + 4 kpoint-gen pass). `cargo run --example cu111_co` writes 66 atoms.
+
 ## 2026-10-01: castep dev-deps point at the local sibling repo
 
 - `chemrust-geometry` dev-deps now use the local path deps `castep-cell-io` 0.7.0

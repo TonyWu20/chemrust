@@ -12,5 +12,5 @@ keywords.workspace = true
 
 [dependencies]
 chemrust-geometry = { path = "../chemrust-geometry" }
-crystallographic-group = { version = "0.3.1" }
+crystallographic-group = { version = "0.4.0" }
 nalgebra = { version = "0.33.2", features = ["compare", "debug"] }

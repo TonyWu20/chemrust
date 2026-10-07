@@ -2,6 +2,77 @@
 
 Session decisions affecting the repo. One entry per decision, newest first.
 
+## 2026-10-07: Prune the seven stale non-member crate dirs
+
+- Removed `cell_reader`, `chemrust-cerius2-io`, `chemrust-misctools`,
+  `chemrust-parser`, `chemrust-scanner`, `chemrust-settings`, `mount_scanner`.
+- None of the seven is a workspace member. The workspace keeps only
+  `chemrust-geometry` and `chemrust-kpoint-gen`.
+- All seven were fully git-tracked with no uncommitted files. Nothing is
+  lost. History stays reachable via git.
+- CI runs `cargo build` and `cargo test` at the root. It never touched the
+  seven dirs, so the workflow needs no change.
+- `docs/REWRITE_PLAN.md` still names them. That document is historical
+  context and stays as is.
+- Supersession confirmed: `mount_scanner` and `chemrust-scanner` were
+  superseded by the sibling repo `../chemrust-nasl`.
+  - `chemrust-scanner` -> `chemrust-nasl` (core). Same geometry
+    primitives/intersections, refactored coordination-sites module,
+    `circle_check`/`sphere_check` algorithms. Same `SAC_GDY_V.cell` fixture.
+  - `mount_scanner` -> `chemrust-nasl-app` (binary `rhino`). `arg_parser.rs`
+    and `kpoint_quality.rs` are byte-identical. Same `example_task.yaml`
+    schema. Seeding (pseudopotential copy) carries the old Fast/Full/Post
+    run modes.
+  - Old dirs last touched 2024-05-27. The nasl repo ran from 2024-04-29 to
+    2025-04-17 and kept evolving. The prune is safe.
+- `notes/` (kept `pr-reviews/` content per the 2026-10-01 docs move) is not
+  a crate dir and was not pruned. Open: prune it too or keep it.
+- Root `README.md` still lists `chemrust-core` under Member. Stale label.
+  Open: update it to the current member names.
+- Verified: `cargo build` and `cargo test --workspace` pass.
+  20 tests pass (16 geometry, 4 kpoint-gen).
+- Affected: 7 deleted dirs, `docs/DECISIONS.md`.
+
+
+## 2026-10-07: chemrust-geometry manifest metadata filled; MIT confirmed
+
+- `chemrust-geometry/Cargo.toml` now sets `homepage.workspace = true` and
+  `repository.workspace = true` (inherit from the root).
+- `documentation = "https://docs.rs/chemrust-geometry"` is set on the member.
+  The workspace has no `documentation` key to inherit.
+- License stays MIT via `license.workspace = true`. No change needed.
+- Verified: `cargo metadata` shows `license: MIT`, `homepage`, `repository`,
+  and `documentation` all resolved. `cargo publish --dry-run` no longer prints
+  the metadata warning.
+- Open question (undecided): should `chemrust-geometry` leave the current
+  workspace-style repo and get its own repo?
+- Recommendation: keep it in the workspace for now. `chemrust-kpoint-gen`
+  path-depends on `chemrust-geometry` and uses its public API. A repo split
+  would force kpoint-gen to track published versions of geometry mid-development.
+  `cargo publish` works from inside a workspace, so publishing is not blocked.
+- Affected: `chemrust-geometry/Cargo.toml`, `docs/DECISIONS.md`.
+
+
+## 2026-10-07: chemrust-geometry publish-ready; dev-deps move off local paths
+
+- `chemrust-geometry` is ready for `cargo publish`.
+- Dev-deps `castep-cell-io` 0.7.0 and `castep-cell-fmt` 0.3.0 drop their
+  `path = "../../castep-cell-io/..."` keys. They now resolve from crates.io.
+- The local-path pin (2026-10-01) existed because registry 0.2.1 lacked
+  `ToCellFile`. `castep-cell-fmt` 0.3.0 is now published on crates.io, so
+  the registry version carries `ToCellFile` and the example builds.
+- Added `chemrust-geometry/README.md`. It documents the core types, the
+  transform pipeline, the slab generators, and the CASTEP example.
+- `cargo publish` refuses path dependencies, so this is the blocker fix.
+- Affected: `chemrust-geometry/Cargo.toml`, `chemrust-geometry/README.md`.
+- Verified: `cargo publish --dry-run --allow-dirty` packages 13 files and
+  verifies the build. `cargo build --example cu111_co` compiles from the
+  registry versions. `cargo test -p chemrust-geometry` passes 16 tests.
+- Known warning: `manifest has no documentation, homepage or repository`.
+  The manifest inherits `edition`, `authors`, `license` from the workspace
+  but not `repository` or `homepage`.
+
+
 ## 2026-10-05: `crystallographic-group` 0.3.1 to 0.4.0
 
 - `chemrust-geometry` and `chemrust-kpoint-gen` now use `crystallographic-group = "0.4.0"`.

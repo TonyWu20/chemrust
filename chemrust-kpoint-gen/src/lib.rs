@@ -1,8 +1,31 @@
-mod kpoints;
-mod monkhorst_pack;
-mod symmetry_operations;
+//! K-point generation and symmetry reduction for Monkhorst-Pack grids.
+//!
+//! The crate is code-agnostic: it knows nothing about CASTEP, VASP, or any
+//! other electronic-structure package. Code-specific k-point settings live
+//! in thin adapter crates that translate their settings into
+//! [`KPointSampling`] and back.
+//!
+//! # Public API
+//!
+//! - [`KPoint`] - k-point with coordinates in (-1, 1)
+//! - [`IrreducibleKpt`] - k-point with its degeneracy under a symmetry group
+//! - [`MPGrid`], [`MPSpacingParam`] - Monkhorst-Pack grid builders
+//! - [`SymmetryOperation`] - trait for rotation providers.
+//!   `SeitzMatrix` from `crystallographic-group` implements it
+//! - [`reduce_kpoints`] - symmetry reduction
+//! - [`KPointSampling`], [`KPointSet`] - code-agnostic sampling settings
 
 mod functions;
+mod kpoints;
+mod monkhorst_pack;
+mod settings;
+mod symmetry_operations;
+
+pub use functions::reduce_kpoints;
+pub use kpoints::{IrreducibleKpt, KPoint};
+pub use monkhorst_pack::{MPGrid, MPSpacingParam};
+pub use settings::{KPointSampling, KPointSet};
+pub use symmetry_operations::SymmetryOperation;
 
 #[cfg(test)]
 mod tests {
@@ -24,8 +47,9 @@ mod tests {
 
     #[test]
     fn it_works() {
+        // hall_symbol is zero-indexed; row 19 is space-group number 20
         let symmetry_group_hm_symbol = SpaceGroupTable::per_number()
-            .hall_symbol(20)
+            .hall_symbol(19)
             .expect("Space group number 20 is within 230");
         dbg!(symmetry_group_hm_symbol);
         let symmetry_group = HallSymbolNotation::try_from_str(symmetry_group_hm_symbol).unwrap();

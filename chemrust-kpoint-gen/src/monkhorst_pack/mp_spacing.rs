@@ -32,7 +32,6 @@ impl MPSpacingParam {
     }
 }
 
-type Spacing = f64;
 fn determine_grid_num(length: f64, spacing: f64) -> usize {
     ((length / spacing).ceil() as usize).max(1)
 }

@@ -2,6 +2,47 @@
 
 Session decisions affecting the repo. One entry per decision, newest first.
 
+## 2026-10-18: K-point settings layer + castep-kpoint-gen app crate
+
+- `chemrust-kpoint-gen` now exports a curated 8-item public API at the
+  crate root: `KPoint`, `IrreducibleKpt`, `MPGrid`, `MPSpacingParam`,
+  `SymmetryOperation`, `reduce_kpoints`, plus the new settings layer
+  `KPointSampling` and `KPointSet`. Modules stay private.
+- `apply_rotation_to_kpt` is `pub(crate)` (used by kpoint tests across
+  modules); `is_irreducible` is private. `#![allow(unused)]` in
+  monkhorst_pack and the unused `Spacing` alias are removed.
+- D1: the code-agnostic settings layer lives in kpoint-gen, not in
+  castep-cell-io and not in a new core crate.
+- D2: the CASTEP app-adapter is a new standalone crate
+  `castep-kpoint-gen` at `~/programming/castep-kpoint-gen`, sibling of
+  `castep-cell-io`. Name follows the `castep-*` family.
+- D3: kpoint-gen takes no dependency on castep-cell-io. This reverses
+  the draft plan that would have added a `castep` module there.
+- D4: KPOINT_LIST weights are normalized to sum 1 in the adapter.
+- D5: symmetry comes from a CASTEP space-group number (programmatic)
+  or a `SYMMETRY_OPS` block. castep-cell-io has no space-group-number
+  type, so the number path is programmatic.
+- Conventions recorded in `docs/KPT-SETTINGS-LAYER.md`: 2pi spacing
+  scaling for `KPOINTS_MP_SPACING` (ReciprocalCellVectors is 2pi,
+  CASTEP is crystallographic 1/ang), MP offset as BZ fractions with
+  `offset_i * 2 * n_i` conversion (unverified assumption),
+  `hall_symbol` off-by-one (zero-indexed table vs 1-indexed CASTEP
+  numbers), `core_position_set` as full group element list, rotation
+  only (non-symmorphic translations ignored), Ang-only lattice units.
+- `castep-kpoint-gen` deps: path deps on `castep-cell-io/castep_cell_io`,
+  `chemrust/chemrust-kpoint-gen`, `chemrust/chemrust-geometry`;
+  `castep-cell-fmt` is dev-only.
+- Affected: `chemrust-kpoint-gen/src/{lib.rs, settings.rs,
+  functions/mod.rs, monkhorst_pack/mod.rs, monkhorst_pack/mp_spacing.rs}`,
+  new `docs/KPT-SETTINGS-LAYER.md`, new crate
+  `~/programming/castep-kpoint-gen`, `docs/DECISIONS.md`.
+- Verified: chemrust workspace 24 tests (16 geometry + 8 kpoint-gen),
+  0 warnings. `castep-kpoint-gen` 17 tests including a KPOINT_LIST
+  write-out and re-parse round trip. `cargo doc` for kpoint-gen lists
+  exactly the 8 public items.
+- Open: `castep-kpoint-gen` has no git repo yet. KPOINT_MP_OFFSET
+  unit assumption unverified against CASTEP.
+
 ## 2026-10-07: Prune the seven stale non-member crate dirs
 
 - Removed `cell_reader`, `chemrust-cerius2-io`, `chemrust-misctools`,

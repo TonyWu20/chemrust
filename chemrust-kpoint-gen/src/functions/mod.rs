@@ -6,13 +6,13 @@ use crate::{
 };
 
 /// Apply rotation operation to a k-point, return a new instance of k-point
-pub fn apply_rotation_to_kpt(rotation_matrix: &Matrix3<f64>, kpoint: &KPoint) -> KPoint {
+pub(crate) fn apply_rotation_to_kpt(rotation_matrix: &Matrix3<f64>, kpoint: &KPoint) -> KPoint {
     KPoint::new(rotation_matrix * kpoint.coord())
 }
 
 /// Apply the group of symmetry operations for the given symmetry,
 /// determine if the given k-point is an irreducible k-point under all symmetry operations.
-pub fn is_irreducible<T: SymmetryOperation>(k: &KPoint, group: &[T]) -> bool {
+fn is_irreducible<T: SymmetryOperation>(k: &KPoint, group: &[T]) -> bool {
     group.iter().all(|ops|
             // If the dict order is greater than it is an irreducible points
             apply_rotation_to_kpt(&ops.rotation(), k) >= *k)

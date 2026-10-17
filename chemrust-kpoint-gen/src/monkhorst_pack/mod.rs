@@ -1,4 +1,3 @@
-#![allow(unused)]
 use nalgebra::Vector3;
 
 use crate::kpoints::KPoint;

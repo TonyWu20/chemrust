@@ -18,6 +18,17 @@ impl KPoint {
     pub(crate) fn inv(&self) -> KPoint {
         KPoint(-self.0)
     }
+    /// Strict coordinate equality in the (-1, 1) representation.
+    ///
+    /// `PartialEq` additionally accepts the full inversion, i.e.
+    /// (x, y, z) == (-x, -y, -z). The k / -k pair bookkeeping in
+    /// `reduce_kpoints` needs the strict comparison.
+    pub(crate) fn coord_eq(&self, other: &Self) -> bool {
+        self.0
+            .iter()
+            .zip(other.0.iter())
+            .all(|(a, b)| (a - b).abs() < CUSTOM_EPSILON)
+    }
 }
 
 impl Display for KPoint {

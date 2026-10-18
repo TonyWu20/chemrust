@@ -2,6 +2,44 @@
 
 Session decisions affecting the repo. One entry per decision, newest first.
 
+## 2026-10-19: k-point representative sign (mission K1)
+
+- `reduce_kpoints` now keeps the MORE-NEGATIVE member of each k / -k
+  pair, matching the CASTEP `cell_reduce_kpoints_internal` default
+  (`exclude_minus_k`, CASTEP-6.11 `Source/Fundamental/cell.f90`):
+  the pair merges into the first point of the sort order, which for
+  an equidistant pair is the more-negative one. Cu111_CO fixture:
+  (-0.25, 0, 0) weight 1.0, KPOINT_LIST fold (0.75, 0, 0). The old
+  comparator kept the more-positive member (+0.25).
+- New `KPoint::coord_eq` (`pub(crate)` in `kpoints/kpoint.rs`):
+  strict coordinate equality on the (-1, 1) coordinates. It replaces
+  the dead `contains(&kpt.inv())` pair check: `KPoint`'s `PartialEq`
+  is inversion-aware (a point equals its own inversion), so that
+  check was true for every kpt and the singleton disjunct never
+  fired.
+- Behavior rules in the second stage of `reduce_kpoints`:
+  - partner -k present (strict coordinates): keep the more-negative
+    member, degeneracy `group.len() + 1` (the partner term).
+  - partner absent: the point stands alone and is kept; the partner
+    term is not added (degeneracy `group.len()`).
+  - self-invariant point (k == -k, e.g. Gamma on an odd-n mixed
+    grid): no partner term, degeneracy `group.len()`. The old code
+    gave `group.len() + 1` and the weights were wrong on odd-n grids.
+  - Passing the inversion op in the group no longer double-counts:
+    the first stage consumes the pair and the second stage sees the
+    survivor as a singleton.
+- Four regression tests in `functions/mod.rs`: C1 pair sign (the
+  fixture case), self-invariant Gamma, singleton kept,
+  inversion-in-group double count. No existing test encoded the old
+  +0.25 expectation; none had to be flipped.
+- Affected: `chemrust-kpoint-gen/src/{functions/mod.rs,
+  kpoints/kpoint.rs}`, `docs/DECISIONS.md`. Public API unchanged.
+- Verified: chemrust workspace 28 tests (16 geometry + 12
+  kpoint-gen), 0 warnings. `castep-kpoint-gen` 17 tests. Closure
+  gate `kpoint_fixture_gate` PASSES in release (kx = -0.25, weight
+  1.0, folded 0.75). Red before: kx = 0.25.
+
+
 ## 2026-10-18: K-point settings layer + castep-kpoint-gen app crate
 
 - `chemrust-kpoint-gen` now exports a curated 8-item public API at the
